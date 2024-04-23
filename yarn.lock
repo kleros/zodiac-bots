@@ -687,8 +687,10 @@ __metadata:
     "@wagmi/cli": "npm:2.1.4"
     chai: "npm:^4.2.0"
     dotenv: "npm:^16.4.5"
+    eslint-config-prettier: "npm:9.1.0"
     hardhat: "npm:^2.22.3"
     hardhat-gas-reporter: "npm:^1.0.8"
+    prettier: "npm:3.2.5"
     solidity-coverage: "npm:^0.8.1"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.4.5"
@@ -2902,6 +2904,17 @@ __metadata:
     escodegen: ./bin/escodegen.js
     esgenerate: ./bin/esgenerate.js
   checksum: 10/f7c4f9639f4198848784548f268bb4bbd55f1a12344af79ea4a8978168c2009b0bfc1047dece1e0fdca4ff539fe9dffb0b4183ecab22ab91dea88328487da86a
+  languageName: node
+  linkType: hard
+
+"eslint-config-prettier@npm:9.1.0":
+  version: 9.1.0
+  resolution: "eslint-config-prettier@npm:9.1.0"
+  peerDependencies:
+    eslint: ">=7.0.0"
+  bin:
+    eslint-config-prettier: bin/cli.js
+  checksum: 10/411e3b3b1c7aa04e3e0f20d561271b3b909014956c4dba51c878bf1a23dbb8c800a3be235c46c4732c70827276e540b6eed4636d9b09b444fd0a8e07f0fcd830
   languageName: node
   linkType: hard
 
@@ -5206,7 +5219,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.0.3":
+"prettier@npm:3.2.5, prettier@npm:^3.0.3":
   version: 3.2.5
   resolution: "prettier@npm:3.2.5"
   bin:
