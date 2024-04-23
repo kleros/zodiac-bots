@@ -3,9 +3,6 @@ import { mainnet } from "viem/chains";
 import { realityEthV3_0Abi, realityModuleEthAbi } from "./generated";
 import { Context, Proposal } from "./types";
 import { getSnapshotSpace } from "./snapshot";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const context: Context = {
   watchers: [],
@@ -50,12 +47,14 @@ const main = async () => {
               timestamp: Number(log.args.ts),
               user: log.args.user,
             });
-            console.log(`New answer: ${log.args.answer} with bond: ${log.args.bond}`);
+            console.log(
+              `New answer: ${log.args.answer} with bond: ${log.args.bond}`,
+            );
 
             // TODO: blast notifications via email, slack, telegram...
           });
         },
-      }
+      },
     );
   };
   const watchRealityModuleProposals = () => {
@@ -74,11 +73,13 @@ const main = async () => {
               };
               context.proposals.push(proposal);
               context.watchers.push(watchRealityAnswers(proposal));
-              console.log(`New question: ${log.args.questionId} with proposalId: ${log.args.proposalId}`);
+              console.log(
+                `New question: ${log.args.questionId} with proposalId: ${log.args.proposalId}`,
+              );
             }
           });
         },
-      }
+      },
     );
   };
   context.watchers.push(watchRealityModuleProposals()); // WARNING: check if this is a blocking call, otherwise it will exit the process

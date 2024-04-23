@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "@reality.eth/contracts": "^3.0.48",
-    "dotenv": "^16.4.5",
     "viem": "^2.7.6"
   },
   "packageManager": "yarn@4.1.1",

@@ -686,7 +686,6 @@ __metadata:
     "@types/mocha": "npm:>=9.1.0"
     "@wagmi/cli": "npm:2.1.4"
     chai: "npm:^4.2.0"
-    dotenv: "npm:^16.4.5"
     hardhat: "npm:^2.22.3"
     hardhat-gas-reporter: "npm:^1.0.8"
     solidity-coverage: "npm:^0.8.1"
@@ -2678,7 +2677,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:^16.3.1, dotenv@npm:^16.4.5":
+"dotenv@npm:^16.3.1":
   version: 16.4.5
   resolution: "dotenv@npm:16.4.5"
   checksum: 10/55a3134601115194ae0f924e54473459ed0d9fc340ae610b676e248cca45aa7c680d86365318ea964e6da4e2ea80c4514c1adab5adb43d6867fb57ff068f95c8
