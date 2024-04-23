@@ -1,4 +1,4 @@
-import { WatchContractEventReturnType } from "viem";
+import type { WatchContractEventReturnType, Hash, Address } from "viem";
 
 export type SnapshotSpace = {
   id: string;
@@ -6,21 +6,21 @@ export type SnapshotSpace = {
   network: string;
   plugins: {
     safeSnap: {
-      address: `0x${string}`;
+      address: Address;
     };
   };
 };
 
 export type Answer = {
-  answer: `0x${string}` | undefined;
+  answer: Hash | undefined;
   bond: bigint | undefined;
   timestamp: number;
-  user: `0x${string}` | undefined;
+  user: Hash | undefined;
 };
 
 export type Proposal = {
   proposalId: string | undefined;
-  questionId: `0x${string}`;
+  questionId: Hash;
   answers: Answer[];
 };
 
