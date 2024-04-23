@@ -41,8 +41,7 @@ const getContracts = async (snapshotSpaceId: string) => {
 };
 
 const main = async () => {
-  const { realityModule, realityOracle } =
-    await getContracts(SNAPSHOT_SPACE_ID);
+  const { realityModule, realityOracle } = await getContracts(SNAPSHOT_SPACE_ID);
   const watchRealityAnswers = (proposal: Proposal) => {
     return realityOracle.watchEvent.LogNewAnswer(
       {
