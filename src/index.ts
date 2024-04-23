@@ -7,6 +7,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const { MAINNET_RPC_URL, SNAPSHOT_SPACE_ID } = process.env;
+if (!MAINNET_RPC_URL || !SNAPSHOT_SPACE_ID) {
+  throw new Error(
+    "Please provide a value for the expected environment variables",
+  );
+}
+
 const context: Context = {
   watchers: [],
   proposals: [],
@@ -17,7 +24,7 @@ const getContracts = async (snapshotSpaceId: string) => {
   const realityModuleAddress = snapshotSpace.plugins.safeSnap.address;
   const client = createPublicClient({
     chain: mainnet,
-    transport: http(process.env.MAINNET_RPC_URL),
+    transport: http(MAINNET_RPC_URL),
   });
   const realityModule = getContract({
     client,
@@ -34,8 +41,8 @@ const getContracts = async (snapshotSpaceId: string) => {
 };
 
 const main = async () => {
-  const snapshotSpaceId = "1inch.eth"; // TODO: get this from parameters or configuration file
-  const { realityModule, realityOracle } = await getContracts(snapshotSpaceId);
+  const { realityModule, realityOracle } =
+    await getContracts(SNAPSHOT_SPACE_ID);
   const watchRealityAnswers = (proposal: Proposal) => {
     return realityOracle.watchEvent.LogNewAnswer(
       {
@@ -50,12 +57,14 @@ const main = async () => {
               timestamp: Number(log.args.ts),
               user: log.args.user,
             });
-            console.log(`New answer: ${log.args.answer} with bond: ${log.args.bond}`);
+            console.log(
+              `New answer: ${log.args.answer} with bond: ${log.args.bond}`,
+            );
 
             // TODO: blast notifications via email, slack, telegram...
           });
         },
-      }
+      },
     );
   };
   const watchRealityModuleProposals = () => {
@@ -74,11 +83,13 @@ const main = async () => {
               };
               context.proposals.push(proposal);
               context.watchers.push(watchRealityAnswers(proposal));
-              console.log(`New question: ${log.args.questionId} with proposalId: ${log.args.proposalId}`);
+              console.log(
+                `New question: ${log.args.questionId} with proposalId: ${log.args.proposalId}`,
+              );
             }
           });
         },
-      }
+      },
     );
   };
   context.watchers.push(watchRealityModuleProposals()); // WARNING: check if this is a blocking call, otherwise it will exit the process
