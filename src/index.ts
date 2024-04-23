@@ -55,7 +55,7 @@ const main = async () => {
             // TODO: blast notifications via email, slack, telegram...
           });
         },
-      }
+      },
     );
   };
   const watchRealityModuleProposals = () => {
@@ -78,7 +78,7 @@ const main = async () => {
             }
           });
         },
-      }
+      },
     );
   };
   context.watchers.push(watchRealityModuleProposals()); // WARNING: check if this is a blocking call, otherwise it will exit the process
