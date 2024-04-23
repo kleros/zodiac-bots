@@ -8,6 +8,11 @@ const config: HardhatUserConfig = {
   solidity: "0.8.24",
   networks: {
     hardhat: {
+      forking: {
+        url: process.env.MAINNET_RPC_URL ?? "bad rpc url",
+        blockNumber: 19475120, // 1inch proposal
+        enabled: true,
+      },
     },
     mainnet: {
       chainId: 1,

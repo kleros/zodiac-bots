@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "generate": "wagmi generate",
-    "bot:run": "hardhat run src/index.ts"
+    "bot:run": "hardhat run src/index.ts",
+    "fork": "hardhat node",
+    "test": "hardhat test"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ignition": "^0.15.1",
