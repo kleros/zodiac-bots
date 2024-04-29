@@ -11,9 +11,12 @@ RUN mkdir -p /home/node/app
 
 WORKDIR /home/node/app
 
+COPY --chown=node package.json yarn.lock ./
+RUN yarn && yarn cache clean
+
+COPY --chown=node tsconfig.json wagmi.config.ts ./
+RUN yarn generate
+
 COPY --chown=node . .
 
-RUN yarn && yarn generate && yarn cache clean
-
 CMD ["yarn", "bot:run"]
-
