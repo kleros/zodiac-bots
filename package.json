@@ -4,6 +4,7 @@
   "description": "Zodiac Bots",
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
     "generate": "wagmi generate",
     "bot:run": "ts-node src/start.ts",
     "test:all": "mocha",

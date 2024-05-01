@@ -3,8 +3,6 @@ FROM node:20.12.1-alpine
 ARG ETHERSCAN_API_KEY
 ENV ETHERSCAN_API_KEY $ETHERSCAN_API_KEY
 
-RUN env
-
 USER node
 
 RUN mkdir -p /home/node/app
@@ -19,4 +17,6 @@ RUN yarn generate
 
 COPY --chown=node . .
 
-CMD ["yarn", "bot:run"]
+RUN yarn build
+
+CMD ["node", "dist/src/start.js"]
