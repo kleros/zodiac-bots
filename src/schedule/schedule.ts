@@ -60,16 +60,16 @@ export const configurableScheduler = async (deps: ConfigurableSchedulerDeps) => 
     setLastProcessedBlockNumberFn,
   } = deps;
 
-  const plan = await planIterationFn();
-  if (plan.hasBlocks) {
-    if (onBlocksFound) await onBlocksFound(plan.fromBlock, plan.toBlock);
-    await setLastProcessedBlockNumberFn(plan.toBlock);
-  } else {
-    if (onSkip) await onSkip();
-  }
-  await waitForFn(intervalInSeconds * 1000);
-
-  if (shouldContinueFn()) configurableScheduler(deps);
+  do {
+    const plan = await planIterationFn();
+    if (plan.hasBlocks) {
+      if (onBlocksFound) await onBlocksFound(plan.fromBlock, plan.toBlock);
+      await setLastProcessedBlockNumberFn(plan.toBlock);
+    } else {
+      if (onSkip) await onSkip();
+    }
+    await waitForFn(intervalInSeconds * 1000);
+  } while (shouldContinueFn());
 };
 
 export type WaitForFn = (durationInMs: number) => Promise<void>;
