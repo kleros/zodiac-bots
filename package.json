@@ -4,8 +4,12 @@
   "description": "Zodiac Bots",
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
     "generate": "wagmi generate",
-    "bot:run": "hardhat run src/index.ts"
+    "bot:run": "ts-node src/start.ts",
+    "test:all": "mocha",
+    "test:coverage": "c8 --reporter html --reporter text --all --src ./src mocha",
+    "test": "yarn test:coverage"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ignition": "^0.15.1",
@@ -16,22 +20,26 @@
     "@nomicfoundation/hardhat-viem": "^2.0.1",
     "@nomicfoundation/ignition-core": "^0.15.1",
     "@types/chai": "^4.3.14",
-    "@types/chai-as-promised": "^7.1.8",
-    "@types/mocha": "^10.0.6",
+    "@types/chai-as-promised": "^7",
+    "@types/mocha": "^10",
     "@types/node": "^20.12.7",
+    "@types/sinon": "^17.0.3",
     "@wagmi/cli": "2.1.6",
+    "c8": "^9.1.0",
     "chai": "^4.4.1",
+    "chai-as-promised": "^7.1.1",
     "eslint-config-prettier": "9.1.0",
     "hardhat": "^2.22.3",
     "hardhat-gas-reporter": "^1.0.10",
+    "mocha": "^10.4.0",
     "prettier": "3.2.5",
+    "sinon": "^17.0.1",
     "solidity-coverage": "^0.8.12",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "@reality.eth/contracts": "^3.0.48",
-    "dotenv": "^16.4.5",
     "viem": "^2.9.25"
   },
   "packageManager": "yarn@4.1.1",
