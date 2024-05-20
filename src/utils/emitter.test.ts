@@ -1,6 +1,6 @@
 import EventEmitter from "events";
-import { expect } from "./tests-setup";
 import { defaultEmitter } from "./emitter";
+import { expect } from "./tests-setup";
 
 describe("Emitter", () => {
   describe("defaultEmitter", () => {

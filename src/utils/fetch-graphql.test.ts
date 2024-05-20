@@ -1,7 +1,7 @@
 import http from "node:http";
-import { expect } from "./tests-setup";
-import { graphQLFetch } from "./fetch-graphql";
 import { AddressInfo } from "node:net";
+import { graphQLFetch } from "./fetch-graphql";
+import { expect } from "./tests-setup";
 
 type OnQueryCallback = (query: string) => void;
 
