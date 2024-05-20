@@ -26,7 +26,7 @@ Requirements:
 
 1. Ensure that you have loaded the environment variables in your `.env` file.
 2. Install the dependencies executing `yarn`.
-3. Perform a `yarn generate` to retrieve the ABIs.
+3. Perform a `yarn wagmi:generate` to retrieve the ABIs.
 4. Execute `yarn build`.
 5. Run `bin/start.sh yarn bot:run`.
 
