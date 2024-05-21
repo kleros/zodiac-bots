@@ -1,4 +1,4 @@
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 import { defaultEmitter } from "./emitter";
 import { expect } from "./tests-setup";
 

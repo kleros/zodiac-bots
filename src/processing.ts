@@ -1,5 +1,5 @@
-import { EventEmitter } from "stream";
-import { SpaceDetailedPayload, SpaceSkippedPayload, SpaceStartedPayload, BotEventNames } from "./bot-events";
+import type { EventEmitter } from "node:events";
+import { BotEventNames, SpaceDetailedPayload, SpaceSkippedPayload, SpaceStartedPayload } from "./bot-events";
 import { EventType, notify } from "./notify";
 import { updateSpace } from "./services/db/spaces";
 import { getPublicClient } from "./services/provider";

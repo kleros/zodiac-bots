@@ -1,5 +1,5 @@
+import { EventEmitter } from "node:events";
 import sinon from "sinon";
-import { EventEmitter } from "stream";
 import {
   ConfigurableInitializeSpacesDeps,
   ConfigurableStartDeps,

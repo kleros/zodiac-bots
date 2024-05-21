@@ -1,4 +1,4 @@
-import EventEmitter from "node:events";
+import { EventEmitter } from "node:events";
 import { spy } from "sinon";
 import { EventType, NotifyParams } from "./notify";
 import { configurableProcessSpace } from "./processing";

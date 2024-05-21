@@ -1,5 +1,5 @@
+import type { EventEmitter } from "node:events";
 import pino from "pino";
-import { EventEmitter } from "stream";
 import { SpaceDetailedPayload, SpaceSkippedPayload, SpaceStartedPayload, BotEventNames as event } from "../bot-events";
 
 /**

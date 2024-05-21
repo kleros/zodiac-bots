@@ -1,4 +1,4 @@
-import { EventEmitter } from "stream";
+import { EventEmitter } from "node:events";
 import { BotEventNames } from "./bot-events";
 import { processSpaces } from "./processing";
 import { FindSpacesFn, InsertSpacesFn, findSpaces, insertSpaces } from "./services/db/spaces";
