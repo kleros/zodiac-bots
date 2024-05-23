@@ -35,6 +35,14 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
     logger.info("Slack transport configured");
   });
 
+  emitter.on(event.TELEGRAM_CONFIGURATION_MISSING, () => {
+    logger.warn("Telegram configuration missing. Ignoring transport");
+  });
+
+  emitter.on(event.TELEGRAM_STARTED, () => {
+    logger.info("Telegram transport configured");
+  });
+
   emitter.on(event.ITERATION_STARTED, () => {
     logger.info("Checking all the spaces for new events");
   });
