@@ -51,11 +51,6 @@ export const schema = {
     desc: "Snapshot GraphQL API endpoint",
     example: "https://hub.snapshot.org/graphql",
   }),
-  // NOTE: This is only used during the build process, may not be an app requirement
-  ETHERSCAN_API_KEY: str({
-    desc: "Etherscan API key",
-    example: "B1C15S3AXQHQ7PVVDX63VVK2IBAECS448Z",
-  }),
   MAX_BLOCKS_BATCH_SIZE: num({
     desc: "Max number of blocks to process in a single batch",
     example: "200",
