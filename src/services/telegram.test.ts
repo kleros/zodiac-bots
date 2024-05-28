@@ -12,7 +12,7 @@ describe("Telegram service", () => {
   beforeEach(() => (emitter = new EventEmitter()));
   describe("initialize", () => {
     const fn = configurableInitialize;
-    it("should emit an event when the it was properly initialized", () => {
+    it("should emit an event when it was properly initialized", () => {
       const promise = resolveOnEvent(BotEventNames.TELEGRAM_STARTED, emitter);
       fn({
         emitter,
