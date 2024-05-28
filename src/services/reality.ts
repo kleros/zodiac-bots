@@ -1,9 +1,8 @@
 import { decodeEventLog, getAddress, type AbiEvent, type Address, type Hash } from "viem";
 import { realityModuleEthConfig as realityModule, realityEthV3_0Config as realityOracle } from "../generated";
+import { env } from "../utils/env";
 import { graphQLFetch } from "../utils/fetch-graphql";
 import { getPublicClient } from "./provider";
-
-const SNAPSHOT_GRAPHQL_URL = "https://hub.snapshot.org/graphql";
 
 const PROPOSAL_QUESTION_CREATED_EVENT_NAME = "ProposalQuestionCreated";
 const LOG_NEW_ANSWER_EVENT_NAME = "LogNewAnswer";
@@ -48,7 +47,7 @@ export const getRealityModuleAddress: GetRealityModuleAddressFn = async (spaceId
       }
     }
   `;
-  const { space } = await graphQLFetch<QueryResponse>(SNAPSHOT_GRAPHQL_URL, query);
+  const { space } = await graphQLFetch<QueryResponse>(env.SNAPSHOT_GRAPHQL_URL, query);
 
   return space ? space.plugins.safeSnap.address : null;
 };
@@ -71,7 +70,52 @@ export const getRealityOracleAddress: GetRealityOracleAddressFn = async (reality
   });
 };
 
-type ProposalQuestionCreated = {
+export type SpaceAddresses = {
+  moduleAddress: Address;
+  oracleAddress: Address;
+};
+export type GetSpaceAddressesFn = (spaceId: string) => Promise<SpaceAddresses>;
+/**
+ * Return the address of the Oracle and Reality Module contracts for a given Space
+ *
+ * @param spaceId - The ENS of the space
+ * @returns The address of the Oracle and Reality Module contracts
+ *
+ * @example
+ *
+ * const { moduleAddress, oracleAddress } = await getSpaceAddresses("1inch.eth");
+ */
+export const getSpaceAddresses: GetSpaceAddressesFn = async (spaceId) => {
+  return configurableGetSpaceAddresses({
+    spaceId,
+    getRealityModuleAddressFn: getRealityModuleAddress,
+    getRealityOracleAddressFn: getRealityOracleAddress,
+  });
+};
+
+type ConfigurableGetSpaceAddressesDeps = {
+  spaceId: string;
+  getRealityModuleAddressFn: GetRealityModuleAddressFn;
+  getRealityOracleAddressFn: GetRealityOracleAddressFn;
+};
+export const configurableGetSpaceAddresses = async (
+  deps: ConfigurableGetSpaceAddressesDeps,
+): Promise<SpaceAddresses> => {
+  const { spaceId, getRealityModuleAddressFn, getRealityOracleAddressFn } = deps;
+  const moduleAddress = await getRealityModuleAddressFn(spaceId);
+  if (!moduleAddress) {
+    throw new Error(`Unable to resolve module contract address for space ${spaceId}`);
+  }
+
+  const oracleAddress = await getRealityOracleAddressFn(moduleAddress);
+  if (!oracleAddress) {
+    throw new Error(`Unable to resolve oracle contract address for space ${spaceId}`);
+  }
+
+  return { moduleAddress, oracleAddress };
+};
+
+export type ProposalQuestionCreated = {
   proposalId: string;
   questionId: string;
 
@@ -122,7 +166,7 @@ export const getProposalQuestionsCreated: GetProposalQuestionsCreatedFn = async 
   return events;
 };
 
-type LogNewAnswer = {
+export type LogNewAnswer = {
   questionId: Hash;
   answer: Hash;
   bond: bigint;

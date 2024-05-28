@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1715601774566,
+      "tag": "0000_spaces_initial",
+      "breakpoints": true
+    }
+  ]
+}

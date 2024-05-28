@@ -1,8 +1,6 @@
 import { createPublicClient, http } from "viem";
 import { mainnet } from "viem/chains";
-
-// TODO: Perform env vars validation
-const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;
+import { env } from "../utils/env";
 
 /**
  * Returns a viem PublicClient configured with the default RPC provided via environment variables
@@ -12,7 +10,7 @@ const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;
  * @example
  * const publicClient = getPublicClient();
  */
-export const getPublicClient = (rpcUrl: string | undefined = MAINNET_RPC_URL) => {
+export const getPublicClient = (rpcUrl: string | undefined = env.MAINNET_RPC_URL) => {
   return createPublicClient({
     chain: mainnet,
     transport: http(rpcUrl),

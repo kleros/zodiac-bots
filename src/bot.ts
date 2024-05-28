@@ -1,69 +1,141 @@
-import { EventEmitter } from "stream";
-import { botEventNames } from "./bot-events";
-import { scheduler, type SchedulerFn } from "./schedule/schedule";
-import {
-  getLogNewAnswer,
-  getProposalQuestionsCreated,
-  getRealityModuleAddress,
-  getRealityOracleAddress,
-} from "./services/reality";
+import { EventEmitter } from "node:events";
+import { BotEventNames } from "./bot-events";
+import { processSpaces } from "./processing";
+import { FindSpacesFn, InsertSpacesFn, findSpaces, insertSpaces } from "./services/db/spaces";
+import { GetSpaceAddressesFn, getSpaceAddresses } from "./services/reality";
+import { initialize as initializeSlack } from "./services/slack";
+import { ParsedSpace, Space } from "./types";
 import { defaultEmitter } from "./utils/emitter";
+import { env, parseSpacesEnv } from "./utils/env";
+import { initialize as initializeLogger } from "./utils/logger";
 
 export type StartFn = () => Promise<void>;
 /**
- * Entry point for the bot logic.
+ * Entry point for the bot logic
  *
- * Resolves the required addresses/context and starts scanning blocks
+ * Intialize the libraries required for operations, recovers previous execution
+ * state and starts processing spaces.
  */
 export const start: StartFn = () => {
   return configurableStart({
     emitter: defaultEmitter,
-    schedulerFn: scheduler,
-    processFn: () => Promise.resolve(),
+    initializeSpacesFn: initializeSpaces,
+    parsedSpaces: parseSpacesEnv(env.SPACES),
+    shouldContinueFn: () => true,
+    processSpacesFn: processSpaces,
+    initializeLoggerFn: initializeLogger,
+    initializeSlackFn: initializeSlack,
+    waitForFn: waitFor,
   });
 };
 
 export type ConfigurableStartDeps = {
   emitter: EventEmitter;
-  schedulerFn: SchedulerFn;
-  processFn: (start: bigint, end: bigint) => Promise<void>;
+  initializeSpacesFn: InitializeSpacesFn;
+  parsedSpaces: ParsedSpace[];
+  shouldContinueFn: () => boolean;
+  processSpacesFn: typeof processSpaces;
+  initializeLoggerFn: typeof initializeLogger;
+  initializeSlackFn: typeof initializeSlack;
+  waitForFn: WaitForFn;
 };
 export const configurableStart = async (deps: ConfigurableStartDeps) => {
-  const { emitter, schedulerFn } = deps;
-  emitter.emit(botEventNames.START);
+  const {
+    emitter,
+    initializeLoggerFn,
+    initializeSlackFn,
+    initializeSpacesFn,
+    shouldContinueFn,
+    parsedSpaces,
+    processSpacesFn,
+    waitForFn,
+  } = deps;
 
-  const moduleAddress = await getRealityModuleAddress("1inch.eth");
-  if (!moduleAddress) throw new Error("Unable to resolve Reality Module contract address");
-  const oracleAddress = await getRealityOracleAddress(moduleAddress);
-  if (!oracleAddress) throw new Error("Unable to resolve Reality Oracle contract address");
+  initializeLoggerFn(emitter);
+  emitter.emit(BotEventNames.START);
+  initializeSlackFn();
 
-  schedulerFn({
-    intervalInSeconds: 5,
-    onBlocksFound: async (fromBlock: bigint, toBlock: bigint) => {
-      console.log("Processing from", fromBlock, "to", toBlock);
-      const [newProposals, votes] = await Promise.all([
-        getProposalQuestionsCreated({
-          realityModuleAddress: moduleAddress,
-          fromBlock,
-          toBlock,
-        }),
-        getLogNewAnswer({
-          realityOracleAddress: oracleAddress,
-          fromBlock,
-          toBlock,
-        }),
-      ]);
+  let spaces = await initializeSpacesFn(parsedSpaces);
 
-      // TODO: Example effects. Change these to telegram/email/slack notifications
-      if (newProposals.length) {
-        console.log("Found new proposals", newProposals);
-      }
-      if (votes.length) {
-        console.log("Found new votes", votes);
-      }
-      if (!newProposals.length || !votes.length) {
-        console.log("No events in this block range");
-      }
-    },
+  while (shouldContinueFn()) {
+    emitter.emit(BotEventNames.ITERATION_STARTED);
+    spaces = await processSpacesFn(spaces);
+    emitter.emit(BotEventNames.ITERATION_ENDED);
+    await waitForFn(5 * 60 * 1_000);
+  }
+};
+
+type InitializeSpacesFn = (parsedSpaces: ParsedSpace[]) => Promise<Space[]>;
+/**
+ * Given a list of ens/starting block pairs, provides a complete Space object with the latest
+ * processed block (if any) and the reality module/oracle address.
+ *
+ * @param parsedSpaces - The list of ens and starting block pairs
+ * @returns An enhanced list of spaces with latest processed block and reality module/oracle addresses
+ *
+ * @example
+ *
+ * const spaces = await initializeSpaces([{ ens: 'kleros.eth', startBlock: 1_000 }])
+ */
+export const initializeSpaces: InitializeSpacesFn = async (parsedSpaces) => {
+  return configurableInitializeSpaces({
+    parsedSpaces,
+    emitter: defaultEmitter,
+    getSpaceAddressesFn: getSpaceAddresses,
+    findSpacesFn: findSpaces,
+    insertSpacesFn: insertSpaces,
   });
+};
+
+export type ConfigurableInitializeSpacesDeps = {
+  parsedSpaces: ParsedSpace[];
+  emitter: EventEmitter;
+  getSpaceAddressesFn: GetSpaceAddressesFn;
+  findSpacesFn: FindSpacesFn;
+  insertSpacesFn: InsertSpacesFn;
+};
+export const configurableInitializeSpaces = async (deps: ConfigurableInitializeSpacesDeps): Promise<Space[]> => {
+  const { parsedSpaces, getSpaceAddressesFn, findSpacesFn, insertSpacesFn } = deps;
+
+  const enss = parsedSpaces.map((space) => space.ens);
+
+  const [addresses, recovered] = await Promise.all([Promise.all(enss.map(getSpaceAddressesFn)), findSpacesFn(enss)]);
+
+  const isAddressMissing = addresses.length < enss.length;
+  if (isAddressMissing) throw new Error("Unable to resolve addresses for all spaces");
+
+  const isNewSpacePresent = recovered.length < enss.length;
+  if (isNewSpacePresent) {
+    const recoveredEnss = recovered.map(({ ens }) => ens);
+    const newSpaces = parsedSpaces
+      .filter(({ ens }) => !recoveredEnss.includes(ens))
+      .map((space) => ({
+        ...space,
+        lastProcessedBlock: null,
+      }));
+    await insertSpacesFn(newSpaces);
+    recovered.push(...newSpaces);
+  }
+
+  return parsedSpaces.map(({ ens, startBlock }, i) => {
+    const { lastProcessedBlock } = recovered.find((space) => ens === space.ens)!;
+    return {
+      ens,
+      startBlock,
+      lastProcessedBlock,
+      ...addresses[i],
+    };
+  });
+};
+
+export type WaitForFn = (durationInMs: number) => Promise<void>;
+/**
+ * Returns a promise that resolves after a certain amount of milliseconds.
+ *
+ * @example
+ * await waitFor(1_000);
+ * console.log('This message appears after a second')
+ */
+export const waitFor: WaitForFn = async (durationInMs: number) => {
+  return new Promise((resolve) => setTimeout(resolve, durationInMs));
 };

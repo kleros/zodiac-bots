@@ -13,10 +13,11 @@ COPY --chown=node package.json yarn.lock ./
 RUN yarn && yarn cache clean
 
 COPY --chown=node tsconfig.json wagmi.config.ts ./
-RUN yarn generate
+RUN yarn wagmi:generate
 
 COPY --chown=node . .
 
 RUN yarn build
 
-CMD ["node", "dist/src/start.js"]
+ENTRYPOINT ["/bin/sh", "bin/start.sh"]
+CMD ["yarn", "bot:run"]

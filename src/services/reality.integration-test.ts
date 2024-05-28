@@ -1,14 +1,12 @@
-import { type Address } from "viem";
-import { expect } from "../utils/tests-setup";
+import { ONEINCH_MODULE_ADDRESS, ONEINCH_ORACLE_ADDRESS, expect } from "../utils/tests-setup";
 import {
+  configurableGetSpaceAddresses,
   getLogNewAnswer,
   getProposalQuestionsCreated,
   getRealityModuleAddress,
   getRealityOracleAddress,
+  getSpaceAddresses,
 } from "./reality";
-
-const ONEINCH_MODULE_ADDRESS: Address = "0xa62D2a75eb39C12e908e9F6BF50f189641692F2E";
-const ONEINCH_ORACLE_ADDRESS: Address = "0x5b7dD1E86623548AF054A4985F7fc8Ccbb554E2c";
 
 describe("Reality", () => {
   const fn = getRealityModuleAddress;
@@ -29,6 +27,38 @@ describe("Reality", () => {
     it("should return the address of the reality oracle contract", async () => {
       const address = await fn(ONEINCH_MODULE_ADDRESS);
       expect(address).to.equal(ONEINCH_ORACLE_ADDRESS);
+    });
+  });
+
+  describe("getSpaceAddresses", () => {
+    it("should return both module and oracle contract addresses", async () => {
+      const result = await getSpaceAddresses("1inch.eth");
+      expect(result).to.eql({
+        moduleAddress: ONEINCH_MODULE_ADDRESS,
+        oracleAddress: ONEINCH_ORACLE_ADDRESS,
+      });
+    });
+
+    it("should fail when the module address can't be resolved", async () => {
+      const resolveModule = () => Promise.resolve(null);
+      const resolveOracle = () => Promise.resolve(ONEINCH_ORACLE_ADDRESS);
+      const promise = configurableGetSpaceAddresses({
+        spaceId: "1inch.eth",
+        getRealityModuleAddressFn: resolveModule,
+        getRealityOracleAddressFn: resolveOracle,
+      });
+      expect(promise).to.be.rejectedWith("Unable to resolve module contract address for space 1inch.eth");
+    });
+
+    it("should fail when the oracle address can't be resolved", async () => {
+      const resolveModule = () => Promise.resolve(ONEINCH_MODULE_ADDRESS);
+      const resolveOracle = () => Promise.resolve(null);
+      const promise = configurableGetSpaceAddresses({
+        spaceId: "1inch.eth",
+        getRealityModuleAddressFn: resolveModule,
+        getRealityOracleAddressFn: resolveOracle,
+      });
+      expect(promise).to.be.rejectedWith("Unable to resolve oracle contract address for space 1inch.eth");
     });
   });
 

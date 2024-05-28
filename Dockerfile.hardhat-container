@@ -1,16 +1,18 @@
 FROM node:20.12.1-alpine
 
-ARG ETHERSCAN_API_KEY
-ENV ETHERSCAN_API_KEY $ETHERSCAN_API_KEY
-
 USER node
 
 RUN mkdir -p /home/node/app
 
 WORKDIR /home/node/app
 
-COPY --chown=node package.json hardhat.config.ts tsconfig.json ./
+RUN npm init -y && npm install \
+  hardhat@^2.22.4 \
+  @nomicfoundation/hardhat-toolbox@^5.0.0 \
+  ts-node \
+  typescript \
+  @tsconfig/node20
 
-RUN yarn install && yarn cache clean
+COPY --chown=node hardhat.config.ts tsconfig.json ./
 
 CMD ["node_modules/.bin/hardhat", "node", "--verbose"]
