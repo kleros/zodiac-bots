@@ -5,7 +5,13 @@ import sinon, { SinonSpy } from "sinon";
 import { BotEventNames } from "../bot-events";
 import { NotifyParams } from "../notify";
 import { expect, resolveOnEvent, mocks } from "../utils/tests-setup";
-import { ConfigurableNotifyDeps, composeMessage, configurableInitialize, configurableNotify } from "./slack";
+import {
+  ConfigurableNotifyDeps,
+  TRANSPORT_NAME,
+  composeMessage,
+  configurableInitialize,
+  configurableNotify,
+} from "./slack";
 
 describe("Slack service", () => {
   let emitter: EventEmitter;
@@ -13,21 +19,26 @@ describe("Slack service", () => {
   beforeEach(() => (emitter = new EventEmitter()));
   describe("initialize", () => {
     const fn = configurableInitialize;
-    it("should emit an event when the it was properly initialized", () => {
-      const promise = resolveOnEvent(BotEventNames.SLACK_STARTED, emitter);
+    it("should emit an event when the it was properly initialized", async () => {
+      const promise = resolveOnEvent(BotEventNames.TRANSPORT_READY, emitter);
       fn({
         emitter,
         webhookUrl: "https://hooks.slack.com/services/1234/5678/9abc",
       });
-      expect(promise).to.be.fulfilled;
+      const { name } = (await promise).pop();
+      expect(name).to.equal(TRANSPORT_NAME);
     });
-    it("should emit an event when the webhook is missing", () => {
-      const promise = resolveOnEvent(BotEventNames.SLACK_CONFIGURATION_MISSING, emitter);
+
+    it("should emit an event when the webhook is missing", async () => {
+      const promise = resolveOnEvent(BotEventNames.TRANSPORT_CONFIGURATION_MISSING, emitter);
       fn({
         emitter,
         webhookUrl: undefined,
       });
-      expect(promise).to.be.fulfilled;
+      const { name, missing } = (await promise).pop();
+      expect(name).to.equal(TRANSPORT_NAME);
+      expect(missing).to.have.lengthOf(1);
+      expect(missing[0]).to.equal("SLACK_WEBHOOK");
     });
   });
 

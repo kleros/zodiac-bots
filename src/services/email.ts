@@ -3,6 +3,7 @@ import EventEmitter from "node:events";
 import nodemailer, { Transporter } from "nodemailer";
 import { BotEventNames } from "../bot-events";
 import { EventType, NotifyParams } from "../notify";
+import { defaultEmitter } from "../utils/emitter";
 import { env, type Env } from "../utils/env";
 
 export const TRANSPORT_NAME = "email";
@@ -22,7 +23,7 @@ let transport: nodemailer.Transporter | undefined;
  */
 export const initialize = () => {
   return configurableInitialize({
-    emitter: new EventEmitter(),
+    emitter: defaultEmitter,
     env,
     createTransportFn: nodemailer.createTransport.bind(nodemailer),
   });

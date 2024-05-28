@@ -4,7 +4,14 @@ import EventEmitter from "node:events";
 import sinon, { SinonSpy } from "sinon";
 import { BotEventNames } from "../bot-events";
 import { expect, mocks, resolveOnEvent } from "../utils/tests-setup";
-import { ConfigurableSendDeps, configurableInitialize, configurableNotify, configurableSend } from "./telegram";
+import {
+  ConfigurableSendDeps,
+  TRANSPORT_NAME,
+  configurableInitialize,
+  configurableNotify,
+  configurableSend,
+} from "./telegram";
+import { Env } from "../utils/env";
 
 describe("Telegram service", () => {
   let emitter: EventEmitter;
@@ -12,21 +19,35 @@ describe("Telegram service", () => {
   beforeEach(() => (emitter = new EventEmitter()));
   describe("initialize", () => {
     const fn = configurableInitialize;
-    it("should emit an event when the it was properly initialized", () => {
-      const promise = resolveOnEvent(BotEventNames.TELEGRAM_STARTED, emitter);
+    const env = {
+      TELEGRAM_TOKEN: "test-token",
+      TELEGRAM_CHAT_ID: "test-chat-id",
+    } as Env;
+    it("should emit an event when the it was properly initialized", async () => {
+      const promise = resolveOnEvent(BotEventNames.TRANSPORT_READY, emitter);
       fn({
         emitter,
-        token: "test-token",
-        chatId: "test-chat-id",
+        env,
       });
-      expect(promise).to.be.fulfilled;
+      const { name } = (await promise).pop();
+      expect(name).to.equal(TRANSPORT_NAME);
     });
-    it("should emit an event when the token or chatId is missing", () => {
-      const promise = resolveOnEvent(BotEventNames.TELEGRAM_CONFIGURATION_MISSING, emitter);
-      fn({
-        emitter,
+
+    ["TELEGRAM_TOKEN", "TELEGRAM_CHAT_ID"].forEach((key) => {
+      it(`should emit a misconfiguration event if the ${key} is missing`, async () => {
+        const promise = resolveOnEvent(BotEventNames.TRANSPORT_CONFIGURATION_MISSING, emitter);
+        fn({
+          emitter,
+          env: {
+            ...env,
+            [key]: undefined,
+          },
+        });
+        const { name, missing } = (await promise).pop();
+        expect(name).to.equal(TRANSPORT_NAME);
+        expect(missing).to.have.lengthOf(1);
+        expect(missing[0]).to.equal(key);
       });
-      expect(promise).to.be.fulfilled;
     });
   });
 

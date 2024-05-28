@@ -2,9 +2,12 @@ import Bottleneck from "bottleneck";
 import TelegramBot from "node-telegram-bot-api";
 import EventEmitter from "node:events";
 import { BotEventNames } from "../bot-events";
-import { env } from "../utils/env";
 import { NotifyParams } from "../notify";
+import { defaultEmitter } from "../utils/emitter";
+import { Env, env } from "../utils/env";
 import { composeMessage } from "./slack";
+
+export const TRANSPORT_NAME = "telegram";
 
 const bottleneck = new Bottleneck({
   // https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this
@@ -22,7 +25,8 @@ let client: TelegramBot | undefined;
  */
 export const initialize = () => {
   return configurableInitialize({
-    emitter: new EventEmitter(),
+    emitter: defaultEmitter,
+    env,
     token: env.TELEGRAM_TOKEN,
     chatId: env.TELEGRAM_CHAT_ID,
   });
@@ -32,18 +36,27 @@ type ConfigurableInitializeDeps = {
   emitter: EventEmitter;
   token?: string;
   chatId?: string;
+  env: Env;
 };
 
 export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
-  const { token, chatId, emitter } = deps;
+  const { env, emitter } = deps;
 
-  if (!token || !chatId) {
-    emitter.emit(BotEventNames.SLACK_CONFIGURATION_MISSING);
+  const requiredEnv: Array<keyof Env> = ["TELEGRAM_TOKEN", "TELEGRAM_CHAT_ID"];
+  const missing = requiredEnv.filter((key) => !env[key]);
+
+  if (missing.length > 0) {
+    emitter.emit(BotEventNames.TRANSPORT_CONFIGURATION_MISSING, {
+      name: TRANSPORT_NAME,
+      missing,
+    });
     return;
   }
 
-  client = new TelegramBot(token, { polling: false });
-  emitter.emit(BotEventNames.SLACK_STARTED);
+  client = new TelegramBot(env.TELEGRAM_TOKEN!, { polling: false });
+  emitter.emit(BotEventNames.TRANSPORT_READY, {
+    name: TRANSPORT_NAME,
+  });
 };
 
 /**
