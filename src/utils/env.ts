@@ -1,4 +1,4 @@
-import { bool, cleanEnv, makeValidator, num, str, url } from "envalid";
+import { bool, cleanEnv, makeValidator, num, str, url, host, port, email } from "envalid";
 import type { ParsedSpace } from "../types";
 
 /**
@@ -79,9 +79,45 @@ export const schema = {
     docs: "",
     default: undefined,
   }),
+  SMTP_HOST: host({
+    desc: "Hostname for the SMTP server",
+    example: "smtp.gmail.com",
+    default: undefined,
+  }),
+  SMTP_PORT: port({
+    desc: "Port for the SMTP server. Defalts to 465",
+    example: "465",
+    default: 465,
+  }),
+  SMTP_SECURE: bool({
+    desc: "Use SSL/TLS for the SMTP connection. Default is true. Should only be disabled for dev/testing",
+    example: "true",
+    default: true,
+  }),
+  SMTP_USER: str({
+    desc: "Username for the SMTP server",
+    example: "kleros",
+    default: undefined,
+  }),
+  SMTP_PASSWORD: str({
+    desc: "Password for the SMTP server",
+    example: "hunter2",
+    default: undefined,
+  }),
+  SMTP_FROM: email({
+    desc: "Sender email address",
+    example: "no-reply@kleros.local",
+    default: undefined,
+  }),
+  SMTP_TO: email({
+    desc: "Sender email address",
+    example: "alert@kleros.local",
+    default: undefined,
+  }),
 };
 
 export const env = cleanEnv(process.env, schema);
+export type Env = typeof env;
 
 /**
  * Parse the SPACES environment variable into an array of objects

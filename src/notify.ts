@@ -1,6 +1,7 @@
 import { LogNewAnswer, ProposalQuestionCreated } from "./services/reality";
 import { notify as notifySlack } from "./services/slack";
 import { notify as notifyTelegram } from "./services/telegram";
+import { notify as notifyEmail } from "./services/email";
 import { Space } from "./types";
 
 export enum EventType {
@@ -16,5 +17,5 @@ export type NotifyParams = { space: Space } & (
  * Invokes all the transports to notify the event
  */
 export const notify = async (notification: NotifyParams) => {
-  return Promise.all([notifySlack(notification), notifyTelegram(notification)]);
+  return Promise.all([notifySlack(notification), notifyTelegram(notification), notifyEmail(notification)]);
 };

@@ -5,6 +5,7 @@ import { FindSpacesFn, InsertSpacesFn, findSpaces, insertSpaces } from "./servic
 import { GetSpaceAddressesFn, getSpaceAddresses } from "./services/reality";
 import { initialize as initializeSlack } from "./services/slack";
 import { initialize as initializeTelegram } from "./services/telegram";
+import { initialize as initializeEmail } from "./services/email";
 import { ParsedSpace, Space } from "./types";
 import { defaultEmitter } from "./utils/emitter";
 import { env, parseSpacesEnv } from "./utils/env";
@@ -27,6 +28,7 @@ export const start: StartFn = () => {
     initializeLoggerFn: initializeLogger,
     initializeSlackFn: initializeSlack,
     initializeTelegramFn: initializeTelegram,
+    initializeEmailFn: initializeEmail,
     waitForFn: waitFor,
   });
 };
@@ -40,6 +42,7 @@ export type ConfigurableStartDeps = {
   initializeLoggerFn: typeof initializeLogger;
   initializeSlackFn: typeof initializeSlack;
   initializeTelegramFn: typeof initializeTelegram;
+  initializeEmailFn: typeof initializeEmail;
   waitForFn: WaitForFn;
 };
 export const configurableStart = async (deps: ConfigurableStartDeps) => {
@@ -49,6 +52,7 @@ export const configurableStart = async (deps: ConfigurableStartDeps) => {
     initializeSlackFn,
     initializeTelegramFn,
     initializeSpacesFn,
+    initializeEmailFn,
     shouldContinueFn,
     parsedSpaces,
     processSpacesFn,
@@ -59,6 +63,7 @@ export const configurableStart = async (deps: ConfigurableStartDeps) => {
   emitter.emit(BotEventNames.START);
   initializeSlackFn();
   initializeTelegramFn();
+  initializeEmailFn();
 
   let spaces = await initializeSpacesFn(parsedSpaces);
 
