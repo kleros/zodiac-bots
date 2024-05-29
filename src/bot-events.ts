@@ -5,6 +5,8 @@ export const enum BotEventNames {
   START = "start",
   SLACK_CONFIGURATION_MISSING = "slack_configuration_missing",
   SLACK_STARTED = "slack_started",
+  TELEGRAM_CONFIGURATION_MISSING = "telegram_configuration_missing",
+  TELEGRAM_STARTED = "telegram_started",
   ITERATION_STARTED = "iteration_started",
   ITERATION_ENDED = "iteration_ended",
   SPACE_STARTED = "space_started",

@@ -23,6 +23,7 @@ describe("Bot", () => {
         emitter: new EventEmitter(),
         initializeLoggerFn: sinon.spy(),
         initializeSlackFn: sinon.spy(),
+        initializeTelegramFn: sinon.spy(),
         initializeSpacesFn: sinon.spy(),
         shouldContinueFn: () => {
           const returned = !isShouldContinueCalled;
@@ -54,9 +55,10 @@ describe("Bot", () => {
     it("should initialize required libraries", async () => {
       await fn(depsMock);
 
-      const { initializeLoggerFn, initializeSlackFn } = depsMock;
+      const { initializeLoggerFn, initializeSlackFn, initializeTelegramFn } = depsMock;
       expect((initializeLoggerFn as sinon.SinonSpy).calledOnce).to.be.true;
       expect((initializeSlackFn as sinon.SinonSpy).calledOnce).to.be.true;
+      expect((initializeTelegramFn as sinon.SinonSpy).calledOnce).to.be.true;
     });
   });
 

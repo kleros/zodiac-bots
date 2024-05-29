@@ -67,6 +67,18 @@ export const schema = {
     docs: "https://api.slack.com/messaging/webhooks",
     default: undefined,
   }),
+  TELEGRAM_TOKEN: str({
+    desc: "Telegram API Token",
+    example: "4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc",
+    docs: "https://core.telegram.org/bots#how-do-i-create-a-bot",
+    default: undefined,
+  }),
+  TELEGRAM_CHAT_ID: str({
+    desc: "Identifier of the chat to send notifications to",
+    example: "-1002037333689",
+    docs: "",
+    default: undefined,
+  }),
 };
 
 export const env = cleanEnv(process.env, schema);
