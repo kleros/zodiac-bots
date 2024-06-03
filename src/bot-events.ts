@@ -3,6 +3,8 @@ import { Space } from "./types";
 
 export const enum BotEventNames {
   START = "start",
+  TRANSPORT_CONFIGURATION_MISSING = "transport_configuration_missing",
+  TRANSPORT_READY = "transport_ready",
   SLACK_CONFIGURATION_MISSING = "slack_configuration_missing",
   SLACK_STARTED = "slack_started",
   TELEGRAM_CONFIGURATION_MISSING = "telegram_configuration_missing",
@@ -29,4 +31,13 @@ export type SpaceSkippedPayload = {
 export type SpaceDetailedPayload = SpaceSkippedPayload & {
   proposals: ProposalQuestionCreated[];
   answers: LogNewAnswer[];
+};
+
+export type TransportConfigurationMissingPayload = {
+  name: string;
+  missing: string[];
+};
+
+export type TransportReadyPayload = {
+  name: string;
 };

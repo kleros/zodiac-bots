@@ -1,6 +1,13 @@
 import type { EventEmitter } from "node:events";
 import pino from "pino";
-import { SpaceDetailedPayload, SpaceSkippedPayload, SpaceStartedPayload, BotEventNames as event } from "../bot-events";
+import {
+  SpaceDetailedPayload,
+  SpaceSkippedPayload,
+  SpaceStartedPayload,
+  TransportConfigurationMissingPayload,
+  TransportReadyPayload,
+  BotEventNames as event,
+} from "../bot-events";
 
 /**
  * Listens to relevant events of an EventEmitter instance and issues log lines
@@ -25,6 +32,16 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
 
   emitter.on(event.START, () => {
     logger.info("Bot started");
+  });
+
+  emitter.on(event.TRANSPORT_CONFIGURATION_MISSING, (payload: TransportConfigurationMissingPayload) => {
+    logger.warn(
+      `Transport "${payload.name}" not starting. The following environment variables are missing: ${payload.missing.join(", ")}`,
+    );
+  });
+
+  emitter.on(event.TRANSPORT_READY, (payload: TransportReadyPayload) => {
+    logger.info(`Transport "${payload.name}" is ready`);
   });
 
   emitter.on(event.SLACK_CONFIGURATION_MISSING, () => {
