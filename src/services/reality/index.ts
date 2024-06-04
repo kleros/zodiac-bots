@@ -1,8 +1,8 @@
 import { decodeEventLog, getAddress, type AbiEvent, type Address, type Hash } from "viem";
-import { realityModuleEthConfig as realityModule, realityEthV3_0Config as realityOracle } from "../generated";
-import { env } from "../utils/env";
-import { graphQLFetch } from "../utils/fetch-graphql";
-import { getPublicClient } from "./provider";
+import { realityModuleEthConfig as realityModule, realityEthV3_0Config as realityOracle } from "./abi";
+import { env } from "../../utils/env";
+import { graphQLFetch } from "../../utils/fetch-graphql";
+import { getPublicClient } from "../provider";
 
 const PROPOSAL_QUESTION_CREATED_EVENT_NAME = "ProposalQuestionCreated";
 const LOG_NEW_ANSWER_EVENT_NAME = "LogNewAnswer";
