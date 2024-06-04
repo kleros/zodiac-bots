@@ -1,4 +1,4 @@
-import { parseSpacesEnv, validateSpaces } from "./env";
+import { parseSpacesEnv, validateEmailTo, validateSpaces } from "./env";
 import { expect } from "./tests-setup";
 
 describe("Environment variables lib", () => {
@@ -54,6 +54,41 @@ describe("Environment variables lib", () => {
           startBlock: 4000n,
         },
       ]);
+    });
+  });
+
+  describe("validateEmailTo", () => {
+    const fn = validateEmailTo;
+
+    it("should allow a single email", () => {
+      const input = "test@test.com";
+      expect(fn(input)).to.equal(input);
+    });
+
+    it("should allow multiple comma separated emails", () => {
+      const input = "test1@test.com,test2@test.org,test4@test.net";
+      expect(fn(input)).to.equal(input);
+    });
+
+    it("should allow valid but unfrequent emails", () => {
+      const input = "test+email@test.com,user@127.0.0.1,user@great.museum";
+      expect(fn(input)).to.equal(input);
+    });
+
+    it("should require at least one space", () => {
+      expect(() => fn("")).to.throw();
+    });
+
+    it("should fail for malformed inputs", () => {
+      expect(() => fn(",,")).to.throw();
+      expect(() => fn("test@test.com,")).to.throw();
+      expect(() => fn("test@test.com,,")).to.throw();
+      expect(() => fn(",test@test.com")).to.throw();
+      expect(() => fn("test")).to.throw();
+      expect(() => fn("@test")).to.throw();
+      expect(() => fn("@test.")).to.throw();
+      expect(() => fn("@test.com")).to.throw();
+      expect(() => fn("test@")).to.throw();
     });
   });
 });

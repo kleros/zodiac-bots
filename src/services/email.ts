@@ -3,7 +3,7 @@ import EventEmitter from "node:events";
 import nodemailer, { Transporter } from "nodemailer";
 import { BotEventNames } from "../bot-events";
 import { EventType, NotifyParams } from "../notify";
-import { env, type Env } from "../utils/env";
+import { env, parseEmailToEnv, type Env } from "../utils/env";
 
 export const TRANSPORT_NAME = "email";
 
@@ -112,30 +112,36 @@ export const configurableNotify = async (deps: ConfigurableNotifyDeps) => {
 const send = (message: EmailMessage) => {
   return configurableSend({
     message,
-    from: env.SMTP_FROM,
-    to: env.SMTP_TO,
+    env: env,
+    parseEmailToEnvFn: parseEmailToEnv,
     sendFn: transport?.sendMail.bind(transport),
   });
 };
 
 export type ConfigurableSendDeps = {
   message: EmailMessage;
-  from: Env["SMTP_FROM"];
-  to: Env["SMTP_TO"];
+  env: Env;
+  parseEmailToEnvFn: typeof parseEmailToEnv;
   sendFn?: Transporter["sendMail"];
 };
 
 export const configurableSend = async (deps: ConfigurableSendDeps) => {
-  const { from, to, message, sendFn } = deps;
+  const { message, env, parseEmailToEnvFn, sendFn } = deps;
 
   if (!sendFn) return;
 
-  await sendFn({
-    from,
-    to,
-    subject: message.subject,
-    text: message.text,
-  });
+  const receivers = parseEmailToEnvFn(env.SMTP_TO);
+
+  await Promise.all(
+    receivers.map((receiver) =>
+      sendFn({
+        from: env.SMTP_FROM,
+        to: receiver,
+        subject: message.subject,
+        text: message.text,
+      }),
+    ),
+  );
 };
 
 export type EmailMessage = {

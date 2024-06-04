@@ -7,17 +7,17 @@ import type { ParsedSpace } from "../types";
  * can be present using comma as separator.
  *
  * @param input - The SPACES environment variable string
- * @returns A boolean indicating the validity of the input format
+ * @returns the input when it is valid, throws an error otherwise
  *
  * @example
  *
- * validateSpaces("kleros.eth:3000000"); // true
- * validateSpaces("kleros.eth:3000000,1inch.eth:6000000"); // true
- * validateSpaces(""); // false
- * validateSpaces("kleros.eth"); // false
- * validateSpaces("kleros:3000000"); // false
- * validateSpaces("kleros.eth,1inch.eth"); // false
- * validateSpaces("kleros.eth:3000000,1inch.eth"); // false
+ * validateSpaces("kleros.eth:3000000"); // valid
+ * validateSpaces("kleros.eth:3000000,1inch.eth:6000000"); // valid
+ * validateSpaces(""); // invalid
+ * validateSpaces("kleros.eth"); // invalid
+ * validateSpaces("kleros:3000000"); // invalid
+ * validateSpaces("kleros.eth,1inch.eth"); // invalid
+ * validateSpaces("kleros.eth:3000000,1inch.eth"); // invalid
  */
 export const validateSpaces = (input: string) => {
   const isValid = /^[\w-]+\.eth:\d+(,[\w-]+\.eth:\d+)*$/.test(input);
@@ -26,8 +26,39 @@ export const validateSpaces = (input: string) => {
 
   return input;
 };
-
 const spacesValidator = makeValidator<string>(validateSpaces);
+
+/**
+ * Validates the EMAIL_TO environment variable, which should be a comma separated list of
+ * emails.
+ *
+ * @param input - The EMAIL_TO environment variable string
+ * @returns the input when it is valid, throws an error otherwise
+ *
+ * @example
+ *
+ * validateEmailTo("foo@bar.com"); // valid
+ * validateEmailTo("foo+foo@bar.com"); // valid
+ * validateEmailTo("foo@bar.com,bar@foo.com"); // valid
+ * validateEmailTo("foo"); // invalid
+ * validateEmailTo("foo@"); // invalid
+ * validateEmailTo("@foo"); // invalid
+ * validateEmailTo("foo@bar.com,"); // invalid
+ * validateEmailTo("foo@bar.com,,"); // invalid
+ */
+export const validateEmailTo = (input: string) => {
+  // Validate one email address following the validation applied to <input type="email">
+  // https://html.spec.whatwg.org/multipage/input.html#email-state-(type=email)
+  const oneEmailRegexText =
+    "[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*";
+  // Validates that there is at least one email, optionally followed by more
+  // comma separated valid emails
+  const isValid = new RegExp(`^${oneEmailRegexText}(,${oneEmailRegexText})*$`).test(input);
+  if (!isValid) throw new Error("Invalid email recipients format");
+
+  return input;
+};
+const emailToValidator = makeValidator<string>(validateEmailTo);
 
 export const schema = {
   DB_URI: url({
@@ -109,7 +140,7 @@ export const schema = {
     example: "no-reply@kleros.local",
     default: undefined,
   }),
-  SMTP_TO: email({
+  SMTP_TO: emailToValidator({
     desc: "Sender email address",
     example: "alert@kleros.local",
     default: undefined,
@@ -134,4 +165,18 @@ export const parseSpacesEnv = (spacesEnv: string): ParsedSpace[] => {
     const [ens, startingBlock] = pair.split(":");
     return { ens, startBlock: BigInt(startingBlock) };
   });
+};
+
+/**
+ * Parse the EMAIL_TO environment variable into an array of emails
+ *
+ * @param emailToEnv - The EMAIL_TO environment variable string
+ * @returns An array of emails
+ *
+ * @example
+ * const emailTo = parseEmailToEnv("foo@bar.com,bar@foo.com");
+ */
+export const parseEmailToEnv = (emailToEnv: string | undefined): string[] => {
+  if (!emailToEnv) return [];
+  return emailToEnv.split(",");
 };
