@@ -78,7 +78,7 @@ describe("Bot", () => {
       };
     });
 
-    it("should handle new spaces is processed", async () => {
+    it("should handle spaces no previously processed", async () => {
       const parsedSpace = {
         ens: "1inch.eth",
         startBlock: 1234n,

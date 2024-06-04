@@ -23,7 +23,7 @@ describe("Telegram service", () => {
       TELEGRAM_TOKEN: "test-token",
       TELEGRAM_CHAT_ID: "test-chat-id",
     } as Env;
-    it("should emit an event when the it was properly initialized", async () => {
+    it("should emit an event when the was properly initialized", async () => {
       const promise = resolveOnEvent(BotEventNames.TRANSPORT_READY, emitter);
       fn({
         emitter,

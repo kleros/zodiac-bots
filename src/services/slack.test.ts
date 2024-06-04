@@ -19,7 +19,7 @@ describe("Slack service", () => {
   beforeEach(() => (emitter = new EventEmitter()));
   describe("initialize", () => {
     const fn = configurableInitialize;
-    it("should emit an event when the it was properly initialized", async () => {
+    it("should emit an event when it was properly initialized", async () => {
       const promise = resolveOnEvent(BotEventNames.TRANSPORT_READY, emitter);
       fn({
         emitter,

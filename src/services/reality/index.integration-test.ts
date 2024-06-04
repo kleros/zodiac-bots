@@ -1,4 +1,4 @@
-import { ONEINCH_MODULE_ADDRESS, ONEINCH_ORACLE_ADDRESS, expect } from "../utils/tests-setup";
+import { ONEINCH_MODULE_ADDRESS, ONEINCH_ORACLE_ADDRESS, expect } from "../../utils/tests-setup";
 import {
   configurableGetSpaceAddresses,
   getLogNewAnswer,
@@ -6,7 +6,7 @@ import {
   getRealityModuleAddress,
   getRealityOracleAddress,
   getSpaceAddresses,
-} from "./reality";
+} from ".";
 
 describe("Reality", () => {
   const fn = getRealityModuleAddress;
