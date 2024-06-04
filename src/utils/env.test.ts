@@ -1,4 +1,4 @@
-import { parseSpacesEnv, validateEmailTo, validateSpaces } from "./env";
+import { parseEmailToEnv, parseSpacesEnv, validateEmailTo, validateSpaces } from "./env";
 import { expect } from "./tests-setup";
 
 describe("Environment variables lib", () => {
@@ -89,6 +89,24 @@ describe("Environment variables lib", () => {
       expect(() => fn("@test.")).to.throw();
       expect(() => fn("@test.com")).to.throw();
       expect(() => fn("test@")).to.throw();
+    });
+  });
+
+  describe("parseEmailToEnv", () => {
+    const fn = parseEmailToEnv;
+
+    it("should correctly parse the to format with only entry", () => {
+      const address = "receiver1@server.com";
+      const result = fn(address);
+      expect(result).to.have.lengthOf(1);
+      expect(result[0]).to.eql(address);
+    });
+
+    it("should correctly parse the to format with multiple entries", () => {
+      const emails = ["receiver1@server.com", "receiver2@server.com"];
+      const result = fn(emails.join(","));
+      expect(result).to.have.lengthOf(2);
+      expect(result).to.have.deep.members(emails);
     });
   });
 });
