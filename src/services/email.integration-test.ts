@@ -66,6 +66,10 @@ describe("Email service", () => {
 
       await fn(mocks.proposalMock);
 
+      // In very rare occasions, the fake SMTP server API has a slight
+      // delay to register emails sent in burst
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       const current = await getMails();
 
       const receivers = parseEmailToEnv(env.SMTP_TO);
