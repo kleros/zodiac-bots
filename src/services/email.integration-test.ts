@@ -1,7 +1,7 @@
 import EventEmitter from "node:events";
 import nodemailer from "nodemailer";
 import { BotEventNames, TransportConfigurationMissingPayload, TransportReadyPayload } from "../bot-events";
-import { Env, env } from "../utils/env";
+import { Env, env, parseEmailToEnv } from "../utils/env";
 import { expect, getMails, mocks, resolveOnEvent } from "../utils/tests-setup";
 import {
   ConfigurableSendDeps,
@@ -61,21 +61,31 @@ describe("Email service", () => {
   describe("notify", () => {
     const fn = notify;
 
-    it("should notify when the integration is configured", async () => {
+    it("should send the emails", async () => {
       const previous = await getMails();
 
       await fn(mocks.proposalMock);
 
+      // In very rare occasions, the fake SMTP server API has a slight
+      // delay to register emails sent in burst
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       const current = await getMails();
-      expect(current).to.have.lengthOf(previous.length + 1);
 
-      const email = current.pop()!;
-      expect(email.from[0].address).to.equal(env.SMTP_FROM);
-      expect(email.to[0].address).to.equal(env.SMTP_TO);
+      const receivers = parseEmailToEnv(env.SMTP_TO);
+      expect(current).to.have.lengthOf(previous.length + receivers.length);
 
-      const expectedContent = composeMessage(mocks.proposalMock);
-      expect(email.subject).to.equal(expectedContent.subject);
-      expect(email.text).to.equal(expectedContent.text);
+      const emails = current.slice(-receivers.length);
+
+      receivers.forEach((receiver) => {
+        const email = emails.find((email) => email.to[0].address == receiver);
+        expect(email).to.exist;
+        expect(email!.from[0].address).to.equal(env.SMTP_FROM);
+
+        const expectedContent = composeMessage(mocks.proposalMock);
+        expect(email!.subject).to.equal(expectedContent.subject);
+        expect(email!.text).to.equal(expectedContent.text);
+      });
     });
   });
 
@@ -85,8 +95,10 @@ describe("Email service", () => {
     it("should avoid sending without raising errors when the client is not configured", async () => {
       const depsMock = {
         sendFn: undefined,
-        from: "test@test.com",
-        to: "test@test.com",
+        env: {
+          from: "receiver@test.com",
+          to: "sender@test.com",
+        } as any as Env,
         message: {} as EmailMessage,
       } as ConfigurableSendDeps;
 
