@@ -6,6 +6,8 @@ import { EventType, NotifyParams } from "../notify";
 import { defaultEmitter } from "../utils/emitter";
 import { env } from "../utils/env";
 
+export const TRANSPORT_NAME = "slack";
+
 const bottleneck = new Bottleneck({
   // https://api.slack.com/apis/rate-limits#overview
   minTime: 1000,
@@ -33,12 +35,17 @@ type InitializeDeps = {
 export const configurableInitialize = (deps: InitializeDeps) => {
   const { webhookUrl, emitter } = deps;
   if (!webhookUrl) {
-    emitter.emit(BotEventNames.SLACK_CONFIGURATION_MISSING);
+    emitter.emit(BotEventNames.TRANSPORT_CONFIGURATION_MISSING, {
+      name: TRANSPORT_NAME,
+      missing: ["SLACK_WEBHOOK"],
+    });
     return;
   }
 
   webhook = new IncomingWebhook(webhookUrl);
-  emitter.emit(BotEventNames.SLACK_STARTED);
+  emitter.emit(BotEventNames.TRANSPORT_READY, {
+    name: TRANSPORT_NAME,
+  });
 };
 
 /**
