@@ -40,7 +40,6 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
   const requiredFields: Array<keyof Env> = [
     "SMTP_HOST",
     "SMTP_PORT",
-    "SMTP_SECURE",
     "SMTP_USER",
     "SMTP_PASSWORD",
     "SMTP_FROM",
@@ -58,7 +57,6 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
   transport = createTransportFn({
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,
-    secure: env.SMTP_SECURE === true,
     auth: {
       user: env.SMTP_USER,
       pass: env.SMTP_PASSWORD,
