@@ -115,11 +115,6 @@ export const schema = {
     example: "465",
     default: 465,
   }),
-  SMTP_SECURE: bool({
-    desc: "Use SSL/TLS for the SMTP connection. Default is true. Should only be disabled for dev/testing",
-    example: "true",
-    default: true,
-  }),
   SMTP_USER: str({
     desc: "Username for the SMTP server",
     example: "kleros",
