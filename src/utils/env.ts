@@ -140,6 +140,16 @@ export const schema = {
     example: "alert@kleros.local",
     default: undefined,
   }),
+  HEARTBEAT_URL: url({
+    desc: "URL to request every HEARTBEAT_INTERVAL seconds to indicate that the service is up",
+    example: "https://keros.io/api/heartbeat/zodiac",
+    default: undefined,
+  }),
+  HEARTBEAT_INTERVAL: num({
+    desc: "Interval in milliseconds to send heartbeats",
+    example: "60000",
+    default: 60000,
+  }),
 };
 
 export const env = cleanEnv(process.env, schema);

@@ -25,6 +25,7 @@ describe("Bot", () => {
         initializeSlackFn: sinon.spy(),
         initializeTelegramFn: sinon.spy(),
         initializeEmailFn: sinon.spy(),
+        initializeHeartbeatFn: sinon.spy(),
         initializeSpacesFn: sinon.spy(),
         shouldContinueFn: () => {
           const returned = !isShouldContinueCalled;
@@ -56,11 +57,11 @@ describe("Bot", () => {
     it("should initialize required libraries", async () => {
       await fn(depsMock);
 
-      const { initializeLoggerFn, initializeSlackFn, initializeTelegramFn, initializeEmailFn } = depsMock;
-      expect((initializeLoggerFn as sinon.SinonSpy).calledOnce).to.be.true;
-      expect((initializeSlackFn as sinon.SinonSpy).calledOnce).to.be.true;
-      expect((initializeTelegramFn as sinon.SinonSpy).calledOnce).to.be.true;
-      expect((initializeEmailFn as sinon.SinonSpy).calledOnce).to.be.true;
+      expect((depsMock.initializeLoggerFn as sinon.SinonSpy).calledOnce).to.be.true;
+      expect((depsMock.initializeSlackFn as sinon.SinonSpy).calledOnce).to.be.true;
+      expect((depsMock.initializeTelegramFn as sinon.SinonSpy).calledOnce).to.be.true;
+      expect((depsMock.initializeEmailFn as sinon.SinonSpy).calledOnce).to.be.true;
+      expect((depsMock.initializeHeartbeatFn as sinon.SinonSpy).calledOnce).to.be.true;
     });
   });
 

@@ -6,6 +6,7 @@ import { GetSpaceAddressesFn, getSpaceAddresses } from "./services/reality";
 import { initialize as initializeSlack } from "./services/slack";
 import { initialize as initializeTelegram } from "./services/telegram";
 import { initialize as initializeEmail } from "./services/email";
+import { initialize as initializeHeartbeat } from "./services/heartbeat";
 import { ParsedSpace, Space } from "./types";
 import { defaultEmitter } from "./utils/emitter";
 import { env, parseSpacesEnv } from "./utils/env";
@@ -29,6 +30,7 @@ export const start: StartFn = () => {
     initializeSlackFn: initializeSlack,
     initializeTelegramFn: initializeTelegram,
     initializeEmailFn: initializeEmail,
+    initializeHeartbeatFn: initializeHeartbeat,
     waitForFn: waitFor,
   });
 };
@@ -43,6 +45,7 @@ export type ConfigurableStartDeps = {
   initializeSlackFn: typeof initializeSlack;
   initializeTelegramFn: typeof initializeTelegram;
   initializeEmailFn: typeof initializeEmail;
+  initializeHeartbeatFn: typeof initializeHeartbeat;
   waitForFn: WaitForFn;
 };
 export const configurableStart = async (deps: ConfigurableStartDeps) => {
@@ -53,6 +56,7 @@ export const configurableStart = async (deps: ConfigurableStartDeps) => {
     initializeTelegramFn,
     initializeSpacesFn,
     initializeEmailFn,
+    initializeHeartbeatFn,
     shouldContinueFn,
     parsedSpaces,
     processSpacesFn,
@@ -64,6 +68,7 @@ export const configurableStart = async (deps: ConfigurableStartDeps) => {
   initializeSlackFn();
   initializeTelegramFn();
   initializeEmailFn();
+  initializeHeartbeatFn();
 
   let spaces = await initializeSpacesFn(parsedSpaces);
 
