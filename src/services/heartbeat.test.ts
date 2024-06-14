@@ -7,7 +7,7 @@ import { Env } from "../utils/env";
 import { BotEventNames } from "../bot-events";
 import { waitFor } from "../bot";
 
-const createFakeServer = async (statusCode: number, onQuery?: Function) => {
+const createFakeServer = async (statusCode: number, onQuery?: () => void) => {
   const server = http.createServer((_, res) => {
     if (onQuery) onQuery();
     res.writeHead(statusCode);
@@ -90,4 +90,3 @@ describe("Heartbeat", () => {
     });
   });
 });
-
