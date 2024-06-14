@@ -59,8 +59,8 @@ This section outlines the environment variables required for the application. Be
 
 | Variable          | Description                               | Example                                                         |
 | ----------------- | ----------------------------------------- | --------------------------------------------------------------- |
-| `DB_URI`          | Postgres connection string                | `postgresql://user:password@localhost:5432/dbname`              |
 | `SPACES`          | Spaces to monitor. At least one required. | `kleros.eth:3000000,1inch.eth:6000000`                          |
+| `DB_URI`          | Postgres connection string                | `postgresql://user:password@localhost:5432/dbname`              |
 | `MAINNET_RPC_URL` | Provider URL for the Ethereum mainnet RPC | `https://mainnet.infura.io/v3/8238211010344719ad14a89db874158c` |
 
 - **SPACES format**: Spaces should be defined by the ENS and the starting block, with the following format: `kleros.eth:3000000`. Multiple spaces can be present, separated by commas.
@@ -69,11 +69,11 @@ This section outlines the environment variables required for the application. Be
 
 #### Debugging and Performance
 
-| Variable                | Description                      | Example                            | Default |
-| ----------------------- | -------------------------------- | ---------------------------------- | ------- |
-| `DB_DEBUG`              | Print SQL queries to console     | `false`                            | `false` |
-| `MAX_BLOCKS_BATCH_SIZE` | Max blocks to process in a batch | `200`                              | `200`   |
-| `SNAPSHOT_GRAPHQL_URL`  | Snapshot GraphQL API endpoint    | `https://hub.snapshot.org/graphql` |         |
+| Variable                | Description                      | Example                            | Default                            |
+| ----------------------- | -------------------------------- | ---------------------------------- | ---------------------------------- |
+| `DB_DEBUG`              | Print SQL queries to console     | `true`                             | `false`                            |
+| `MAX_BLOCKS_BATCH_SIZE` | Max blocks to process in a batch | `3000`                             | `200`                              |
+| `SNAPSHOT_GRAPHQL_URL`  | Snapshot GraphQL API endpoint    | `https://hub.snapshot.org/graphql` | `https://hub.snapshot.org/graphql` |
 
 #### Heartbeats
 
@@ -82,7 +82,7 @@ Heartbeats are periodic GET requests performed against an endpoint to indicate t
 | Variable             | Description                               | Example                                         | Default |
 | -------------------- | ----------------------------------------- | ----------------------------------------------- | ------- |
 | `HEARTBEAT_URL`      | URL that will receive the GET request     | `https://instrumentation.keros.io/hooks/zodiac` |         |
-| `HEARTBEAT_INTERVAL` | Interval in milliseconds between requests | `60000`                                         | `60000` |
+| `HEARTBEAT_INTERVAL` | Interval in milliseconds between requests | `1000`                                          | `60000` |
 
 ### Transports Configuration
 

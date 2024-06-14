@@ -80,6 +80,7 @@ export const schema = {
   }),
   SNAPSHOT_GRAPHQL_URL: url({
     desc: "Snapshot GraphQL API endpoint",
+    default: "https://hub.snapshot.org/graphql",
     example: "https://hub.snapshot.org/graphql",
   }),
   MAX_BLOCKS_BATCH_SIZE: num({
