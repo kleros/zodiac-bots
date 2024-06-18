@@ -1,7 +1,7 @@
 /**
  * Check if a promise is in pending state
  *
- * @param The promise to check the state of
+ * @param promise The promise to check the state of
  * @returns true if the promise is in pending state, false if resolved or rejected
  *
  * @example
