@@ -1,15 +1,17 @@
 import { EventEmitter } from "node:events";
 import { BotEventNames } from "./bot-events";
 import { processSpaces } from "./processing";
-import { FindSpacesFn, InsertSpacesFn, findSpaces, insertSpaces } from "./services/db/spaces";
-import { GetSpaceAddressesFn, getSpaceAddresses } from "./services/reality";
+import { findSpaces, insertSpaces, type FindSpacesFn, type InsertSpacesFn } from "./services/db/spaces";
+import { initialize as initializeEmail } from "./services/email";
+import { getSpaceAddresses, type GetSpaceAddressesFn } from "./services/reality";
 import { initialize as initializeSlack } from "./services/slack";
 import { initialize as initializeTelegram } from "./services/telegram";
-import { initialize as initializeEmail } from "./services/email";
-import { ParsedSpace, Space } from "./types";
-import { defaultEmitter } from "./utils/emitter";
+import type { ParsedSpace, Space } from "./types";
+import { defaultEmitter, resolveOnEvent } from "./utils/emitter";
 import { env, parseSpacesEnv } from "./utils/env";
+import isPromisePending from "./utils/is-promise-pending";
 import { initialize as initializeLogger } from "./utils/logger";
+import { initialize as initializeGracefulShutdown } from "./utils/shutdown";
 
 export type StartFn = () => Promise<void>;
 /**
@@ -23,13 +25,14 @@ export const start: StartFn = () => {
     emitter: defaultEmitter,
     initializeSpacesFn: initializeSpaces,
     parsedSpaces: parseSpacesEnv(env.SPACES),
-    shouldContinueFn: () => true,
     processSpacesFn: processSpaces,
     initializeLoggerFn: initializeLogger,
     initializeSlackFn: initializeSlack,
     initializeTelegramFn: initializeTelegram,
     initializeEmailFn: initializeEmail,
+    initializeGracefulShutdownFn: initializeGracefulShutdown,
     waitForFn: waitFor,
+    batchCooldown: env.BATCH_COOLDOWN,
   });
 };
 
@@ -37,13 +40,14 @@ export type ConfigurableStartDeps = {
   emitter: EventEmitter;
   initializeSpacesFn: InitializeSpacesFn;
   parsedSpaces: ParsedSpace[];
-  shouldContinueFn: () => boolean;
   processSpacesFn: typeof processSpaces;
   initializeLoggerFn: typeof initializeLogger;
   initializeSlackFn: typeof initializeSlack;
   initializeTelegramFn: typeof initializeTelegram;
   initializeEmailFn: typeof initializeEmail;
+  initializeGracefulShutdownFn: typeof initializeGracefulShutdown;
   waitForFn: WaitForFn;
+  batchCooldown: number;
 };
 export const configurableStart = async (deps: ConfigurableStartDeps) => {
   const {
@@ -53,26 +57,35 @@ export const configurableStart = async (deps: ConfigurableStartDeps) => {
     initializeTelegramFn,
     initializeSpacesFn,
     initializeEmailFn,
-    shouldContinueFn,
+    initializeGracefulShutdownFn,
     parsedSpaces,
     processSpacesFn,
     waitForFn,
+    batchCooldown,
   } = deps;
 
   initializeLoggerFn(emitter);
-  emitter.emit(BotEventNames.START);
+  initializeGracefulShutdownFn();
+  emitter.emit(BotEventNames.STARTED);
   initializeSlackFn();
   initializeTelegramFn();
   initializeEmailFn();
 
   let spaces = await initializeSpacesFn(parsedSpaces);
 
-  while (shouldContinueFn()) {
+  const shutdownSignalPromise = resolveOnEvent(BotEventNames.GRACEFUL_SHUTDOWN_START, emitter);
+  let shouldContinue = await isPromisePending(shutdownSignalPromise);
+
+  while (shouldContinue) {
     emitter.emit(BotEventNames.ITERATION_STARTED);
     spaces = await processSpacesFn(spaces);
     emitter.emit(BotEventNames.ITERATION_ENDED);
-    await waitForFn(5 * 60 * 1_000);
+
+    await Promise.race([waitForFn(batchCooldown), shutdownSignalPromise]);
+    shouldContinue = await isPromisePending(shutdownSignalPromise);
   }
+
+  emitter.emit(BotEventNames.PROCESSING_ENDED);
 };
 
 type InitializeSpacesFn = (parsedSpaces: ParsedSpace[]) => Promise<Space[]>;
