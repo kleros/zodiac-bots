@@ -51,7 +51,7 @@ describe("Heartbeat", () => {
       await waitFor(expectedCalls * interval + interval * 0.5);
       server.close();
 
-      expect(httpCalls).to.equal(expectedCalls, "web server received less calls than expected");
+      expect(httpCalls).to.equal(expectedCalls, "web server received a different number of calls than expected");
       expect(sentEvents).to.equal(expectedCalls, "event emitter received less calls than expected");
       await expect(transportReadyEventPromise, "transport ready event not emitted").to.eventually.be.fulfilled;
     });
