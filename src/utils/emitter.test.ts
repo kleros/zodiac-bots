@@ -24,7 +24,7 @@ describe("Emitter", () => {
       return expect(promise).to.eventually.fulfilled;
     });
 
-    it("should not resolve if the event never happens", async () => {
+    it("should remain pending if the event never happens", async () => {
       const emitter = new EventEmitter();
       const name = BotEventNames.STARTED;
 

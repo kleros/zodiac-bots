@@ -1,7 +1,7 @@
 import { LogNewAnswer, ProposalQuestionCreated } from "./services/reality";
 import { Space } from "./types";
 
-export const enum BotEventNames {
+export enum BotEventNames {
   // General
   STARTED = "started",
   PROCESSING_ENDED = "processing_ended",
