@@ -3,7 +3,7 @@ import Bottleneck from "bottleneck";
 import EventEmitter from "node:events";
 import sinon, { SinonSpy } from "sinon";
 import { BotEventNames } from "../bot-events";
-import { NotifyParams } from "../notify";
+import { Notification } from "../notify";
 import { expect, resolveOnEvent, mocks } from "../utils/tests-setup";
 import {
   ConfigurableNotifyDeps,
@@ -82,7 +82,7 @@ describe("Slack service", () => {
         fn({
           ...mocks.proposalMock,
           type: "unexpected",
-        } as any as NotifyParams);
+        } as any as Notification);
       expect(test).to.throw("unexpected");
     });
   });

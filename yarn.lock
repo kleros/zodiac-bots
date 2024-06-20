@@ -625,6 +625,7 @@ __metadata:
     "@tsconfig/node20": "npm:^20.1.4"
     "@types/chai": "npm:^4.3.14"
     "@types/chai-as-promised": "npm:^7"
+    "@types/lodash": "npm:^4"
     "@types/mocha": "npm:^10"
     "@types/node": "npm:^20.12.7"
     "@types/node-telegram-bot-api": "npm:^0"
@@ -639,6 +640,7 @@ __metadata:
     drizzle-orm: "npm:^0.30.10"
     envalid: "npm:^8.0.0"
     eslint-config-prettier: "npm:9.1.0"
+    lodash: "npm:^4.17.21"
     mocha: "npm:^10.4.0"
     node-telegram-bot-api: "npm:^0.66.0"
     nodemailer: "npm:^6.9.13"
@@ -829,6 +831,13 @@ __metadata:
   version: 2.0.6
   resolution: "@types/istanbul-lib-coverage@npm:2.0.6"
   checksum: 10/3feac423fd3e5449485afac999dcfcb3d44a37c830af898b689fadc65d26526460bedb889db278e0d4d815a670331796494d073a10ee6e3a6526301fe7415778
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:^4":
+  version: 4.17.5
+  resolution: "@types/lodash@npm:4.17.5"
+  checksum: 10/10e2e9cbeb16998026f4071f9f5f2a38b651eba15302f512e0b8ab904c07c197ca0282d2821f64e53c2b692d7046af0a1ce3ead190fb077cbe4036948fce1924
   languageName: node
   linkType: hard
 
@@ -3274,7 +3283,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.15":
+"lodash@npm:^4.17.15, lodash@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 10/c08619c038846ea6ac754abd6dd29d2568aa705feb69339e836dfa8d8b09abbb2f859371e86863eda41848221f9af43714491467b5b0299122431e202bb0c532

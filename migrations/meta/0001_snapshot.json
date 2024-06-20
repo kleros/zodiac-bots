@@ -1,0 +1,95 @@
+{
+  "id": "4ad79953-df56-4304-92bf-b922779e84be",
+  "prevId": "589fabbe-0056-4ff7-a9d1-0e173aed0dd9",
+  "version": "5",
+  "dialect": "pg",
+  "tables": {
+    "notification": {
+      "name": "notification",
+      "schema": "",
+      "columns": {
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block": {
+          "name": "block",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transport_name": {
+          "name": "transport_name",
+          "type": "transport_name",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "notification_tx_hash_transport_name_pk": {
+          "name": "notification_tx_hash_transport_name_pk",
+          "columns": [
+            "tx_hash",
+            "transport_name"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "space": {
+      "name": "space",
+      "schema": "",
+      "columns": {
+        "ens": {
+          "name": "ens",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "start_block": {
+          "name": "start_block",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_processed_block": {
+          "name": "last_processed_block",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {
+    "transport_name": {
+      "name": "transport_name",
+      "values": {
+        "telegram": "telegram",
+        "slack": "slack",
+        "email": "email"
+      }
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

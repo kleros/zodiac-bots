@@ -2,7 +2,7 @@ import Bottleneck from "bottleneck";
 import TelegramBot from "node-telegram-bot-api";
 import EventEmitter from "node:events";
 import { BotEventNames } from "../bot-events";
-import { NotifyParams } from "../notify";
+import { Notification } from "../notify";
 import { defaultEmitter } from "../utils/emitter";
 import { Env, env } from "../utils/env";
 import { composeMessage } from "./slack";
@@ -69,7 +69,7 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
  *
  * await notify(notification);
  */
-export const notify = (notification: NotifyParams) => {
+export const notify = (notification: Notification) => {
   return configurableNotify({
     notification,
     sendFn: send,
@@ -79,7 +79,7 @@ export const notify = (notification: NotifyParams) => {
 };
 
 export type ConfigurableNotifyDeps = {
-  notification: NotifyParams;
+  notification: Notification;
   throttleFn: typeof Bottleneck.prototype.schedule;
   composeMessageFn: typeof composeMessage;
   sendFn: typeof send;

@@ -2,7 +2,7 @@ import { IncomingWebhook } from "@slack/webhook";
 import Bottleneck from "bottleneck";
 import EventEmitter from "node:events";
 import { BotEventNames } from "../bot-events";
-import { EventType, NotifyParams } from "../notify";
+import { EventType, Notification } from "../notify";
 import { defaultEmitter } from "../utils/emitter";
 import { env } from "../utils/env";
 
@@ -59,7 +59,7 @@ export const configurableInitialize = (deps: InitializeDeps) => {
  *
  * await notify(notification);
  */
-export const notify = async (notification: NotifyParams) => {
+export const notify = async (notification: Notification) => {
   return configurableNotify({
     notification,
     sendFn: webhook?.send.bind(webhook),
@@ -69,7 +69,7 @@ export const notify = async (notification: NotifyParams) => {
 };
 
 export type ConfigurableNotifyDeps = {
-  notification: NotifyParams;
+  notification: Notification;
   sendFn?: typeof IncomingWebhook.prototype.send;
   throttleFn: typeof Bottleneck.prototype.schedule;
   composeMessageFn: typeof composeMessage;
@@ -92,7 +92,7 @@ export const configurableNotify = async (deps: ConfigurableNotifyDeps) => {
  *
  * const message = composeMessage(notification);
  */
-export const composeMessage = (notification: NotifyParams) => {
+export const composeMessage = (notification: Notification) => {
   const { space, type, event } = notification;
   const { txHash, blockNumber, questionId } = event;
 
