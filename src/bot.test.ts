@@ -1,15 +1,16 @@
 import { EventEmitter } from "node:events";
 import sinon from "sinon";
 import {
-  ConfigurableInitializeSpacesDeps,
-  ConfigurableStartDeps,
   configurableInitializeSpaces,
   configurableStart,
+  waitFor,
+  type ConfigurableInitializeSpacesDeps,
+  type ConfigurableStartDeps,
 } from "./bot";
 import { BotEventNames } from "./bot-events";
 import { findSpaces, insertSpaces } from "./services/db/spaces";
 import { getSpaceAddresses } from "./services/reality";
-import { expect } from "./utils/tests-setup";
+import { expect, resolveOnEvent } from "./utils/tests-setup";
 
 describe("Bot", () => {
   describe(".start", () => {
@@ -17,7 +18,6 @@ describe("Bot", () => {
 
     let depsMock = {} as ConfigurableStartDeps;
     beforeEach(() => {
-      let isShouldContinueCalled = false;
       depsMock = {
         parsedSpaces: [],
         emitter: new EventEmitter(),
@@ -27,40 +27,43 @@ describe("Bot", () => {
         initializeEmailFn: sinon.spy(),
         initializeHeartbeatFn: sinon.spy(),
         initializeSpacesFn: sinon.spy(),
-        shouldContinueFn: () => {
-          const returned = !isShouldContinueCalled;
-          isShouldContinueCalled = true;
-          return returned;
-        },
+        initializeGracefulShutdownFn: sinon.spy(),
         processSpacesFn: sinon.spy(),
-        waitForFn: () => Promise.resolve(),
+        waitForFn: waitFor,
+        batchCooldown: 300,
       };
     });
 
+    afterEach(() => {
+      // Trigger a shutdown event so the function stops processing blocks
+      depsMock.emitter.emit(BotEventNames.GRACEFUL_SHUTDOWN_START);
+    });
+
     it("should emit the expected events", async () => {
-      const detectEvent = (name: BotEventNames) =>
-        new Promise((resolve) => {
-          depsMock.emitter.on(name, resolve);
-        });
+      const { emitter } = depsMock;
 
       const promises = Promise.all([
-        detectEvent(BotEventNames.START),
-        detectEvent(BotEventNames.ITERATION_STARTED),
-        detectEvent(BotEventNames.ITERATION_ENDED),
+        resolveOnEvent(BotEventNames.STARTED, emitter),
+        resolveOnEvent(BotEventNames.ITERATION_STARTED, emitter),
+        resolveOnEvent(BotEventNames.ITERATION_ENDED, emitter),
       ]);
 
-      await fn(depsMock);
+      fn(depsMock);
 
-      return expect(promises).to.eventually.fulfilled;
+      await expect(promises).to.eventually.fulfilled;
     });
 
     it("should initialize required libraries", async () => {
-      await fn(depsMock);
+      fn(depsMock);
 
-      expect((depsMock.initializeLoggerFn as sinon.SinonSpy).calledOnce).to.be.true;
-      expect((depsMock.initializeSlackFn as sinon.SinonSpy).calledOnce).to.be.true;
-      expect((depsMock.initializeTelegramFn as sinon.SinonSpy).calledOnce).to.be.true;
-      expect((depsMock.initializeEmailFn as sinon.SinonSpy).calledOnce).to.be.true;
+      await resolveOnEvent(BotEventNames.ITERATION_STARTED, depsMock.emitter);
+
+      expect((depsMock.initializeLoggerFn as sinon.SinonSpy).calledOnce, "logger failed").to.be.true;
+      expect((depsMock.initializeSlackFn as sinon.SinonSpy).calledOnce, "slack failed").to.be.true;
+      expect((depsMock.initializeTelegramFn as sinon.SinonSpy).calledOnce, "telegram failed").to.be.true;
+      expect((depsMock.initializeEmailFn as sinon.SinonSpy).calledOnce, "email failed").to.be.true;
+      expect((depsMock.initializeGracefulShutdownFn as sinon.SinonSpy).calledOnce, "graceful shutdown failed").to.be
+        .true;
       expect((depsMock.initializeHeartbeatFn as sinon.SinonSpy).calledOnce).to.be.true;
     });
   });
