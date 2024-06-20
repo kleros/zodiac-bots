@@ -21,6 +21,9 @@ export const proposalMock: Notification = {
   },
 };
 
+/**
+ * Generates a Proposal notification with randomized values
+ */
 export const randomizeProposalNotification = () => {
   const copy = clone(proposalMock);
   copy.event.txHash = getRandomHash();
