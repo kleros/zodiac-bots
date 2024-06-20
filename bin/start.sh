@@ -23,6 +23,11 @@ if [ -n "$SMTP_HOST" ]; then
 	fi
 fi
 
+# Expand the base command to wait for HEARTBEAT_URL when configured
+if [ -n "$HEARTBEAT_URL" ]; then
+	WAITDEPS_CMD="$WAITDEPS_CMD --tcp-connect $HEARTBEAT_URL"
+fi
+
 $WAITDEPS_CMD
 
 echo "Ensuring database schema is up to date..."

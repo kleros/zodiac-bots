@@ -12,6 +12,10 @@ export const enum BotEventNames {
   SPACE_EVENTS_FETCHED = "space_events_fetched",
   SPACE_NOTIFIED = "space_notified",
   SPACE_ENDED = "space_ended",
+  HEARTBEAT_CONFIGURATION_MISSING = "heartbeat_configuration_missing",
+  HEARTBEAT_READY = "heartbeat_ready",
+  HEARTBEAT_SENT = "heartbeat_sent",
+  HEARTBEAT_FAILED = "heartbeat_failed",
 }
 
 export type SpaceStartedPayload = {
