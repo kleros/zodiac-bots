@@ -20,7 +20,7 @@ export const defaultEmitter = new EventEmitter();
  */
 export const resolveOnEvent = <R = [unknown, ...unknown[]]>(name: BotEventNames, emitter: EventEmitter): Promise<R> =>
   new Promise((resolve) => {
-    emitter.on(name, (...args) => {
+    emitter.once(name, (...args) => {
       resolve(args as R);
     });
   });

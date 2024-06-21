@@ -80,6 +80,7 @@ export const schema = {
   }),
   SNAPSHOT_GRAPHQL_URL: url({
     desc: "Snapshot GraphQL API endpoint",
+    default: "https://hub.snapshot.org/graphql",
     example: "https://hub.snapshot.org/graphql",
   }),
   MAX_BLOCKS_BATCH_SIZE: num({
@@ -139,6 +140,16 @@ export const schema = {
     desc: "Sender email address",
     example: "alert@kleros.local",
     default: undefined,
+  }),
+  HEARTBEAT_URL: url({
+    desc: "URL to request every HEARTBEAT_INTERVAL seconds to indicate that the service is up",
+    example: "https://keros.io/api/heartbeat/zodiac",
+    default: undefined,
+  }),
+  HEARTBEAT_INTERVAL: num({
+    desc: "Interval in milliseconds to send heartbeats",
+    example: "60000",
+    default: 60000,
   }),
 };
 

@@ -3,6 +3,7 @@ import { BotEventNames } from "./bot-events";
 import { processSpaces } from "./processing";
 import { findSpaces, insertSpaces, type FindSpacesFn, type InsertSpacesFn } from "./services/db/spaces";
 import { initialize as initializeEmail } from "./services/email";
+import { initialize as initializeHeartbeat } from "./services/heartbeat";
 import { getSpaceAddresses, type GetSpaceAddressesFn } from "./services/reality";
 import { initialize as initializeSlack } from "./services/slack";
 import { initialize as initializeTelegram } from "./services/telegram";
@@ -31,6 +32,7 @@ export const start: StartFn = () => {
     initializeTelegramFn: initializeTelegram,
     initializeEmailFn: initializeEmail,
     initializeGracefulShutdownFn: initializeGracefulShutdown,
+    initializeHeartbeatFn: initializeHeartbeat,
     waitForFn: waitFor,
     batchCooldown: env.BATCH_COOLDOWN,
   });
@@ -46,6 +48,7 @@ export type ConfigurableStartDeps = {
   initializeTelegramFn: typeof initializeTelegram;
   initializeEmailFn: typeof initializeEmail;
   initializeGracefulShutdownFn: typeof initializeGracefulShutdown;
+  initializeHeartbeatFn: typeof initializeHeartbeat;
   waitForFn: WaitForFn;
   batchCooldown: number;
 };
@@ -58,6 +61,7 @@ export const configurableStart = async (deps: ConfigurableStartDeps) => {
     initializeSpacesFn,
     initializeEmailFn,
     initializeGracefulShutdownFn,
+    initializeHeartbeatFn,
     parsedSpaces,
     processSpacesFn,
     waitForFn,
@@ -70,6 +74,7 @@ export const configurableStart = async (deps: ConfigurableStartDeps) => {
   initializeSlackFn();
   initializeTelegramFn();
   initializeEmailFn();
+  initializeHeartbeatFn();
 
   let spaces = await initializeSpacesFn(parsedSpaces);
 
