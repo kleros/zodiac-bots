@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { spy } from "sinon";
-import { EventType, NotifyParams } from "./notify";
+import { EventType, Notification } from "./notify";
 import { configurableProcessSpace } from "./processing";
 import { findSpaces, insertSpaces, updateSpace } from "./services/db/spaces";
 import { Space } from "./types";
@@ -60,7 +60,7 @@ describe("processSpace", () => {
         txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43",
         blockNumber: 19475120n,
       },
-    } as NotifyParams);
+    } as Notification);
 
     const [updatedSpace] = await findSpaces([space.ens]);
     expect(updatedSpace.lastProcessedBlock).to.equal(toBlock);
@@ -100,7 +100,7 @@ describe("processSpace", () => {
         txHash: "0x0cc20c32ee428bdb8f16fa1aa22b396ecafa91b61bc2c3350723e4dfefeebff0",
         blockNumber: 19640300n,
       },
-    } as NotifyParams);
+    } as Notification);
 
     const [updatedSpace] = await findSpaces([space.ens]);
     expect(updatedSpace.lastProcessedBlock).to.equal(toBlock);

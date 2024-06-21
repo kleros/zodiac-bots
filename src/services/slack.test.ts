@@ -1,10 +1,10 @@
-import { IncomingWebhookResult } from "@slack/webhook";
+import type { IncomingWebhookResult } from "@slack/webhook";
 import Bottleneck from "bottleneck";
 import EventEmitter from "node:events";
 import sinon, { SinonSpy } from "sinon";
-import { BotEventNames, TransportConfigurationMissingPayload, TransportReadyPayload } from "../bot-events";
-import { NotifyParams } from "../notify";
-import { expect, resolveOnEvent, mocks } from "../utils/tests-setup";
+import { BotEventNames, type TransportConfigurationMissingPayload, type TransportReadyPayload } from "../bot-events";
+import type { Notification } from "../notify";
+import { expect, mocks, resolveOnEvent } from "../utils/tests-setup";
 import {
   ConfigurableNotifyDeps,
   TRANSPORT_NAME,
@@ -85,7 +85,7 @@ describe("Slack service", () => {
         fn({
           ...mocks.proposalMock,
           type: "unexpected",
-        } as any as NotifyParams);
+        } as any as Notification);
       expect(test).to.throw("unexpected");
     });
   });

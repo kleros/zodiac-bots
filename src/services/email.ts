@@ -2,7 +2,7 @@ import Bottleneck from "bottleneck";
 import EventEmitter from "node:events";
 import nodemailer, { Transporter } from "nodemailer";
 import { BotEventNames } from "../bot-events";
-import { EventType, NotifyParams } from "../notify";
+import { EventType, Notification } from "../notify";
 import { defaultEmitter } from "../utils/emitter";
 import { env, parseEmailToEnv, type Env } from "../utils/env";
 
@@ -76,7 +76,7 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
  *
  * await notify(notification);
  */
-export const notify = (notification: NotifyParams) => {
+export const notify = (notification: Notification) => {
   return configurableNotify({
     notification,
     sendFn: send,
@@ -86,7 +86,7 @@ export const notify = (notification: NotifyParams) => {
 };
 
 export type ConfigurableNotifyDeps = {
-  notification: NotifyParams;
+  notification: Notification;
   throttleFn: typeof Bottleneck.prototype.schedule;
   sendFn: typeof send;
   composeMessageFn: typeof composeMessage;
@@ -159,7 +159,7 @@ export type EmailMessage = {
  *
  * const message = composeMessage(notification);
  */
-export const composeMessage = (notification: NotifyParams): EmailMessage => {
+export const composeMessage = (notification: Notification): EmailMessage => {
   const message = {
     subject: "",
     text: "",
