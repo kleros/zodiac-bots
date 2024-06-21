@@ -88,6 +88,11 @@ export const schema = {
     example: "200",
     default: 200,
   }),
+  BATCH_COOLDOWN: num({
+    desc: "Amount of milliseconds to wait to process a new batch after the previous one was processed",
+    example: "60000",
+    default: 60000,
+  }),
   SLACK_WEBHOOK: url({
     desc: "Slack Webhook URL",
     example: "https://hook.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
