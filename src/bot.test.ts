@@ -25,6 +25,7 @@ describe("Bot", () => {
         initializeSlackFn: sinon.spy(),
         initializeTelegramFn: sinon.spy(),
         initializeEmailFn: sinon.spy(),
+        initializeHeartbeatFn: sinon.spy(),
         initializeSpacesFn: sinon.spy(),
         initializeGracefulShutdownFn: sinon.spy(),
         processSpacesFn: sinon.spy(),
@@ -63,6 +64,7 @@ describe("Bot", () => {
       expect((depsMock.initializeEmailFn as sinon.SinonSpy).calledOnce, "email failed").to.be.true;
       expect((depsMock.initializeGracefulShutdownFn as sinon.SinonSpy).calledOnce, "graceful shutdown failed").to.be
         .true;
+      expect((depsMock.initializeHeartbeatFn as sinon.SinonSpy).calledOnce).to.be.true;
     });
   });
 

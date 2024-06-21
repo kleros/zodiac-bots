@@ -1,5 +1,6 @@
 import type { EventEmitter } from "node:events";
 import pino from "pino";
+import { env } from "./env";
 import {
   SpaceDetailedPayload,
   SpaceSkippedPayload,
@@ -90,5 +91,21 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
 
   emitter.on(event.PROCESSING_ENDED, () => {
     logger.info("Processing stopped. No more blocks will be scanned");
+  });
+
+  emitter.on(event.HEARTBEAT_CONFIGURATION_MISSING, () => {
+    logger.warn("Periodic heartbeats not configured due to missing environment variables");
+  });
+
+  emitter.on(event.HEARTBEAT_READY, () => {
+    logger.info("Perioc hearbeats ready");
+  });
+
+  emitter.on(event.HEARTBEAT_SENT, () => {
+    logger.info(`Perioc hearbeat sent to ${env.HEARTBEAT_URL}`);
+  });
+
+  emitter.on(event.HEARTBEAT_FAILED, () => {
+    logger.error(`Perioc hearbeat to ${env.HEARTBEAT_URL} failed`);
   });
 };
