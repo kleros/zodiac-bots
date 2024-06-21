@@ -2,7 +2,7 @@ import Bottleneck from "bottleneck";
 import TelegramBot from "node-telegram-bot-api";
 import EventEmitter from "node:events";
 import sinon, { SinonSpy } from "sinon";
-import { BotEventNames } from "../bot-events";
+import { BotEventNames, TransportConfigurationMissingPayload, TransportReadyPayload } from "../bot-events";
 import { expect, mocks, resolveOnEvent } from "../utils/tests-setup";
 import {
   ConfigurableSendDeps,
@@ -24,18 +24,21 @@ describe("Telegram service", () => {
       TELEGRAM_CHAT_ID: "test-chat-id",
     } as Env;
     it("should emit an event when the was properly initialized", async () => {
-      const promise = resolveOnEvent(BotEventNames.TRANSPORT_READY, emitter);
+      const promise = resolveOnEvent<[TransportReadyPayload]>(BotEventNames.TRANSPORT_READY, emitter);
       fn({
         emitter,
         env,
       });
-      const { name } = (await promise).pop();
+      const { name } = (await promise)[0];
       expect(name).to.equal(TRANSPORT_NAME);
     });
 
     ["TELEGRAM_TOKEN", "TELEGRAM_CHAT_ID"].forEach((key) => {
       it(`should emit a misconfiguration event if the ${key} is missing`, async () => {
-        const promise = resolveOnEvent(BotEventNames.TRANSPORT_CONFIGURATION_MISSING, emitter);
+        const promise = resolveOnEvent<[TransportConfigurationMissingPayload]>(
+          BotEventNames.TRANSPORT_CONFIGURATION_MISSING,
+          emitter,
+        );
         fn({
           emitter,
           env: {
@@ -43,7 +46,7 @@ describe("Telegram service", () => {
             [key]: undefined,
           },
         });
-        const { name, missing } = (await promise).pop();
+        const { name, missing } = (await promise)[0];
         expect(name).to.equal(TRANSPORT_NAME);
         expect(missing).to.have.lengthOf(1);
         expect(missing[0]).to.equal(key);

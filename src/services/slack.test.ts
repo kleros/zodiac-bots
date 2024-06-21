@@ -1,10 +1,10 @@
-import { IncomingWebhookResult } from "@slack/webhook";
+import type { IncomingWebhookResult } from "@slack/webhook";
 import Bottleneck from "bottleneck";
 import EventEmitter from "node:events";
 import sinon, { SinonSpy } from "sinon";
-import { BotEventNames } from "../bot-events";
-import { Notification } from "../notify";
-import { expect, resolveOnEvent, mocks } from "../utils/tests-setup";
+import { BotEventNames, type TransportConfigurationMissingPayload, type TransportReadyPayload } from "../bot-events";
+import type { Notification } from "../notify";
+import { expect, mocks, resolveOnEvent } from "../utils/tests-setup";
 import {
   ConfigurableNotifyDeps,
   TRANSPORT_NAME,
@@ -20,22 +20,25 @@ describe("Slack service", () => {
   describe("initialize", () => {
     const fn = configurableInitialize;
     it("should emit an event when it was properly initialized", async () => {
-      const promise = resolveOnEvent(BotEventNames.TRANSPORT_READY, emitter);
+      const promise = resolveOnEvent<[TransportReadyPayload]>(BotEventNames.TRANSPORT_READY, emitter);
       fn({
         emitter,
         webhookUrl: "https://hooks.slack.com/services/1234/5678/9abc",
       });
-      const { name } = (await promise).pop();
+      const { name } = (await promise)[0];
       expect(name).to.equal(TRANSPORT_NAME);
     });
 
     it("should emit an event when the webhook is missing", async () => {
-      const promise = resolveOnEvent(BotEventNames.TRANSPORT_CONFIGURATION_MISSING, emitter);
+      const promise = resolveOnEvent<[TransportConfigurationMissingPayload]>(
+        BotEventNames.TRANSPORT_CONFIGURATION_MISSING,
+        emitter,
+      );
       fn({
         emitter,
         webhookUrl: undefined,
       });
-      const { name, missing } = (await promise).pop();
+      const { name, missing } = (await promise)[0];
       expect(name).to.equal(TRANSPORT_NAME);
       expect(missing).to.have.lengthOf(1);
       expect(missing[0]).to.equal("SLACK_WEBHOOK");
