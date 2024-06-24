@@ -1,6 +1,6 @@
 import http from "node:http";
 import { expect, resolveOnEvent } from "../utils/tests-setup";
-import { configurableInitialize, interval } from "./heartbeat";
+import { configurableInitialize, interval, stop } from "./heartbeat";
 import EventEmitter from "node:events";
 import { AddressInfo } from "node:net";
 import { Env } from "../utils/env";
@@ -22,9 +22,7 @@ const createFakeServer = async (statusCode: number, onQuery?: () => void) => {
 describe("Heartbeat", () => {
   const fn = configurableInitialize;
 
-  afterEach(() => {
-    if (interval) clearInterval(interval);
-  });
+  afterEach(() => stop());
 
   describe("initialize", () => {
     it("should send a heartbeat every interval", async () => {
@@ -87,6 +85,34 @@ describe("Heartbeat", () => {
       const unconfiguredEventPromise = resolveOnEvent(BotEventNames.HEARTBEAT_CONFIGURATION_MISSING, emitter);
       fn({ emitter, env });
       await expect(unconfiguredEventPromise, "url missing and event not emitted").to.eventually.be.fulfilled;
+    });
+  });
+
+  describe("stop", () => {
+    it("should cancel the existing interval", async () => {
+      const expectedCalls = 0;
+
+      let httpCalls = 0;
+      const server = await createFakeServer(200, () => httpCalls++);
+      const { port } = server.address() as AddressInfo;
+
+      const emitter = new EventEmitter();
+      let sentEvents = 0;
+      emitter.on(BotEventNames.HEARTBEAT_SENT, () => sentEvents++);
+
+      const interval = 100;
+      const env = {
+        HEARTBEAT_URL: `http://localhost:${port}/test`,
+        HEARTBEAT_INTERVAL: interval,
+      } as Env;
+
+      fn({ emitter, env });
+      stop();
+
+      await waitFor(interval * 1.5);
+      server.close();
+
+      expect(httpCalls).to.equal(expectedCalls, "web server received a different number of calls than expected");
     });
   });
 });
