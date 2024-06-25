@@ -1,6 +1,7 @@
 import EventEmitter from "node:events";
 import { BotEventNames } from "../bot-events";
 import { DBConnection, disconnect as disconnectDB, getConnection as getDBConnection } from "../services/db/connection";
+import { stop as stopHeartbeat } from "../services/heartbeat";
 import { defaultEmitter } from "./emitter";
 
 /**
@@ -50,16 +51,19 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
  */
 const stopServices = () => {
   return configurableStopServices({
-    disconnectDBFn: disconnectDB,
     connection: getDBConnection(),
+    disconnectDBFn: disconnectDB,
+    stopHeartbeatFn: stopHeartbeat,
   });
 };
 
 type ConfigurableStopServicesDeps = {
   disconnectDBFn: typeof disconnectDB;
+  stopHeartbeatFn: typeof stopHeartbeat;
   connection: DBConnection;
 };
 export const configurableStopServices = async (deps: ConfigurableStopServicesDeps) => {
-  const { connection, disconnectDBFn } = deps;
+  const { connection, disconnectDBFn, stopHeartbeatFn } = deps;
   await disconnectDBFn(connection);
+  stopHeartbeatFn();
 };

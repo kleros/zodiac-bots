@@ -32,13 +32,16 @@ describe("Graceful Shutdown", () => {
 
     it("should disconnect the database", async () => {
       const connection = connect(env.DB_URI);
+      const stopHeartbeat = sinon.spy();
 
       await fn({
         connection,
         disconnectDBFn: disconnect,
+        stopHeartbeatFn: stopHeartbeat,
       });
 
-      await expect(test(connection), "stops working after close").to.eventually.be.rejected;
+      expect(stopHeartbeat.calledOnce, "stopHeartbeat not called").to.be.true;
+      await expect(test(connection), "DB still available").to.eventually.be.rejected;
     });
   });
 });

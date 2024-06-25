@@ -1,10 +1,17 @@
-import EventEmitter from "node:events";
-import { env } from "../utils/env";
-import { defaultEmitter } from "../utils/emitter";
+import type EventEmitter from "node:events";
 import { BotEventNames } from "../bot-events";
+import { defaultEmitter } from "../utils/emitter";
+import { env } from "../utils/env";
 
 export let interval: NodeJS.Timeout | undefined;
 
+/**
+ * Periodically perform a HTTP GET request to the configured HEARTBEAT_URL.
+ *
+ * @example
+ *
+ * initialize();
+ */
 export const initialize = () => configurableInitialize({ env, emitter: defaultEmitter });
 
 type ConfigurableInitializeDeps = {
@@ -31,4 +38,12 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
   }, HEARTBEAT_INTERVAL);
 
   emitter.emit(BotEventNames.HEARTBEAT_READY);
+};
+
+/**
+ * Cancels the periodic heartbeat request.
+ */
+export const stop = () => {
+  clearInterval(interval);
+  interval = undefined;
 };
