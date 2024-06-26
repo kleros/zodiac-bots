@@ -5,13 +5,9 @@ import sinon, { SinonSpy } from "sinon";
 import { BotEventNames, type TransportConfigurationMissingPayload, type TransportReadyPayload } from "../bot-events";
 import type { Notification } from "../notify";
 import { expect, mocks, resolveOnEvent } from "../utils/tests-setup";
-import {
-  ConfigurableNotifyDeps,
-  TRANSPORT_NAME,
-  composeMessage,
-  configurableInitialize,
-  configurableNotify,
-} from "./slack";
+import { ConfigurableNotifyDeps, TRANSPORT_NAME, configurableInitialize, configurableNotify } from "./slack";
+import { render } from "../utils/notification-template";
+import { randomizeProposalNotification } from "../utils/test-mocks";
 
 describe("Slack service", () => {
   let emitter: EventEmitter;
@@ -52,41 +48,27 @@ describe("Slack service", () => {
     beforeEach(() => {
       const bottleneck = new Bottleneck({ minTime: null });
       depsMock = {
-        notification: mocks.proposalMock,
+        notification: randomizeProposalNotification(),
         sendFn: () => Promise.resolve({} as IncomingWebhookResult),
         throttleFn: bottleneck.schedule.bind(bottleneck),
-        composeMessageFn: () => "",
+        renderFn: render,
       };
     });
 
     it("should send nothing when the integration is not configured", async () => {
       depsMock.throttleFn = sinon.spy();
-      depsMock.composeMessageFn = sinon.spy();
+      depsMock.renderFn = sinon.spy();
       depsMock.sendFn = undefined;
       await fn(depsMock);
       expect((depsMock.throttleFn as SinonSpy).called).to.be.false;
-      expect((depsMock.composeMessageFn as SinonSpy).called).to.be.false;
+      expect((depsMock.renderFn as SinonSpy).called).to.be.false;
     });
 
-    it("should notify when the integration is configured", async () => {
+    it("should notify proposals when the integration is configured", async () => {
       depsMock.sendFn = sinon.spy();
-      const content = "test content";
-      depsMock.composeMessageFn = () => content;
+      const expectedContent = await render("slack", depsMock.notification);
       await fn(depsMock);
-      expect((depsMock.sendFn as SinonSpy).calledOnceWithExactly(content));
-    });
-  });
-
-  describe("composeMessage", () => {
-    const fn = composeMessage;
-
-    it("should fail when the event type is unexpected", () => {
-      const test = () =>
-        fn({
-          ...mocks.proposalMock,
-          type: "unexpected",
-        } as any as Notification);
-      expect(test).to.throw("unexpected");
+      expect((depsMock.sendFn as SinonSpy).calledOnceWithExactly(expectedContent));
     });
   });
 });

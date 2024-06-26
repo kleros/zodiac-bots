@@ -1,0 +1,11 @@
+*`<%- notification.space.ens %>`: 🗳 New Vote!*
+<https://etherscan.io/tx/<%- notification.event.txHash %>|View transaction on Etherscan>
+<https://etherscan.io/address/<%- notification.event.user %>|View user on Etherscan>
+
+*Transaction:* `<%- notification.event.txHash %>` (block `<%- notification.event.blockNumber %>`)
+*User*: `<%- notification.event.user %>`
+
+*Event:*
+_Question ID_: `<%- notification.event.questionId %>`
+_Bond_: `<%- notification.event.bond %>`
+_Answer_: `<%- notification.event.answer %>`

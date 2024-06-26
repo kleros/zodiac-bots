@@ -20,6 +20,7 @@ type Mail = {
   to: Array<MailAddress>;
   subject: string;
   text: string;
+  html: string;
 };
 /**
  * Get the list of all emails from the fake SMTP server

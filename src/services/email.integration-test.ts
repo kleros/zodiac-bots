@@ -7,11 +7,12 @@ import {
   ConfigurableSendDeps,
   EmailMessage,
   TRANSPORT_NAME,
-  composeMessage,
   configurableInitialize,
   configurableSend,
   notify,
 } from "./email";
+import { randomizeProposalNotification } from "../utils/test-mocks";
+import { render } from "../utils/notification-template";
 
 describe("Email service", () => {
   let emitter: EventEmitter;
@@ -61,10 +62,11 @@ describe("Email service", () => {
   describe("notify", () => {
     const fn = notify;
 
-    it("should send the emails", async () => {
+    it("should corrently send a proposal email", async () => {
       const previous = await getMails();
+      const notification = randomizeProposalNotification();
 
-      await fn(mocks.proposalMock);
+      await fn(notification);
 
       // In very rare occasions, the fake SMTP server API has a slight
       // delay to register emails sent in burst
@@ -77,14 +79,20 @@ describe("Email service", () => {
 
       const emails = current.slice(-receivers.length);
 
+      const [expectedSubject, expectedPlain, expectedHTML] = await Promise.all([
+        render("email", notification, "subject"),
+        render("email", notification, "plain"),
+        render("email", notification, "html"),
+      ]);
+
       receivers.forEach((receiver) => {
         const email = emails.find((email) => email.to[0].address == receiver);
         expect(email).to.exist;
-        expect(email!.from[0].address).to.equal(env.SMTP_FROM);
+        expect(email!.from[0].address, "sender address is well configured").to.equal(env.SMTP_FROM);
 
-        const expectedContent = composeMessage(mocks.proposalMock);
-        expect(email!.subject).to.equal(expectedContent.subject);
-        expect(email!.text).to.equal(expectedContent.text);
+        expect(email!.subject, "subject matches the rendered template").to.equal(expectedSubject);
+        expect(email!.text.trim(), "plain content matches the rendered template").to.equal(expectedPlain.trim());
+        expect(email!.html.trim(), "html content matches the rendered template").to.equal(expectedHTML.trim());
       });
     });
   });

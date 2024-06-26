@@ -2,12 +2,12 @@ import Bottleneck from "bottleneck";
 import TelegramBot from "node-telegram-bot-api";
 import EventEmitter from "node:events";
 import { BotEventNames } from "../bot-events";
-import { Notification } from "../notify";
+import { Notification, TransportName } from "../notify";
 import { defaultEmitter } from "../utils/emitter";
 import { Env, env } from "../utils/env";
-import { composeMessage } from "./slack";
+import { render } from "../utils/notification-template";
 
-export const TRANSPORT_NAME = "telegram";
+export const TRANSPORT_NAME: TransportName = "telegram";
 
 const bottleneck = new Bottleneck({
   // https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this
@@ -74,20 +74,22 @@ export const notify = (notification: Notification) => {
     notification,
     sendFn: send,
     throttleFn: bottleneck.schedule.bind(bottleneck),
-    composeMessageFn: composeMessage,
+    renderFn: render,
   });
 };
 
 export type ConfigurableNotifyDeps = {
   notification: Notification;
   throttleFn: typeof Bottleneck.prototype.schedule;
-  composeMessageFn: typeof composeMessage;
+  renderFn: typeof render;
   sendFn: typeof send;
 };
 export const configurableNotify = async (deps: ConfigurableNotifyDeps) => {
-  const { notification, sendFn, throttleFn, composeMessageFn } = deps;
+  const { notification, sendFn, throttleFn, renderFn } = deps;
 
-  await throttleFn(() => sendFn(composeMessageFn(notification)));
+  const message = await renderFn(TRANSPORT_NAME, notification);
+
+  await throttleFn(() => sendFn(message));
 };
 
 /**
