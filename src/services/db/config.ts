@@ -4,7 +4,7 @@ import { env } from "../../utils/env";
 
 export default {
   schema: join(__dirname, "schema.ts"),
-  out: normalize(join(__dirname, "../../../", "migrations")),
+  out: "migrations",
   driver: "pg",
   dbCredentials: {
     connectionString: env.DB_URI,

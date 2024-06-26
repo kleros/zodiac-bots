@@ -31,7 +31,7 @@ type ConfigurableInitializeDeps = {
 export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
   const { emitter, logger } = deps;
 
-  emitter.on(event.START, () => {
+  emitter.on(event.STARTED, () => {
     logger.info("Bot started");
   });
 
@@ -75,6 +75,22 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
   emitter.on(event.SPACE_ENDED, (payload: SpaceDetailedPayload) => {
     const { space } = payload;
     logger.info({ space }, `Processing of ${payload.space.ens} ended`);
+  });
+
+  emitter.on(event.SHUTDOWN_SIGNALED, () => {
+    logger.warn("Shutdown signal detected");
+  });
+
+  emitter.on(event.ERROR, (error: Error) => {
+    logger.error(error, `An unexpected error occurred`);
+  });
+
+  emitter.on(event.GRACEFUL_SHUTDOWN_START, () => {
+    logger.info("Starting graceful shutdown...");
+  });
+
+  emitter.on(event.PROCESSING_ENDED, () => {
+    logger.info("Processing stopped. No more blocks will be scanned");
   });
 
   emitter.on(event.HEARTBEAT_CONFIGURATION_MISSING, () => {
