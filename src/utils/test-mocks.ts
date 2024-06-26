@@ -12,12 +12,14 @@ export const proposalMock: Notification = {
   type: EventType.PROPOSAL_QUESTION_CREATED,
   space: {
     ens: "kleros.eth",
+    startBlock: 100n,
+    lastProcessedBlock: 50n,
   } as Space,
   event: {
-    txHash: "0xA",
-    proposalId: "0xB",
-    questionId: "0xC",
-    blockNumber: 1n,
+    txHash: getRandomHash(),
+    proposalId: getRandomHash(),
+    questionId: getRandomHash(),
+    blockNumber: 50n,
   },
 };
 

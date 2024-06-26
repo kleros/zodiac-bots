@@ -5,6 +5,7 @@ import { BotEventNames } from "../bot-events";
 import { EventType, Notification } from "../notify";
 import { defaultEmitter } from "../utils/emitter";
 import { env, parseEmailToEnv, type Env } from "../utils/env";
+import { render } from "../utils/notification-template";
 
 export const TRANSPORT_NAME = "email";
 
@@ -81,21 +82,35 @@ export const notify = (notification: Notification) => {
     notification,
     sendFn: send,
     throttleFn: bottleneck.schedule.bind(bottleneck),
-    composeMessageFn: composeMessage,
+    renderFn: render,
   });
+};
+
+export type EmailMessage = {
+  subject: string;
+  plain: string;
+  html: string;
 };
 
 export type ConfigurableNotifyDeps = {
   notification: Notification;
   throttleFn: typeof Bottleneck.prototype.schedule;
   sendFn: typeof send;
-  composeMessageFn: typeof composeMessage;
+  renderFn: typeof render;
 };
 
 export const configurableNotify = async (deps: ConfigurableNotifyDeps) => {
-  const { notification, sendFn, throttleFn, composeMessageFn } = deps;
+  const { notification, sendFn, throttleFn, renderFn } = deps;
 
-  await throttleFn(() => sendFn(composeMessageFn(notification)));
+  const [subject, plain, html] = await Promise.all([
+    renderFn("email", notification, "subject"),
+    renderFn("email", notification, "plain"),
+    renderFn("email", notification, "html"),
+  ]);
+
+  const emailMessage: EmailMessage = { subject, plain, html };
+
+  await throttleFn(() => sendFn(emailMessage));
 };
 
 /**
@@ -137,60 +152,9 @@ export const configurableSend = async (deps: ConfigurableSendDeps) => {
         from: env.SMTP_FROM,
         to: receiver,
         subject: message.subject,
-        text: message.text,
+        text: message.plain,
+        html: message.html,
       }),
     ),
   );
-};
-
-export type EmailMessage = {
-  subject: string;
-  text: string;
-};
-
-/**
- * Depending on the notification type, returns the email subject and
- * content.
- *
- * @param notification - The notification to send
- * @returns The subject and content of the email
- *
- * @example
- *
- * const message = composeMessage(notification);
- */
-export const composeMessage = (notification: Notification): EmailMessage => {
-  const message = {
-    subject: "",
-    text: "",
-  };
-
-  const { type, event, space } = notification;
-  const commonContent = `
-  - Transaction: ${event.txHash} (block ${event.blockNumber})
-  - Question: ${event.questionId}
-  - Space: ${space.ens}`;
-  const shortQuestionId = event.questionId.substring(0, 6);
-  switch (notification.type) {
-    case EventType.PROPOSAL_QUESTION_CREATED:
-      message.subject = `New proposal for ${space.ens} (${shortQuestionId})`;
-      message.text = `${message.subject}:
-
-${commonContent}
-`;
-      return message;
-    case EventType.NEW_ANSWER:
-      message.subject = `Vote issued for ${space.ens} (question ${shortQuestionId})`;
-      message.text = `${message.subject}:
-
-${commonContent}
-  - Answer: ${notification.event.answer}
-  - Bond: ${notification.event.bond}
-  - User: ${notification.event.user}
-  - Timestamp: ${notification.event.ts}
-`;
-      return message;
-    default:
-      throw new Error(`Unsupported event type: ${type}. Email composer can't provide a message content`);
-  }
 };

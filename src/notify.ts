@@ -15,8 +15,8 @@ export const transports: { [key in TransportName]: TransportFn } = {
 export const transportNames = Object.keys(transports) as TransportName[];
 
 export enum EventType {
-  PROPOSAL_QUESTION_CREATED = "proposal_question_created",
-  NEW_ANSWER = "new_answer",
+  PROPOSAL_QUESTION_CREATED = "proposal-created",
+  NEW_ANSWER = "answer-issued",
 }
 export type ProposalNotification = {
   space: Space;

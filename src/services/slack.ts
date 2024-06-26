@@ -2,9 +2,10 @@ import { IncomingWebhook } from "@slack/webhook";
 import Bottleneck from "bottleneck";
 import EventEmitter from "node:events";
 import { BotEventNames } from "../bot-events";
-import { EventType, Notification } from "../notify";
+import { Notification } from "../notify";
 import { defaultEmitter } from "../utils/emitter";
 import { env } from "../utils/env";
+import { render } from "../utils/notification-template";
 
 export const TRANSPORT_NAME = "slack";
 
@@ -64,7 +65,7 @@ export const notify = async (notification: Notification) => {
     notification,
     sendFn: webhook?.send.bind(webhook),
     throttleFn: bottleneck.schedule.bind(bottleneck),
-    composeMessageFn: composeMessage,
+    renderFn: render,
   });
 };
 
@@ -72,40 +73,13 @@ export type ConfigurableNotifyDeps = {
   notification: Notification;
   sendFn?: typeof IncomingWebhook.prototype.send;
   throttleFn: typeof Bottleneck.prototype.schedule;
-  composeMessageFn: typeof composeMessage;
+  renderFn: typeof render;
 };
 export const configurableNotify = async (deps: ConfigurableNotifyDeps) => {
-  const { sendFn, throttleFn, notification, composeMessageFn } = deps;
+  const { sendFn, throttleFn, notification, renderFn } = deps;
 
   if (!sendFn) return;
 
-  await throttleFn(() => sendFn(composeMessageFn(notification)));
-};
-
-/**
- * Compose a message for Slack based on the notification type.
- *
- * @param notification - The notification
- * @returns A message string formatted to be sent via Slack
- *
- * @example
- *
- * const message = composeMessage(notification);
- */
-export const composeMessage = (notification: Notification) => {
-  const { space, type, event } = notification;
-  const { txHash, blockNumber, questionId } = event;
-
-  const commonFields = `Space: \`${space.ens}\` | Transaction: \`${txHash}\` (block \`${blockNumber}\`) | Question: \`${questionId}\``;
-
-  switch (type) {
-    case EventType.PROPOSAL_QUESTION_CREATED:
-      const { proposalId } = event;
-      return `*New proposal found*. ${commonFields} | Proposal: \`${proposalId}\``;
-    case EventType.NEW_ANSWER:
-      const { bond, user, answer } = event;
-      return `*New vote issued*. ${commonFields} | User: \`${user}\` | Bond: \`${bond}\` | Answer: \`${answer}\``;
-    default:
-      throw new Error(`Unsupported event type: ${type}. Slack composer can't provide a message content`);
-  }
+  const message = await renderFn("slack", notification);
+  await throttleFn(() => sendFn(message));
 };

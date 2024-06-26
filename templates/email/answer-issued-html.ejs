@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <title>New Vote Notification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+      }
+      .container {
+        width: 80%;
+        margin: auto;
+        padding: 20px;
+      }
+      .header {
+        background-color: #f2f2f2;
+        padding: 20px;
+        text-align: center;
+      }
+      .content {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+      }
+      .footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 0.9em;
+        color: #555;
+      }
+      a.button {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 1em;
+        color: white;
+        background-color: #4caf50;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 5px;
+      }
+      a.button:hover {
+        background-color: #45a049;
+      }
+      .code {
+        font-family: "Courier New", Courier, monospace;
+        background-color: #f4f4f4;
+        padding: 5px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🗳 New Vote!</h1>
+      </div>
+      <div class="content">
+        <p>Hi there,</p>
+        <p>
+          A new vote has been recorded for space
+          <span class="code"><%- notification.space.ens %></span>. Please find
+          the details below:
+        </p>
+        <p>
+          <strong>ENS:</strong>
+          <span class="code"><%- notification.space.ens %></span>
+        </p>
+        <h2>Transaction Details:</h2>
+        <p>
+          <strong>Hash:</strong>
+          <span class="code"><%- notification.event.txHash %></span>
+        </p>
+        <p>
+          <strong>Block:</strong>
+          <span class="code"><%- notification.event.blockNumber %></span>
+        </p>
+        <p>
+          <strong>Issued by:</strong>
+          <span class="code"><%- notification.event.user %></span>
+        </p>
+        <p>
+          You can explore the transaction details on Etherscan using the
+          following links:
+        </p>
+        <p>
+          <a
+            href="https://etherscan.io/tx/<%- notification.event.txHash %>"
+            class="button"
+            >View transaction on Etherscan</a
+          >
+          <a
+            href="https://etherscan.io/address/<%- notification.event.user %>"
+            class="button"
+            >View issuer address on Etherscan</a
+          >
+        </p>
+        <h2>Event Details:</h2>
+        <p>
+          <strong>Question ID:</strong>
+          <span class="code"><%- notification.event.questionId %></span>
+        </p>
+        <p>
+          <strong>Bond:</strong>
+          <span class="code"><%- notification.event.bond %></span>
+        </p>
+        <p>
+          <strong>Answer:</strong>
+          <span class="code"><%- notification.event.answer %></span>
+        </p>
+      </div>
+      <div class="footer">
+        <p>Best regards,<br />Kleros Zodiac Notifications Bot</p>
+      </div>
+    </div>
+  </body>
+</html>

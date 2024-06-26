@@ -12,6 +12,7 @@ import {
   configurableSend,
 } from "./telegram";
 import { Env } from "../utils/env";
+import { render } from "../utils/notification-template";
 
 describe("Telegram service", () => {
   let emitter: EventEmitter;
@@ -59,15 +60,14 @@ describe("Telegram service", () => {
 
     it("should notify when the integration is configured", async () => {
       const bottleneck = new Bottleneck({ minTime: null });
+      const content = "test content";
       const depsMock = {
         notification: mocks.proposalMock,
         sendFn: sinon.spy(),
         throttleFn: bottleneck.schedule.bind(bottleneck),
-        composeMessageFn: () => "",
+        renderFn: () => Promise.resolve(content),
       };
 
-      const content = "test content";
-      depsMock.composeMessageFn = () => content;
       await fn(depsMock);
       expect((depsMock.sendFn as SinonSpy).calledOnceWithExactly(content));
     });
