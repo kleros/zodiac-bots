@@ -3,7 +3,10 @@ import TelegramBot from "node-telegram-bot-api";
 import EventEmitter from "node:events";
 import sinon, { SinonSpy } from "sinon";
 import { BotEventNames, TransportConfigurationMissingPayload, TransportReadyPayload } from "../bot-events";
-import { expect, mocks, resolveOnEvent } from "../utils/tests-setup";
+import { Env } from "../utils/env";
+import { render } from "../utils/notification-template";
+import { randomizeAnswerNotification, randomizeProposalNotification } from "../utils/test-mocks";
+import { expect, resolveOnEvent } from "../utils/tests-setup";
 import {
   ConfigurableSendDeps,
   TRANSPORT_NAME,
@@ -11,8 +14,6 @@ import {
   configurableNotify,
   configurableSend,
 } from "./telegram";
-import { Env } from "../utils/env";
-import { render } from "../utils/notification-template";
 
 describe("Telegram service", () => {
   let emitter: EventEmitter;
@@ -58,18 +59,36 @@ describe("Telegram service", () => {
   describe("notify", () => {
     const fn = configurableNotify;
 
-    it("should notify when the integration is configured", async () => {
+    it("should notify a Proposal", async () => {
       const bottleneck = new Bottleneck({ minTime: null });
-      const content = "test content";
+      const notification = randomizeProposalNotification();
+      const expectedContent = await render("telegram", notification);
+
       const depsMock = {
-        notification: mocks.proposalMock,
+        notification: randomizeProposalNotification(),
         sendFn: sinon.spy(),
         throttleFn: bottleneck.schedule.bind(bottleneck),
-        renderFn: () => Promise.resolve(content),
+        renderFn: render,
       };
 
       await fn(depsMock);
-      expect((depsMock.sendFn as SinonSpy).calledOnceWithExactly(content));
+      expect((depsMock.sendFn as SinonSpy).calledOnceWithExactly(expectedContent));
+    });
+
+    it("should notify an Answer", async () => {
+      const bottleneck = new Bottleneck({ minTime: null });
+      const notification = randomizeAnswerNotification();
+      const expectedContent = await render("telegram", notification);
+
+      const depsMock = {
+        notification: randomizeProposalNotification(),
+        sendFn: sinon.spy(),
+        throttleFn: bottleneck.schedule.bind(bottleneck),
+        renderFn: render,
+      };
+
+      await fn(depsMock);
+      expect((depsMock.sendFn as SinonSpy).calledOnceWithExactly(expectedContent));
     });
   });
 

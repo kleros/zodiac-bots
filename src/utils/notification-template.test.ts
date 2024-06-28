@@ -1,6 +1,6 @@
 import { EventType, TransportName, transportNames } from "../notify";
 import { getTemplateFilePath, render } from "./notification-template";
-import { randomizeProposalNotification } from "./test-mocks";
+import { randomizeAnswerNotification, randomizeProposalNotification } from "./test-mocks";
 import { expect } from "./tests-setup";
 
 describe("Notification templates", () => {
@@ -29,21 +29,52 @@ describe("Notification templates", () => {
   describe("render", () => {
     const fn = render;
 
-    it("should interpolate a notification into a test template", async () => {
+    // "test" is not a valid transport name, but we store under that name templates that are not
+    // expected to be customized, so tests are more predictable
+    const transportName = "test" as any as TransportName;
+
+    it("should interpolate a Proposal notification into a test template", async () => {
+      const notification = randomizeProposalNotification();
+      const result = await fn(transportName, notification);
+
+      const { type, space, event } = notification;
+      const expectedResult = `
+type: ${type}
+space.ens: ${space.ens}
+space.moduleAddress: ${space.moduleAddress}
+space.oracleAddress: ${space.oracleAddress}
+space.startBlock: ${space.startBlock}
+space.lastProcessedBlock: ${space.lastProcessedBlock}
+event.txHash: ${event.txHash}
+event.blockNumber: ${event.blockNumber}
+event.questionId: ${event.questionId}
+event.proposalId: ${event.proposalId}`;
+      expect(result).to.equal(expectedResult.trim());
+    });
+
+    it("should interpolate an Answer notification into a test template", async () => {
       // "test" is not a valid transport name, but we store under that name templates that are not
       // expected to be customized, so tests are more predictable
       const transportName = "test" as any as TransportName;
-      const notification = randomizeProposalNotification();
+      const notification = randomizeAnswerNotification();
       const result = await fn(transportName, notification);
+
+      const { type, space, event } = notification;
       const expectedResult = `
-type: ${notification.type}
-space.ens: ${notification.space.ens}
-space.startBlock: ${notification.space.startBlock}
-space.lastProcessedBlock: ${notification.space.lastProcessedBlock}
-event.txHash: ${notification.event.txHash}
-event.blockNumber: ${notification.event.blockNumber}
-event.questionId: ${notification.event.questionId}
-event.proposalId: ${notification.event.proposalId}`;
+type: ${type}
+space.ens: ${space.ens}
+space.moduleAddress: ${space.moduleAddress}
+space.oracleAddress: ${space.oracleAddress}
+space.startBlock: ${space.startBlock}
+space.lastProcessedBlock: ${space.lastProcessedBlock}
+event.txHash: ${event.txHash}
+event.blockNumber: ${event.blockNumber}
+event.questionId: ${event.questionId}
+event.answer: ${event.answer}
+event.bond: ${event.bond}
+event.user: ${event.user}
+event.ts: ${event.ts}
+`;
       expect(result).to.equal(expectedResult.trim());
     });
   });

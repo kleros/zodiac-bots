@@ -13,7 +13,7 @@ type MailAddress = {
   name: string;
 };
 
-type Mail = {
+export type Mail = {
   id: string;
   time: string;
   from: Array<MailAddress>;
