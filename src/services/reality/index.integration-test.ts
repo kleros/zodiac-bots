@@ -32,11 +32,18 @@ describe("Reality", () => {
 
   describe("getSpaceAddresses", () => {
     it("should return both module and oracle contract addresses", async () => {
-      const result = await getSpaceAddresses("1inch.eth");
+      const result = await getSpaceAddresses({ spaceId: "1inch.eth" });
       expect(result).to.eql({
         moduleAddress: ONEINCH_MODULE_ADDRESS,
         oracleAddress: ONEINCH_ORACLE_ADDRESS,
       });
+    });
+
+    it("should only resolve the oracle when the module is provided", async () => {
+      const moduleAddress = "0x6eaB9b5c4Be8F66fC8efb0FdF256FC9143344885";
+      const oracleAddress = "0x5b7dD1E86623548AF054A4985F7fc8Ccbb554E2c";
+      const result = await getSpaceAddresses({ spaceId: "1inch.eth", moduleAddress });
+      expect(result).to.eql({ moduleAddress, oracleAddress });
     });
 
     it("should fail when the module address can't be resolved", async () => {

@@ -6,4 +6,4 @@ export type Space = {
   lastProcessedBlock?: bigint | null;
 } & SpaceAddresses;
 
-export type ParsedSpace = Pick<Space, "ens" | "startBlock">;
+export type ParsedSpace = Pick<Space, "ens" | "startBlock"> & Partial<Pick<Space, "moduleAddress">>;

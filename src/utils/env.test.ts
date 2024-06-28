@@ -34,11 +34,12 @@ describe("Environment variables lib", () => {
 
     it("should correctly parse the spaces format with only entry", () => {
       const result = fn("kleros.eth:3000");
+
       expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.eql({
-        ens: "kleros.eth",
-        startBlock: 3000n,
-      });
+      const parsedSpace = result[0];
+      expect(parsedSpace.ens).to.equal("kleros.eth");
+      expect(parsedSpace.startBlock).to.equal(3000n);
+      expect(parsedSpace.moduleAddress).to.be.undefined;
     });
 
     it("should correctly parse the spaces format with multiple entries", () => {
@@ -48,12 +49,24 @@ describe("Environment variables lib", () => {
         {
           ens: "kleros.eth",
           startBlock: 3000n,
+          moduleAddress: undefined,
         },
         {
           ens: "kleros2.eth",
           startBlock: 4000n,
+          moduleAddress: undefined,
         },
       ]);
+    });
+
+    it("should correctly parse an space with module address provided", () => {
+      const result = fn("kleros.eth:3000:0x1234567890abcdef1234567890abcdef12345678");
+      expect(result).to.have.lengthOf(1);
+      expect(result[0]).to.eql({
+        ens: "kleros.eth",
+        startBlock: 3000n,
+        moduleAddress: "0x1234567890abcdef1234567890abcdef12345678",
+      });
     });
   });
 

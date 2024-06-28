@@ -1,10 +1,15 @@
 import { bool, cleanEnv, makeValidator, num, str, url, host, port, email } from "envalid";
 import type { ParsedSpace } from "../types";
+import { Address } from "viem";
 
 /**
  * Validates the SPACES environment variable, which as a `kleros.eth:30000` format, where
  * `kleros.eth` is the ENS of the space and `3000000` is the starting block. Multiple spaces
  * can be present using comma as separator.
+ *
+ * In addition to the `ens:blockNumber` syntax, there is an optional third parameter to
+ * pin the Reality Module address instead of having it automatically resolved using Snapshot.
+ * The format looks like`kleros.eth:3000000:0x12345678901234567890123456789012345`.
  *
  * @param input - The SPACES environment variable string
  * @returns the input when it is valid, throws an error otherwise
@@ -18,9 +23,10 @@ import type { ParsedSpace } from "../types";
  * validateSpaces("kleros:3000000"); // invalid
  * validateSpaces("kleros.eth,1inch.eth"); // invalid
  * validateSpaces("kleros.eth:3000000,1inch.eth"); // invalid
+ * validateSpaces("kleros.eth:1000,1inch.eth:2000:0x1234567890abcdef1234567890abcdef12345678"); // valid
  */
 export const validateSpaces = (input: string) => {
-  const isValid = /^[\w-]+\.eth:\d+(,[\w-]+\.eth:\d+)*$/.test(input);
+  const isValid = /^[\w-]+\.eth:\d+(:0x[a-fA-F0-9]{40})?(,[\w-]+\.eth:\d+(:0x[a-fA-F0-9]{40})?)*$/.test(input);
 
   if (!isValid) throw new Error("Invalid spaces format");
 
@@ -168,8 +174,12 @@ export type Env = typeof env;
  */
 export const parseSpacesEnv = (spacesEnv: string): ParsedSpace[] => {
   return spacesEnv.split(",").map((pair) => {
-    const [ens, startingBlock] = pair.split(":");
-    return { ens, startBlock: BigInt(startingBlock) };
+    const [ens, startingBlock, moduleAddress] = pair.split(":");
+    return {
+      ens,
+      startBlock: BigInt(startingBlock),
+      moduleAddress: moduleAddress as Address,
+    };
   });
 };
 

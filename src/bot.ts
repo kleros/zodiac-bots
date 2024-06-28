@@ -4,7 +4,7 @@ import { processSpaces } from "./processing";
 import { findSpaces, insertSpaces, type FindSpacesFn, type InsertSpacesFn } from "./services/db/spaces";
 import { initialize as initializeEmail } from "./services/email";
 import { initialize as initializeHeartbeat } from "./services/heartbeat";
-import { getSpaceAddresses, type GetSpaceAddressesFn } from "./services/reality";
+import { getSpaceAddresses } from "./services/reality";
 import { initialize as initializeSlack } from "./services/slack";
 import { initialize as initializeTelegram } from "./services/telegram";
 import type { ParsedSpace, Space } from "./types";
@@ -118,7 +118,7 @@ export const initializeSpaces: InitializeSpacesFn = async (parsedSpaces) => {
 export type ConfigurableInitializeSpacesDeps = {
   parsedSpaces: ParsedSpace[];
   emitter: EventEmitter;
-  getSpaceAddressesFn: GetSpaceAddressesFn;
+  getSpaceAddressesFn: typeof getSpaceAddresses;
   findSpacesFn: FindSpacesFn;
   insertSpacesFn: InsertSpacesFn;
 };
@@ -127,7 +127,14 @@ export const configurableInitializeSpaces = async (deps: ConfigurableInitializeS
 
   const enss = parsedSpaces.map((space) => space.ens);
 
-  const [addresses, recovered] = await Promise.all([Promise.all(enss.map(getSpaceAddressesFn)), findSpacesFn(enss)]);
+  const [addresses, recovered] = await Promise.all([
+    Promise.all(
+      parsedSpaces.map(({ ens, moduleAddress }) => {
+        return getSpaceAddressesFn({ spaceId: ens, moduleAddress });
+      }),
+    ),
+    findSpacesFn(enss),
+  ]);
 
   const isAddressMissing = addresses.length < enss.length;
   if (isAddressMissing) throw new Error("Unable to resolve addresses for all spaces");

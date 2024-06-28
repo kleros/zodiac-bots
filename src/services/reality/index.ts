@@ -74,7 +74,10 @@ export type SpaceAddresses = {
   moduleAddress: Address;
   oracleAddress: Address;
 };
-export type GetSpaceAddressesFn = (spaceId: string) => Promise<SpaceAddresses>;
+export type GetSpaceAddressesOpts = {
+  spaceId: string;
+  moduleAddress?: Address;
+};
 /**
  * Return the address of the Oracle and Reality Module contracts for a given Space
  *
@@ -85,9 +88,11 @@ export type GetSpaceAddressesFn = (spaceId: string) => Promise<SpaceAddresses>;
  *
  * const { moduleAddress, oracleAddress } = await getSpaceAddresses("1inch.eth");
  */
-export const getSpaceAddresses: GetSpaceAddressesFn = async (spaceId) => {
+export const getSpaceAddresses = async (opts: GetSpaceAddressesOpts): Promise<SpaceAddresses> => {
+  const { spaceId, moduleAddress } = opts;
   return configurableGetSpaceAddresses({
     spaceId,
+    moduleAddress,
     getRealityModuleAddressFn: getRealityModuleAddress,
     getRealityOracleAddressFn: getRealityOracleAddress,
   });
@@ -95,16 +100,24 @@ export const getSpaceAddresses: GetSpaceAddressesFn = async (spaceId) => {
 
 type ConfigurableGetSpaceAddressesDeps = {
   spaceId: string;
+  moduleAddress?: Address;
   getRealityModuleAddressFn: GetRealityModuleAddressFn;
   getRealityOracleAddressFn: GetRealityOracleAddressFn;
 };
 export const configurableGetSpaceAddresses = async (
   deps: ConfigurableGetSpaceAddressesDeps,
 ): Promise<SpaceAddresses> => {
-  const { spaceId, getRealityModuleAddressFn, getRealityOracleAddressFn } = deps;
-  const moduleAddress = await getRealityModuleAddressFn(spaceId);
+  const { spaceId, getRealityModuleAddressFn, getRealityOracleAddressFn, moduleAddress: providedModuleAddress } = deps;
+
+  let moduleAddress = providedModuleAddress;
+
   if (!moduleAddress) {
-    throw new Error(`Unable to resolve module contract address for space ${spaceId}`);
+    const resolvedModuleAddress = await getRealityModuleAddressFn(spaceId);
+    if (!resolvedModuleAddress) {
+      throw new Error(`Unable to resolve module contract address for space ${spaceId}`);
+    }
+
+    moduleAddress = resolvedModuleAddress;
   }
 
   const oracleAddress = await getRealityOracleAddressFn(moduleAddress);
