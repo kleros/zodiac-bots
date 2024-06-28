@@ -2,7 +2,9 @@ import EventEmitter from "node:events";
 import nodemailer from "nodemailer";
 import { BotEventNames, TransportConfigurationMissingPayload, TransportReadyPayload } from "../bot-events";
 import { Env, env, parseEmailToEnv } from "../utils/env";
-import { expect, getMails, mocks, resolveOnEvent } from "../utils/tests-setup";
+import { render } from "../utils/notification-template";
+import { randomizeAnswerNotification, randomizeProposalNotification } from "../utils/test-mocks";
+import { expect, getMails, Mail, resolveOnEvent } from "../utils/tests-setup";
 import {
   ConfigurableSendDeps,
   EmailMessage,
@@ -11,8 +13,6 @@ import {
   configurableSend,
   notify,
 } from "./email";
-import { randomizeProposalNotification } from "../utils/test-mocks";
-import { render } from "../utils/notification-template";
 
 describe("Email service", () => {
   let emitter: EventEmitter;
@@ -62,9 +62,43 @@ describe("Email service", () => {
   describe("notify", () => {
     const fn = notify;
 
-    it("should corrently send a proposal email", async () => {
+    it("should corrently notify a Proposal", async () => {
       const previous = await getMails();
       const notification = randomizeProposalNotification();
+
+      await fn(notification);
+
+      // In very rare occasions, the fake SMTP server API has a slight
+      // delay to register emails sent in burst
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const current = await getMails();
+
+      const receivers = parseEmailToEnv(env.SMTP_TO);
+      expect(current).to.have.lengthOf(previous.length + receivers.length);
+
+      const emails = current.slice(-receivers.length);
+
+      const [expectedSubject, expectedPlain, expectedHTML] = await Promise.all([
+        render("email", notification, "subject"),
+        render("email", notification, "plain"),
+        render("email", notification, "html"),
+      ]);
+
+      receivers.forEach((receiver) => {
+        const email = emails.find((email) => email.to[0].address == receiver);
+        expect(email).to.exist;
+        expect(email!.from[0].address, "sender address is well configured").to.equal(env.SMTP_FROM);
+
+        expect(email!.subject, "subject matches the rendered template").to.equal(expectedSubject);
+        expect(email!.text.trim(), "plain content matches the rendered template").to.equal(expectedPlain.trim());
+        expect(email!.html.trim(), "html content matches the rendered template").to.equal(expectedHTML.trim());
+      });
+    });
+
+    it("should corrently notify an Answer", async () => {
+      const previous = await getMails();
+      const notification = randomizeAnswerNotification();
 
       await fn(notification);
 

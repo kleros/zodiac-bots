@@ -3,11 +3,10 @@ import Bottleneck from "bottleneck";
 import EventEmitter from "node:events";
 import sinon, { SinonSpy } from "sinon";
 import { BotEventNames, type TransportConfigurationMissingPayload, type TransportReadyPayload } from "../bot-events";
-import type { Notification } from "../notify";
-import { expect, mocks, resolveOnEvent } from "../utils/tests-setup";
-import { ConfigurableNotifyDeps, TRANSPORT_NAME, configurableInitialize, configurableNotify } from "./slack";
 import { render } from "../utils/notification-template";
-import { randomizeProposalNotification } from "../utils/test-mocks";
+import { randomizeAnswerNotification, randomizeProposalNotification } from "../utils/test-mocks";
+import { expect, resolveOnEvent } from "../utils/tests-setup";
+import { ConfigurableNotifyDeps, TRANSPORT_NAME, configurableInitialize, configurableNotify } from "./slack";
 
 describe("Slack service", () => {
   let emitter: EventEmitter;
@@ -64,8 +63,16 @@ describe("Slack service", () => {
       expect((depsMock.renderFn as SinonSpy).called).to.be.false;
     });
 
-    it("should notify proposals when the integration is configured", async () => {
+    it("should notify a Proposal", async () => {
       depsMock.sendFn = sinon.spy();
+      const expectedContent = await render("slack", depsMock.notification);
+      await fn(depsMock);
+      expect((depsMock.sendFn as SinonSpy).calledOnceWithExactly(expectedContent));
+    });
+
+    it("should notify an Answer", async () => {
+      depsMock.sendFn = sinon.spy();
+      depsMock.notification = randomizeAnswerNotification();
       const expectedContent = await render("slack", depsMock.notification);
       await fn(depsMock);
       expect((depsMock.sendFn as SinonSpy).calledOnceWithExactly(expectedContent));
