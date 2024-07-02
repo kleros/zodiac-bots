@@ -1,21 +1,21 @@
+import Bottleneck from "bottleneck";
 import EventEmitter from "node:events";
 import nodemailer from "nodemailer";
 import { BotEventNames, TransportConfigurationMissingPayload, TransportReadyPayload } from "../bot-events";
-import { Env, env, parseEmailToEnv, parseEmailToEnvByENS } from "../utils/env";
+import { Env, env, parseEmailToEnvByENS } from "../utils/env";
 import { render } from "../utils/notification-template";
 import { randomizeAnswerNotification, randomizeProposalNotification } from "../utils/test-mocks";
 import { expect, getMails, Mail, resolveOnEvent } from "../utils/tests-setup";
 import {
-  ConfigurableSendDeps,
-  EmailMessage,
-  TRANSPORT_NAME,
   configurableInitialize,
   configurableNotify,
   configurableSend,
+  ConfigurableSendDeps,
+  EmailMessage,
   notify,
   send,
+  TRANSPORT_NAME,
 } from "./email";
-import Bottleneck from "bottleneck";
 
 describe("Email service", () => {
   let emitter: EventEmitter;
