@@ -35,8 +35,11 @@ export const validateSpaces = (input: string) => {
 const spacesValidator = makeValidator<string>(validateSpaces);
 
 /**
- * Validates the EMAIL_TO environment variable, which should be a comma separated list of
- * emails.
+ * Validates the EMAIL_TO environment variable. The EMAIL_TO consist of comma separated entries
+ * that follow one of the following formats:
+ *  - `foo@bar.com`: A simple email address. It will receive all notifications.
+ *  - `example.eth:foo@bar.com`: A ENS-scoped email address. It will only receive notifications
+ *  for the given space (`example.eth`).
  *
  * @param input - The EMAIL_TO environment variable string
  * @returns the input when it is valid, throws an error otherwise
@@ -46,20 +49,28 @@ const spacesValidator = makeValidator<string>(validateSpaces);
  * validateEmailTo("foo@bar.com"); // valid
  * validateEmailTo("foo+foo@bar.com"); // valid
  * validateEmailTo("foo@bar.com,bar@foo.com"); // valid
+ * validateEmailTo("foo.eth:foo@example.com"); // valid
+ * validateEmailTo("foo.eth:foo@example.com,bar.eth:bar@example.com"); // valid
  * validateEmailTo("foo"); // invalid
  * validateEmailTo("foo@"); // invalid
  * validateEmailTo("@foo"); // invalid
  * validateEmailTo("foo@bar.com,"); // invalid
  * validateEmailTo("foo@bar.com,,"); // invalid
+ * validateEmailTo("foo.eth:"); // invalid
  */
 export const validateEmailTo = (input: string) => {
   // Validate one email address following the validation applied to <input type="email">
   // https://html.spec.whatwg.org/multipage/input.html#email-state-(type=email)
   const oneEmailRegexText =
-    "[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*";
+    "[a-zA-Z0-9\\.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*";
   // Validates that there is at least one email, optionally followed by more
   // comma separated valid emails
-  const isValid = new RegExp(`^${oneEmailRegexText}(,${oneEmailRegexText})*$`).test(input);
+  const ensRegexText = "[\\w-]+\\.eth";
+  const emailWithOptionalEnsRegexText = `(${ensRegexText}:)?${oneEmailRegexText}`;
+
+  const completePattern = `^${emailWithOptionalEnsRegexText}(,${emailWithOptionalEnsRegexText})*$`;
+
+  const isValid = new RegExp(completePattern).test(input);
   if (!isValid) throw new Error("Invalid email recipients format");
 
   return input;
@@ -143,8 +154,8 @@ export const schema = {
     default: undefined,
   }),
   SMTP_TO: emailToValidator({
-    desc: "Sender email address",
-    example: "alert@kleros.local",
+    desc: "Comma separated list of email recipients. It can be a simple email (receive all notifications) or ENS-scoped (receive only notifications for the given ENS) by prefixing the ENS and a colon.",
+    example: "alert@kleros.local,example.ens:alerts@example.com",
     default: undefined,
   }),
   HEARTBEAT_URL: url({
@@ -176,15 +187,26 @@ export const parseSpacesEnv = (spacesEnv: string): ParsedSpace[] => {
   return spacesEnv.split(",").map((pair) => {
     const [ens, startingBlock, moduleAddress] = pair.split(":");
     return {
-      ens,
+      ens: ens.toLowerCase(),
       startBlock: BigInt(startingBlock),
       moduleAddress: moduleAddress as Address,
     };
   });
 };
 
+type PerEnsRecipients = {
+  common: string[];
+  [ens: string]: string[];
+};
+
 /**
- * Parse the EMAIL_TO environment variable into an array of emails
+ * Parse the EMAIL_TO environment variable into an array of emails.
+ *
+ * The EMAIL_TO consist of comma separated entries that follow one of the following
+ * formats:
+ *  - `foo@bar.com`: A simple email address. It will receive all notifications.
+ *  - `example.eth:foo@bar.com`: A ENS-scoped email address. It will only receive notifications
+ *  for the given space (`example.eth`).
  *
  * @param emailToEnv - The EMAIL_TO environment variable string
  * @returns An array of emails
@@ -192,7 +214,48 @@ export const parseSpacesEnv = (spacesEnv: string): ParsedSpace[] => {
  * @example
  * const emailTo = parseEmailToEnv("foo@bar.com,bar@foo.com");
  */
-export const parseEmailToEnv = (emailToEnv: string | undefined): string[] => {
-  if (!emailToEnv) return [];
-  return emailToEnv.split(",");
+export const parseEmailToEnv = (emailToEnv: string | undefined): PerEnsRecipients => {
+  const result: PerEnsRecipients = {
+    common: [] as string[],
+  };
+
+  if (!emailToEnv) return result;
+
+  const entries = emailToEnv.split(",");
+
+  entries.forEach((entry) => {
+    const [email, ens] = entry
+      .split(":")
+      // Reversed so the email is always the first part and the ens an
+      // optional second
+      .reverse() as [string] | [string, string];
+
+    const key = ens ? ens : "common";
+
+    if (!result[key]) result[key] = [];
+    result[key].push(email);
+  });
+
+  return result;
+};
+
+/**
+ * Parse and filter the EMAIL_TO environment variable into an array of emails relevants to the
+ * given ENS. This includes both common (are notified for all ENS changes) and ENS-scoped (are
+ * notified only of changes in the given ENS).
+ *
+ * @params ens - The ENS to filter on
+ * @params emailToEnv - The EMAIL_TO environment variable string
+ * @returns An array of emails
+ *
+ * @example
+ * const toEnv = "common@example.com,kleros.eth:kleros@example.com,other.eth:other@example.com";
+ * const recipients = parseEmailToEnvByENS("kleros.eth", toEnv);
+ */
+export const parseEmailToEnvByENS = (ens: string, emailToEnv: string | undefined): string[] => {
+  const parsed = parseEmailToEnv(emailToEnv);
+  const { common } = parsed;
+  const ensRecipients = parsed[ens] || [];
+
+  return [...common, ...ensRecipients];
 };

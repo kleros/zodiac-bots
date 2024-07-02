@@ -63,17 +63,20 @@ This section outlines the environment variables required for the application. Be
 | `DB_URI`          | Postgres connection string                | `postgresql://user:password@localhost:5432/dbname`              |
 | `MAINNET_RPC_URL` | Provider URL for the Ethereum mainnet RPC | `https://mainnet.infura.io/v3/8238211010344719ad14a89db874158c` |
 
-- **SPACES format**: Spaces should be defined by the ENS and the starting block, with the following format: `kleros.eth:3000000`. Multiple spaces can be present, separated by commas.
+- **SPACES format**: Comma separated list of spaces to follow. The spaces are defined by the ENS, starting block and (optionally) the Reality module contract address. These three values should be colon separated following the format `ens:block<:reality module address>`. When the reality module address is not provided, the bot tries to auto-detect it. Examples:
+  - `1inch.eth:19475120`: Defines space `1inch.eth` starting at block `19475120`.
+  - `shutterdao0x36.eth:20190728:0x6eaB9b5c4Be8F66fC8efb0FdF256FC9143344885`: Defines space `shutterdao0x36.eth` starting at block `20190728` with the Reality module contract address set to `0x6eaB9b5c4Be8F66fC8efb0FdF256FC9143344885`.
 
 ### Optional Environment Variables
 
 #### Debugging and Performance
 
-| Variable                | Description                      | Example                            | Default                            |
-| ----------------------- | -------------------------------- | ---------------------------------- | ---------------------------------- |
-| `DB_DEBUG`              | Print SQL queries to console     | `true`                             | `false`                            |
-| `MAX_BLOCKS_BATCH_SIZE` | Max blocks to process in a batch | `3000`                             | `200`                              |
-| `SNAPSHOT_GRAPHQL_URL`  | Snapshot GraphQL API endpoint    | `https://hub.snapshot.org/graphql` | `https://hub.snapshot.org/graphql` |
+| Variable                | Description                                            | Example                            | Default                            |
+| ----------------------- | ------------------------------------------------------ | ---------------------------------- | ---------------------------------- |
+| `DB_DEBUG`              | Print SQL queries to console                           | `true`                             | `false`                            |
+| `MAX_BLOCKS_BATCH_SIZE` | Max blocks to process in a batch                       | `3000`                             | `200`                              |
+| `BATCH_COOLDOWN`        | Wait time in milliseconds before processing next batch | `60000`                            | `200`                              |
+| `SNAPSHOT_GRAPHQL_URL`  | Snapshot GraphQL API endpoint                          | `https://hub.snapshot.org/graphql` | `https://hub.snapshot.org/graphql` |
 
 #### Heartbeats
 
@@ -115,3 +118,8 @@ The [Telegram docs](https://core.telegram.org/bots#how-do-i-create-a-bot-token) 
 | `SMTP_PASSWORD` | Password                          | `kleros`                |         |
 | `SMTP_FROM`     | Sender email address              | `no-reply@kleros.local` |         |
 | `SMTP_TO`       | Recipient email address           | `alert@kleros.local`    |         |
+
+`SMTP_TO` allows multiples entries separated by commas. Entries can be defined using one of the following formats:
+
+- Simple emails (`alerts@example.com`), which will receive notifications for all the spaces.
+- Space-scoped emails (`kleros.eth:alerts@example.com`), which will receive only notifications for the provided space (in the example above, `kleros.eth`).

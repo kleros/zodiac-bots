@@ -88,20 +88,43 @@ describe("Environment variables lib", () => {
       expect(fn(input)).to.equal(input);
     });
 
-    it("should require at least one space", () => {
+    it("should allow ens scoped recipients", () => {
+      const input = "kleros.eth:test@test.com";
+      expect(fn(input)).to.equal(input);
+    });
+
+    it("should allow multiple comma separated ens scoped recipients for different ens", () => {
+      const input = "kleros.eth:test@test.com,kleros2.eth:test2@test.org";
+      expect(fn(input)).to.equal(input);
+    });
+
+    it("should allow multiple comma separated ens scoped recipients for the same ens", () => {
+      const input = "kleros.eth:test@test.com,kleros.eth:test2@test.org";
+      expect(fn(input)).to.equal(input);
+    });
+
+    it("should allow mixing simple emails with ens scoped emails", () => {
+      const input = "kleros.eth:test@test.com,test2@test.com";
+      expect(fn(input)).to.equal(input);
+    });
+
+    it("should require at least one email", () => {
       expect(() => fn("")).to.throw();
     });
 
     it("should fail for malformed inputs", () => {
-      expect(() => fn(",,")).to.throw();
-      expect(() => fn("test@test.com,")).to.throw();
-      expect(() => fn("test@test.com,,")).to.throw();
-      expect(() => fn(",test@test.com")).to.throw();
-      expect(() => fn("test")).to.throw();
-      expect(() => fn("@test")).to.throw();
-      expect(() => fn("@test.")).to.throw();
-      expect(() => fn("@test.com")).to.throw();
-      expect(() => fn("test@")).to.throw();
+      expect(() => fn(",,"), "multiple empty entries").to.throw();
+      expect(() => fn("test@test.com,"), "trailing comma").to.throw();
+      expect(() => fn("test@test.com,,"), "trailing commas").to.throw();
+      expect(() => fn(",test@test.com"), "prefixing comma").to.throw();
+      expect(() => fn("test@test.com:test@test.com"), "colon separated emails").to.throw();
+      expect(() => fn("test"), "not an email").to.throw();
+      expect(() => fn("@test"), "email without user").to.throw();
+      expect(() => fn("test@"), "email without domain").to.throw();
+      expect(() => fn(":test@test.com"), "colon but no ens").to.throw();
+      expect(() => fn("test@test.com:kleros.eth"), "ens with reversed order").to.throw();
+      expect(() => fn("kleros.eth:@test.com"), "ens with userless email").to.throw();
+      expect(() => fn("kleros.eth:example.eth"), "colon separated ens").to.throw();
     });
   });
 
@@ -110,16 +133,16 @@ describe("Environment variables lib", () => {
 
     it("should correctly parse the to format with only entry", () => {
       const address = "receiver1@server.com";
-      const result = fn(address);
-      expect(result).to.have.lengthOf(1);
-      expect(result[0]).to.eql(address);
+      expect(fn(address)).to.eql({
+        common: [address],
+      });
     });
 
     it("should correctly parse the to format with multiple entries", () => {
       const emails = ["receiver1@server.com", "receiver2@server.com"];
-      const result = fn(emails.join(","));
-      expect(result).to.have.lengthOf(2);
-      expect(result).to.have.deep.members(emails);
+      expect(fn(emails.join(","))).to.eql({
+        common: emails,
+      });
     });
   });
 });
