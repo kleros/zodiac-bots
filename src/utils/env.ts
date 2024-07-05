@@ -224,11 +224,8 @@ export const parseEmailToEnv = (emailToEnv: string | undefined): PerEnsRecipient
   const entries = emailToEnv.split(",");
 
   entries.forEach((entry) => {
-    const [email, ens] = entry
-      .split(":")
-      // Reversed so the email is always the first part and the ens an
-      // optional second
-      .reverse() as [string] | [string, string];
+    // Reversed so the email is always the first part and the ens an optional second
+    const [email, ens] = entry.split(":").reverse() as [string] | [string, string];
 
     const key = ens ? ens : "common";
 
