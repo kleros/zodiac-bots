@@ -2,9 +2,9 @@ import Bottleneck from "bottleneck";
 import EventEmitter from "node:events";
 import nodemailer, { Transporter } from "nodemailer";
 import { BotEventNames } from "../bot-events";
-import { EventType, Notification } from "../notify";
+import { Notification } from "../notify";
 import { defaultEmitter } from "../utils/emitter";
-import { env, parseEmailToEnv, type Env } from "../utils/env";
+import { env, parseEmailToEnvByENS, type Env } from "../utils/env";
 import { render } from "../utils/notification-template";
 
 export const TRANSPORT_NAME = "email";
@@ -83,6 +83,8 @@ export const notify = (notification: Notification) => {
     sendFn: send,
     throttleFn: bottleneck.schedule.bind(bottleneck),
     renderFn: render,
+    env,
+    parseEmailToEnvByENSFn: parseEmailToEnvByENS,
   });
 };
 
@@ -97,10 +99,14 @@ export type ConfigurableNotifyDeps = {
   throttleFn: typeof Bottleneck.prototype.schedule;
   sendFn: typeof send;
   renderFn: typeof render;
+  env: Env;
+  parseEmailToEnvByENSFn: typeof parseEmailToEnvByENS;
 };
 
 export const configurableNotify = async (deps: ConfigurableNotifyDeps) => {
-  const { notification, sendFn, throttleFn, renderFn } = deps;
+  const { notification, env, parseEmailToEnvByENSFn, sendFn, throttleFn, renderFn } = deps;
+
+  const recipients = parseEmailToEnvByENSFn(notification.space.ens, env.SMTP_TO);
 
   const [subject, plain, html] = await Promise.all([
     renderFn("email", notification, "subject"),
@@ -110,7 +116,7 @@ export const configurableNotify = async (deps: ConfigurableNotifyDeps) => {
 
   const emailMessage: EmailMessage = { subject, plain, html };
 
-  await throttleFn(() => sendFn(emailMessage));
+  await throttleFn(() => sendFn(recipients, emailMessage));
 };
 
 /**
@@ -123,34 +129,32 @@ export const configurableNotify = async (deps: ConfigurableNotifyDeps) => {
  *
  * await send({ subject: 'test subject', text: 'test content'});
  */
-const send = (message: EmailMessage) => {
+export const send = (recipients: string[], message: EmailMessage) => {
   return configurableSend({
+    recipients,
     message,
     env: env,
-    parseEmailToEnvFn: parseEmailToEnv,
     sendFn: transport?.sendMail.bind(transport),
   });
 };
 
 export type ConfigurableSendDeps = {
+  recipients?: string[];
   message: EmailMessage;
   env: Env;
-  parseEmailToEnvFn: typeof parseEmailToEnv;
   sendFn?: Transporter["sendMail"];
 };
 
 export const configurableSend = async (deps: ConfigurableSendDeps) => {
-  const { message, env, parseEmailToEnvFn, sendFn } = deps;
+  const { recipients = [], message, env, sendFn } = deps;
 
   if (!sendFn) return;
 
-  const receivers = parseEmailToEnvFn(env.SMTP_TO);
-
   await Promise.all(
-    receivers.map((receiver) =>
+    recipients.map((recipient) =>
       sendFn({
         from: env.SMTP_FROM,
-        to: receiver,
+        to: recipient,
         subject: message.subject,
         text: message.plain,
         html: message.html,
