@@ -6,11 +6,13 @@ import type { Space } from "../types";
 export const getRandomHex = (size: number): Hex =>
   (`0x` + [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join(``)) as Hex;
 
-export const getRandomHash = (): Hash => getRandomHex(64);
+export const getRandomHash = (): Hash => getRandomHex(64) as Hash;
 export const getRandomAddress = (): Address => getRandomHex(40);
 
+export const randomizeEns = () => `test${Math.floor(Math.random() * 1000000)}.eth`;
+
 export const randomizeSpace = (): Space => ({
-  ens: "kleros.eth",
+  ens: randomizeEns(),
   startBlock: 100n,
   lastProcessedBlock: 50n,
   moduleAddress: getRandomAddress(),
@@ -22,6 +24,7 @@ export const randomizeProposalEventField = (): ProposalQuestionCreated => ({
   proposalId: getRandomHash(),
   questionId: getRandomHash(),
   blockNumber: 50n,
+  happenedAt: new Date(),
 });
 
 export const randomizeAnswerEventField = (): LogNewAnswer => ({
@@ -29,18 +32,21 @@ export const randomizeAnswerEventField = (): LogNewAnswer => ({
   answer: "0x0000000000000000000000000000000000000000000000000000000000000001",
   bond: 100000000000000000n,
   user: getRandomAddress(),
-  ts: 1710928271,
   txHash: getRandomHash(),
   blockNumber: 50n,
+  happenedAt: new Date(),
 });
 
 /**
  * Generates a Proposal notification with randomized values
+ *
+ * @param fields - Fields that has a fixed value and should not be randomized
  */
-export const randomizeProposalNotification = (): ProposalNotification => ({
+export const randomizeProposalNotification = (fields?: Partial<ProposalNotification>): ProposalNotification => ({
   type: EventType.PROPOSAL_QUESTION_CREATED,
   space: randomizeSpace(),
   event: randomizeProposalEventField(),
+  ...fields,
 });
 
 /**
