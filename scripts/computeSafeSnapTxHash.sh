@@ -2,6 +2,11 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
+if [ ! -x "$(command -v cast)" ]; then
+  >&2 echo "error: cast is not installed, please install it from https://book.getfoundry.sh/getting-started/installation"
+  exit 1
+fi
+
 if [ $# -lt 2 ] || [ $# -gt 3 ]; then
   echo "Usage: $(basename $0) <spaceId> <proposalId> [<expectedHash>]"
   echo "       $(basename $0) 1inch.eth 0xdbf016740668f8e646fa9c26e583ce7909b452444aef29728e353852f7982e71"
@@ -21,6 +26,8 @@ expectedHash=$3
 # requirements record at 1inch.eth? The hash is the keccak of the concatenation of 
 # the individual EIP-712 hashes of the Module transactions. If this question was 
 # asked before the corresponding Snapshot proposal was resolved, it should ALWAYS be resolved to INVALID!
+
+echo "Proposal URL: https://snapshot.org/#/$spaceId/proposal/$proposalId"
 
 ipfsCid=$(curl -s -H 'Content-Type: application/json' --data-raw $'{"operationName":"Proposal",
   "variables":{"id":"'$proposalId'"},
