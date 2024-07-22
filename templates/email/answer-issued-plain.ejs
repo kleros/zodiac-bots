@@ -15,8 +15,8 @@ You can explore the transaction details on Etherscan using the following links:
 
 The event contained the following information:
 - Question ID: <%- notification.event.questionId %>
-- Bond: <%- notification.event.bond %>
-- Answer: <%- notification.event.answer %>
+- Bond: <%- formatWei(notification.event.bond) %>
+- Answer: <%- formatAnswer(notification.event.answer) %>
 
 Best regards,
 Kleros Zodiac Notifications Bot
