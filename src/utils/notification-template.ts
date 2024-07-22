@@ -1,6 +1,7 @@
 import { join, normalize } from "node:path";
 import ejs from "ejs";
 import type { TransportName, Notification, EventType } from "../notify";
+import { formatAnswer, formatWei } from "./format";
 
 const BASE_TEMPLATES_PATH = normalize(join(__dirname, "../../templates"));
 
@@ -43,7 +44,7 @@ export const render = (transport: TransportName, notification: Notification, var
   const path = join(BASE_TEMPLATES_PATH, getTemplateFilePath(transport, notification.type, variant));
   return ejs.renderFile(
     path,
-    { notification },
+    { notification, formatWei, formatAnswer },
     {
       cache: true,
       async: true,
