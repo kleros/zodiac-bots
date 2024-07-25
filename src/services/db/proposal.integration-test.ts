@@ -2,17 +2,21 @@ import { eq } from "drizzle-orm";
 import type { Hash } from "viem";
 import type { ProposalNotification } from "../../notify";
 import type { Space } from "../../types";
-import { randomizeProposalNotification, randomizeSpace } from "../../utils/test-mocks";
+import { randomizeProposal, randomizeProposalNotification, randomizeSpace } from "../../utils/test-mocks";
 import { expect } from "../../utils/tests-setup";
 import { getConnection } from "./connection";
-import {
-  type InsertableProposal,
-  findProposalByQuestionId,
-  insertProposal,
-  removeProposalByQuestionId,
-} from "./proposals";
+import { findProposalByQuestionId, insertProposal, removeProposalByQuestionId } from "./proposals";
 import * as schema from "./schema";
 import { insertSpaces } from "./spaces";
+
+const randomizeProposalFromNotification = (notification: ProposalNotification) =>
+  randomizeProposal({
+    ens: notification.space.ens,
+    questionId: notification.event.questionId,
+    proposalId: notification.event.proposalId,
+    txHash: notification.event.txHash,
+    happenedAt: notification.event.happenedAt,
+  });
 
 describe("Active Proposals model", () => {
   const { db } = getConnection();
@@ -23,19 +27,12 @@ describe("Active Proposals model", () => {
     await insertSpaces([space]);
   });
 
-  const randomizeProposal = (notification: ProposalNotification): InsertableProposal => ({
-    ens: notification.space.ens,
-    questionId: notification.event.questionId,
-    proposalId: notification.event.proposalId,
-    txHash: notification.event.txHash,
-    happenedAt: notification.event.happenedAt,
-  });
   describe("insertProposal", () => {
     const fn = insertProposal;
 
     it("should insert a proposal", async () => {
       const notification = randomizeProposalNotification({ space });
-      const fields = randomizeProposal(notification);
+      const fields = randomizeProposalFromNotification(notification);
       await fn(fields);
 
       const inserted = await db.select().from(schema.proposal).where(eq(schema.proposal.questionId, fields.questionId));
@@ -56,7 +53,7 @@ describe("Active Proposals model", () => {
 
     it("should return an existing proposal", async () => {
       const notification = randomizeProposalNotification({ space });
-      const fields = randomizeProposal(notification);
+      const fields = randomizeProposalFromNotification(notification);
       await insertProposal(fields);
 
       const result = await fn(fields.questionId as Hash);
@@ -80,7 +77,7 @@ describe("Active Proposals model", () => {
 
     it("should return an existing proposal", async () => {
       const notification = randomizeProposalNotification({ space });
-      const fields = randomizeProposal(notification);
+      const fields = randomizeProposalFromNotification(notification);
       await insertProposal(fields);
 
       await fn(fields.questionId as Hash);

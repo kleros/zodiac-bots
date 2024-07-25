@@ -5,11 +5,16 @@ import { EventType, type Notification } from "./notify";
 import { configurableProcessAnswers, configurableProcessProposals, configurableProcessSpace } from "./processing";
 import { findProposalByQuestionId, insertProposal } from "./services/db/proposals";
 import { findSpaces, insertSpaces, updateSpace } from "./services/db/spaces";
-import type { LogNewAnswer, ProposalQuestionCreated } from "./services/reality";
+import { getLogNewQuestion, type LogNewAnswer, type ProposalQuestionCreated } from "./services/reality";
 import type { Space } from "./types";
-import { getRandomHash, randomizeAnswerEventField, randomizeEns, randomizeSpace } from "./utils/test-mocks";
+import {
+  getRandomHash,
+  randomizeAnswerEventField,
+  randomizeEns,
+  randomizeProposal,
+  randomizeSpace,
+} from "./utils/test-mocks";
 import { ONEINCH_MODULE_ADDRESS, ONEINCH_ORACLE_ADDRESS, expect } from "./utils/tests-setup";
-import { random } from "lodash";
 
 describe("processSpace", () => {
   const fn = configurableProcessSpace;
@@ -150,9 +155,15 @@ describe("processProposals", () => {
       happenedAt: new Date("2024-03-20T09:48:23.000Z"),
     };
 
+    const spaceWithRealOracle = {
+      ...space,
+      oracleAddress: ONEINCH_ORACLE_ADDRESS,
+    };
+
     await fn({
-      space,
+      space: spaceWithRealOracle,
       proposals: [proposal],
+      getLogNewQuestionFn: getLogNewQuestion,
       notifyFn,
       insertProposalFn: insertProposal,
     });
@@ -162,8 +173,14 @@ describe("processProposals", () => {
 
     expect(call).to.deep.equal({
       type: EventType.PROPOSAL_QUESTION_CREATED,
-      space,
-      event: proposal,
+      space: spaceWithRealOracle,
+      event: {
+        ...proposal,
+        snapshotId: "0xa455f437479cad77a20096c1717f2b23777f258060dd6a0d5882a9aebfaf8275",
+        startedAt: new Date("2024-03-20T09:48:23.000Z"),
+        timeout: 259200,
+        finishedAt: new Date("2024-03-23T09:48:23.000Z"),
+      },
     } as Notification);
 
     const storedProposal = await findProposalByQuestionId(proposal.questionId);
@@ -200,13 +217,12 @@ describe("processAnswers", () => {
       happenedAt: new Date(1712934227 * 1000),
     };
 
-    await insertProposal({
-      ens: space.ens,
-      questionId: answer.questionId,
-      proposalId: getRandomHash(),
-      txHash: getRandomHash(),
-      happenedAt: new Date("2024-03-20T09:48:23.000Z"),
-    });
+    await insertProposal(
+      randomizeProposal({
+        ens: space.ens,
+        questionId: answer.questionId,
+      }),
+    );
 
     await fn({
       space,
@@ -247,13 +263,12 @@ describe("processAnswers", () => {
     const proposalSpace = randomizeSpace();
     await insertSpaces([proposalSpace]);
 
-    await insertProposal({
-      ens: proposalSpace.ens,
-      questionId: answer.questionId,
-      proposalId: getRandomHash(),
-      txHash: getRandomHash(),
-      happenedAt: new Date("2024-03-20T09:48:23.000Z"),
-    });
+    await insertProposal(
+      randomizeProposal({
+        ens: proposalSpace.ens,
+        questionId: answer.questionId,
+      }),
+    );
 
     await fn({
       space,

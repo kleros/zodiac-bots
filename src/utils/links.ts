@@ -3,12 +3,10 @@ import { AnswerNotification, ProposalNotification } from "../notify";
 export const getSnapshotProposalLink = (notification: ProposalNotification): string => {
   const {
     space: { ens },
+    event: { snapshotId },
   } = notification;
 
-  // TODO: Implement this
-  const proposal = "";
-
-  return `https://snapshot.org/#/${ens}/proposal/${proposal}`;
+  return `https://snapshot.org/#/${ens}/proposal/${snapshotId}`;
 };
 
 export const getRealityAnswerLink = (notification: AnswerNotification): string => {

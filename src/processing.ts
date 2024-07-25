@@ -10,6 +10,7 @@ import { updateSpace } from "./services/db/spaces";
 import { getPublicClient } from "./services/provider";
 import {
   getLogNewAnswer,
+  getLogNewQuestion,
   getProposalQuestionsCreated,
   type LogNewAnswer,
   type ProposalQuestionCreated,
@@ -192,6 +193,7 @@ export const processProposals = (space: Space, proposals: ProposalQuestionCreate
   return configurableProcessProposals({
     space,
     proposals,
+    getLogNewQuestionFn: getLogNewQuestion,
     notifyFn: notify,
     insertProposalFn: insertProposal,
   });
@@ -200,29 +202,62 @@ export const processProposals = (space: Space, proposals: ProposalQuestionCreate
 type ConfigurableProcessProposalsDeps = {
   space: Space;
   proposals: ProposalQuestionCreated[];
+  getLogNewQuestionFn: typeof getLogNewQuestion;
   notifyFn: typeof notify;
   insertProposalFn: typeof insertProposal;
 };
 export const configurableProcessProposals = async (deps: ConfigurableProcessProposalsDeps) => {
-  const { space, proposals, insertProposalFn, notifyFn } = deps;
+  const { space, proposals, getLogNewQuestionFn, insertProposalFn, notifyFn } = deps;
 
   await Promise.all(
-    proposals.map((event) =>
-      Promise.all([
+    proposals.map(async (event) => {
+      const questions = await getLogNewQuestionFn({
+        realityOracleAddress: space.oracleAddress,
+        fromBlock: event.blockNumber - 1n,
+        toBlock: event.blockNumber + 1n,
+      });
+      const newQuestionEvent = questions.find((q) => q.questionId === event.questionId);
+
+      if (!newQuestionEvent) {
+        throw new Error(
+          `Unable to resolve LogNewQuestion event for proposal with tx ${event.txHash} for space ${space.ens}`,
+        );
+      }
+
+      if (newQuestionEvent.question.length < 2) {
+        throw new Error(
+          `Expected at least two values in the question field of the LogNewQuestion event for proposal with tx ${event.txHash} for space ${space.ens}`,
+        );
+      }
+
+      const { question, startedAt, finishedAt, timeout } = newQuestionEvent;
+      const snapshotId = question[0];
+
+      return Promise.all([
         insertProposalFn({
           ens: space.ens,
           proposalId: event.proposalId,
-          txHash: event.txHash,
           questionId: event.questionId,
+          txHash: event.txHash,
+          snapshotId,
+          startedAt,
+          finishedAt,
+          timeout,
           happenedAt: event.happenedAt,
         }),
         notifyFn({
           type: EventType.PROPOSAL_QUESTION_CREATED,
-          event,
+          event: {
+            ...event,
+            snapshotId,
+            startedAt,
+            finishedAt,
+            timeout,
+          },
           space,
         }),
-      ]),
-    ),
+      ]);
+    }),
   );
 };
 
