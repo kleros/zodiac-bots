@@ -9,9 +9,10 @@ Transaction Details:
 - Block: <%- notification.event.blockNumber %>
 - Issued by: <%- notification.event.user %>
 
-You can explore the transaction details on Etherscan using the following links:
-- View transaction details: https://etherscan.io/tx/<%- notification.event.txHash %>
+You can explore the details using the following links:
+- View transaction: https://etherscan.io/tx/<%- notification.event.txHash %>
 - View issuer details: https://etherscan.io/address/<%- notification.event.user %>
+- View answer on Reality: <%- getRealityAnswerLink(notification) %>
 
 The event contained the following information:
 - Question ID: <%- notification.event.questionId %>

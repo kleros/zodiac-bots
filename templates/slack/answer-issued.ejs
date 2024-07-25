@@ -1,6 +1,7 @@
 *`<%- notification.space.ens %>`: 🗳 New Reality Answer!*
 <https://etherscan.io/tx/<%- notification.event.txHash %>|View transaction on Etherscan>
 <https://etherscan.io/address/<%- notification.event.user %>|View user on Etherscan>
+<<%- getRealityAnswerLink(notification) %>|View Reality Answer>
 
 *Transaction:* `<%- notification.event.txHash %>` (block `<%- notification.event.blockNumber %>`)
 *User*: `<%- notification.event.user %>`

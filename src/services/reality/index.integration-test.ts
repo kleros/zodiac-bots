@@ -2,6 +2,7 @@ import { ONEINCH_MODULE_ADDRESS, ONEINCH_ORACLE_ADDRESS, expect } from "../../ut
 import {
   configurableGetSpaceAddresses,
   getLogNewAnswer,
+  getLogNewQuestion,
   getProposalQuestionsCreated,
   getRealityModuleAddress,
   getRealityOracleAddress,
@@ -88,6 +89,36 @@ describe("Reality", () => {
         questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf",
         txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43",
         blockNumber: 19475120n,
+      });
+    });
+  });
+
+  describe("getLogNewQuestion", () => {
+    const fn = getLogNewQuestion;
+
+    it("should return the LogNewQuestion events between two blocks", async () => {
+      const fromBlock = 19475120n;
+      const toBlock = 19475121n;
+
+      const events = await fn({
+        realityOracleAddress: ONEINCH_ORACLE_ADDRESS,
+        fromBlock,
+        toBlock,
+      });
+
+      expect(events).to.have.lengthOf(1);
+      expect(events[0]).to.eql({
+        txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43",
+        blockNumber: 19475120n,
+        questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf",
+        user: "0xa62d2a75eb39c12e908e9f6bf50f189641692f2e",
+        question: [
+          "0xa455f437479cad77a20096c1717f2b23777f258060dd6a0d5882a9aebfaf8275",
+          "16f33619042ad909e8be177b122b02895f90e29c3cd4f17262cee4f148dca9b0",
+        ],
+        startedAt: new Date("2024-03-20T09:48:23.000Z"),
+        timeout: 259200,
+        finishedAt: new Date("2024-03-23T09:48:23.000Z"),
       });
     });
   });

@@ -80,8 +80,7 @@
           <span class="code"><%- notification.event.user %></span>
         </p>
         <p>
-          You can explore the transaction details on Etherscan using the
-          following links:
+          You can explore the details using the following links:
         </p>
         <p>
           <a
@@ -93,6 +92,11 @@
             href="https://etherscan.io/address/<%- notification.event.user %>"
             class="button"
             >View issuer address on Etherscan</a
+          >
+          <a
+            href="<%- getRealityAnswerLink(notification) %>"
+            class="button"
+            >View Reality answer</a
           >
         </p>
         <h2>Event Details:</h2>
