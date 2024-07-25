@@ -48,7 +48,9 @@ space.lastProcessedBlock: ${space.lastProcessedBlock}
 event.txHash: ${event.txHash}
 event.blockNumber: ${event.blockNumber}
 event.questionId: ${event.questionId}
-event.proposalId: ${event.proposalId}`;
+event.proposalId: ${event.proposalId}
+event.happenedAt: ${event.happenedAt.toISOString()}
+`;
       expect(result).to.equal(expectedResult.trim());
     });
 
@@ -73,7 +75,7 @@ event.questionId: ${event.questionId}
 event.answer: ${event.answer}
 event.bond: ${event.bond}
 event.user: ${event.user}
-event.ts: ${event.ts}
+event.happenedAt: ${event.happenedAt.toISOString()}
 `;
       expect(result).to.equal(expectedResult.trim());
     });

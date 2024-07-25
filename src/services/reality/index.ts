@@ -132,12 +132,30 @@ export const configurableGetSpaceAddresses = async (
   return { moduleAddress, oracleAddress };
 };
 
+/**
+ * Given a block number, return the date it was mined
+ *
+ * @param blockNumber - The block number to get the date for
+ * @returns The date the block was mined
+ *
+ * @example
+ * const date = await getBlockDate(100n);
+ */
+const getBlockDate = async (blockNumber: bigint): Promise<Date> => {
+  const block = await getPublicClient().getBlock({ blockNumber });
+
+  // JS date accepts epoch as Number (not BigInt) of milliseconds
+  const epochInMs = Number(block.timestamp) * 1000;
+  return new Date(epochInMs);
+};
+
 export type ProposalQuestionCreated = {
-  proposalId: string;
-  questionId: string;
+  proposalId: Hash;
+  questionId: Hash;
 
   txHash: Hash;
   blockNumber: bigint;
+  happenedAt: Date;
 };
 type GetProposalQuestionsCreatedArgs = {
   realityModuleAddress: Address;
@@ -164,22 +182,27 @@ export const getProposalQuestionsCreated: GetProposalQuestionsCreatedFn = async 
     fromBlock,
     toBlock,
   });
-  const events: ProposalQuestionCreated[] = logs.map((log) => {
-    const decoded = decodeEventLog({
-      abi: realityModule.abi,
-      eventName: PROPOSAL_QUESTION_CREATED_EVENT_NAME,
-      data: log.data,
-      topics: log.topics,
-    });
+  const events: ProposalQuestionCreated[] = await Promise.all(
+    logs.map(async (log) => {
+      const decoded = decodeEventLog({
+        abi: realityModule.abi,
+        eventName: PROPOSAL_QUESTION_CREATED_EVENT_NAME,
+        data: log.data,
+        topics: log.topics,
+      });
 
-    return {
-      proposalId: decoded.args.proposalId,
-      questionId: decoded.args.questionId,
+      const happenedAt = await getBlockDate(log.blockNumber);
 
-      txHash: log.transactionHash,
-      blockNumber: log.blockNumber,
-    };
-  });
+      return {
+        proposalId: decoded.args.proposalId as Hash,
+        questionId: decoded.args.questionId as Hash,
+
+        txHash: log.transactionHash,
+        blockNumber: log.blockNumber,
+        happenedAt,
+      };
+    }),
+  );
   return events;
 };
 
@@ -263,10 +286,10 @@ export type LogNewAnswer = {
   answer: Hash;
   bond: bigint;
   user: Address;
-  ts: Number;
 
   blockNumber: bigint;
   txHash: Hash;
+  happenedAt: Date;
 };
 
 type GetLogNewAnswerArgs = {
@@ -303,14 +326,17 @@ export const getLogNewAnswer: GetLogNewAnswerFn = async (args) => {
       topics: log.topics,
     });
 
+    const epochInMs = Number(decoded.args.ts) * 1000;
+    const happenedAt = new Date(epochInMs);
+
     return {
       questionId: decoded.args.question_id,
       answer: decoded.args.answer,
       bond: decoded.args.bond,
       user: decoded.args.user,
-      ts: Number(decoded.args.ts),
       txHash: log.transactionHash,
       blockNumber: log.blockNumber,
+      happenedAt,
     };
   });
   return events;
