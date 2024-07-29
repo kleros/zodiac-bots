@@ -9,7 +9,9 @@ import type { LogNewAnswer, ProposalQuestionCreated } from "./services/reality";
 import type { Space } from "./types";
 import { getRandomHash, randomizeAnswerEventField, randomizeEns, randomizeSpace } from "./utils/test-mocks";
 import { ONEINCH_MODULE_ADDRESS, ONEINCH_ORACLE_ADDRESS, expect } from "./utils/tests-setup";
-import { random } from "lodash";
+
+const oneInchProposalBlockNumber = 19475120n;
+const oneInchAnswerBlockNumber = 19640300n;
 
 describe("processSpace", () => {
   const fn = configurableProcessSpace;
@@ -17,7 +19,7 @@ describe("processSpace", () => {
   const space: Space = {
     ens: randomizeEns(),
     startBlock: 1n,
-    lastProcessedBlock: 19475120n,
+    lastProcessedBlock: oneInchProposalBlockNumber,
     moduleAddress: ONEINCH_MODULE_ADDRESS,
     oracleAddress: ONEINCH_ORACLE_ADDRESS,
   };
@@ -38,14 +40,14 @@ describe("processSpace", () => {
     const processAnswersFn = spy();
     const emitter = new EventEmitter();
 
-    const toBlock = 19475121n;
+    const toBlock = oneInchProposalBlockNumber + 1n;
 
     const result = await fn({
       space,
       blockNumber: toBlock,
       calculateBlockRangeFn: () => ({
         toBlock,
-        fromBlock: 19475120n,
+        fromBlock: oneInchProposalBlockNumber,
       }),
       emitter,
       updateSpaceFn: updateSpace,
@@ -63,7 +65,7 @@ describe("processSpace", () => {
         proposalId: "0x791b3d71ea14497d3b8e756479f6f126e08b44351bfab904834c56b1ccf0479a",
         questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf" as Hash,
         txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43",
-        blockNumber: 19475120n,
+        blockNumber: oneInchProposalBlockNumber,
         happenedAt: new Date("2024-03-20T09:48:23.000Z"),
       },
     ]);
@@ -81,8 +83,8 @@ describe("processSpace", () => {
     const processAnswersFn = spy();
     const emitter = new EventEmitter();
 
-    space.lastProcessedBlock = 19640300n;
-    const toBlock = 19640301n;
+    space.lastProcessedBlock = oneInchAnswerBlockNumber;
+    const toBlock = space.lastProcessedBlock + 1n;
 
     const result = await fn({
       space,
@@ -113,7 +115,7 @@ describe("processSpace", () => {
         user: "0x4D6CAa3E0983fAc7B514D60339EBb538C5A85AAe",
         bond: 10000000n,
         txHash: "0x0cc20c32ee428bdb8f16fa1aa22b396ecafa91b61bc2c3350723e4dfefeebff0",
-        blockNumber: 19640300n,
+        blockNumber: oneInchAnswerBlockNumber,
         happenedAt: new Date(1712934227 * 1000),
       },
     ]);
@@ -146,7 +148,7 @@ describe("processProposals", () => {
       proposalId: "0x791b3d71ea14497d3b8e756479f6f126e08b44351bfab904834c56b1ccf0479a",
       questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf" as Hash,
       txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43",
-      blockNumber: 19475120n,
+      blockNumber: oneInchProposalBlockNumber,
       happenedAt: new Date("2024-03-20T09:48:23.000Z"),
     };
 
@@ -196,7 +198,7 @@ describe("processAnswers", () => {
       user: "0x4D6CAa3E0983fAc7B514D60339EBb538C5A85AAe",
       bond: 10000000n,
       txHash: "0x0cc20c32ee428bdb8f16fa1aa22b396ecafa91b61bc2c3350723e4dfefeebff0",
-      blockNumber: 19640300n,
+      blockNumber: oneInchAnswerBlockNumber,
       happenedAt: new Date(1712934227 * 1000),
     };
 
