@@ -46,8 +46,8 @@ describe("processSpace", () => {
       space,
       blockNumber: toBlock,
       calculateBlockRangeFn: () => ({
-        toBlock,
         fromBlock: oneInchProposalBlockNumber,
+        toBlock,
       }),
       emitter,
       updateSpaceFn: updateSpace,
