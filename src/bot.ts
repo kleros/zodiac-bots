@@ -81,16 +81,18 @@ export const configurableStart = async (deps: ConfigurableStartDeps) => {
   const shutdownSignalPromise = resolveOnEvent(BotEventNames.GRACEFUL_SHUTDOWN_START, emitter);
   let shouldContinue = await isPromisePending(shutdownSignalPromise);
 
-  while (shouldContinue) {
-    emitter.emit(BotEventNames.ITERATION_STARTED);
-    spaces = await processSpacesFn(spaces);
-    emitter.emit(BotEventNames.ITERATION_ENDED);
+  try {
+    while (shouldContinue) {
+      emitter.emit(BotEventNames.ITERATION_STARTED);
+      spaces = await processSpacesFn(spaces);
+      emitter.emit(BotEventNames.ITERATION_ENDED);
 
-    await Promise.race([waitForFn(batchCooldown), shutdownSignalPromise]);
-    shouldContinue = await isPromisePending(shutdownSignalPromise);
+      await Promise.race([waitForFn(batchCooldown), shutdownSignalPromise]);
+      shouldContinue = await isPromisePending(shutdownSignalPromise);
+    }
+  } finally {
+    emitter.emit(BotEventNames.PROCESSING_ENDED);
   }
-
-  emitter.emit(BotEventNames.PROCESSING_ENDED);
 };
 
 type InitializeSpacesFn = (parsedSpaces: ParsedSpace[]) => Promise<Space[]>;
