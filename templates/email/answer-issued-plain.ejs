@@ -1,23 +1,18 @@
-Hi there,
+Hey there,
 
-A new Reality answer has been recorded for space <%- notification.space.ens %>. Please find the details below:
+A new Reality answer has been submitted for space <%- notification.space.ens %>.
 
-ENS: <%- notification.space.ens %>
+Please find the details below:
 
-Transaction Details:
-- Hash: <%- notification.event.txHash %>
-- Block: <%- notification.event.blockNumber %>
-- Issued by: <%- notification.event.user %>
 
 You can explore the details using the following links:
-- View transaction: https://etherscan.io/tx/<%- notification.event.txHash %>
-- View issuer details: https://etherscan.io/address/<%- notification.event.user %>
-- View answer on Reality: <%- getRealityAnswerLink(notification) %>
-
-The event contained the following information:
+- Reality question: <%- getRealityQuestionLink(notification) %>
+- Snapshot proposal: <%- getSnapshotProposalLink(notification) %>
+- Transaction: https://etherscan.io/tx/<%- notification.event.txHash %>
 - Question ID: <%- notification.event.questionId %>
-- Bond: <%- formatWei(notification.event.bond) %>
 - Answer: <%- formatAnswer(notification.event.answer) %>
+- Bond: <%- formatWei(notification.event.bond) %>
+- Submitted by: <%- notification.event.user %>
 
 Best regards,
 Kleros Zodiac Notifications Bot

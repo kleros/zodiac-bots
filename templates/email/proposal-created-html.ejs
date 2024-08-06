@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>New Reality Proposal Question</title>
+    <title>New Reality Question</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,45 +29,47 @@
             font-size: 0.9em;
             color: #555;
         }
-        a.button {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 1em;
-            color: white;
-            background-color: #4CAF50;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        a.button:hover {
-            background-color: #45a049;
-        }
         .code {
             font-family: "Courier New", Courier, monospace;
             background-color: #f4f4f4;
-            padding: 5px;
+            padding: 1px;
             border-radius: 5px;
+        }
+        p.links {
+            display: flex; 
+            justify-content: space-evenly;
+            gap: 20px; 
+            width: 100%;
+        }
+        img {
+            vertical-align: middle; 
+            margin-right: 5px;
+            width: 24px;
+        }
+        h3 {
+            margin-block-start: 1em;
+            margin-block-end: -0.5em;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 New Reality Proposal Question</h1>
+            <h1>🗳 New Reality Question!</h1>
         </div>
         <div class="content">
-            <p>Hi there,</p>
-            <p>We found a new Reality proposal question for space <span class="code"><%- notification.space.ens %></span>. Please find the details below:</p>
-            <p><strong>ENS:</strong> <span class="code"><%- notification.space.ens %></span></p>
-            <h2>Transaction Details:</h2>
-            <p><strong>Hash:</strong> <span class="code"><%- notification.event.txHash %></span></p>
-            <p><strong>Block:</strong> <span class="code"><%- notification.event.blockNumber %></span></p>
-            <p>You can explore the details using the following links:</p>
-            <p><a href="https://etherscan.io/tx/<%- notification.event.txHash %>" class="button">View transaction on Etherscan</a></p>
-            <p><a href="<%- getSnapshotProposalLink(notification) %>" class="button">View proposal on Snapshot</a></p>
-            <h2>Event Details:</h2>
-            <p><strong>Question ID:</strong> <span class="code"><%- notification.event.questionId %></span></p>
-            <p><strong>Proposal ID:</strong> <span class="code"><%- notification.event.proposalId %></span></p>
+            <p>Hey there,</p>
+            <p>A new Reality question has been created for a Snapshot proposal in the space <b><%- notification.space.ens %></b>.</p>
+            <p class="links">
+                <a href="<%- getRealityQuestionLink(notification) %>"><img src="../assets/reality.png" alt="Reality" />Reality Question</a>
+                <a href="<%- getSnapshotProposalLink(notification) %>"><img src="../assets/snapshot.png" alt="Snapshot" />Snapshot Proposal</a>
+                <a href="https://etherscan.io/tx/<%- notification.event.txHash %>"><img src="../assets/etherscan.png" alt="Etherscan" />Transaction</a>
+            </p>
+            <h3>Details</h3>
+            <p>
+                Reality Question ID: <span class="code"><%- notification.event.questionId %></span><br/>
+                Snapshot Proposal ID: <span class="code"><%- notification.event.proposalId %></span><br/>
+            </p>
 
         </div>
         <div class="footer">

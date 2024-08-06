@@ -1,18 +1,11 @@
-Hi there,
+Hey there,
 
-We found a new Reality proposal question for space <%- notification.space.ens %>. Please find the details below:
+A new Reality question has been created for space <%- notification.space.ens %>. 
 
-ENS: <%- notification.space.ens %>
-
-Transaction Details:
-- Hash: <%- notification.event.txHash %>
-- Block: <%- notification.event.blockNumber %>
-
-You can explore the details on the following links:
-- View transaction: https://etherscan.io/tx/<%- notification.event.txHash %>
-- View Snapshot proposal: <%- getSnapshotProposalLink(notification) %>
-
-The event contained the following information:
+Please find the details below:
+- Snapshot proposal: <%- getSnapshotProposalLink(notification) %>
+- Reality question: <%- getRealityQuestionLink(notification) %>
+- Transaction: https://etherscan.io/tx/<%- notification.event.txHash %>
 - Question ID: <%- notification.event.questionId %>
 - Proposal ID: <%- notification.event.proposalId %>
 

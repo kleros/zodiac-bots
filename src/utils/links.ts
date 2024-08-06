@@ -9,7 +9,7 @@ export const getSnapshotProposalLink = (notification: ProposalNotification): str
   return `https://snapshot.org/#/${ens}/proposal/${snapshotId}`;
 };
 
-export const getRealityAnswerLink = (notification: AnswerNotification): string => {
+export const getRealityQuestionLink = (notification: AnswerNotification): string => {
   const {
     space: { oracleAddress },
     event: { questionId },

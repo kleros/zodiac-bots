@@ -2,7 +2,7 @@ import { join, normalize } from "node:path";
 import ejs from "ejs";
 import type { TransportName, Notification, EventType } from "../notify";
 import { formatAnswer, formatWei } from "./format";
-import { getRealityAnswerLink, getSnapshotProposalLink } from "./links";
+import { getRealityQuestionLink, getSnapshotProposalLink } from "./links";
 
 const BASE_TEMPLATES_PATH = normalize(join(__dirname, "../../templates"));
 
@@ -48,7 +48,7 @@ export const render = (transport: TransportName, notification: Notification, var
     notification,
     formatWei,
     formatAnswer,
-    getRealityAnswerLink,
+    getRealityQuestionLink,
     getSnapshotProposalLink,
   };
 
