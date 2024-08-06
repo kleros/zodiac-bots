@@ -88,6 +88,7 @@ describe("Reality", () => {
         questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf",
         txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43",
         blockNumber: 19475120n,
+        happenedAt: new Date("2024-03-20T09:48:23.000Z"),
       });
     });
   });
@@ -111,9 +112,9 @@ describe("Reality", () => {
         answer: "0x0000000000000000000000000000000000000000000000000000000000000001",
         user: "0x4D6CAa3E0983fAc7B514D60339EBb538C5A85AAe",
         bond: 10000000n,
-        ts: 1712934227,
         txHash: "0x0cc20c32ee428bdb8f16fa1aa22b396ecafa91b61bc2c3350723e4dfefeebff0",
         blockNumber: 19640300n,
+        happenedAt: new Date("2024-04-12T15:03:47.000Z"),
       });
     });
   });
