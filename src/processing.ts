@@ -19,6 +19,7 @@ import { defaultEmitter } from "./utils/emitter";
 import { env } from "./utils/env";
 import type { EventEmitter } from "node:events";
 import type { Space } from "./types";
+import { InvalidLogNewQuestionArgsEventError, MissingLogNewQuestionEventError } from "./utils/errors";
 
 /**
  * Process all spaces, respecting the batch size. Triggers a notification per event. Returns the
@@ -219,17 +220,8 @@ export const configurableProcessProposals = async (deps: ConfigurableProcessProp
       });
       const newQuestionEvent = questions.find((q) => q.questionId === event.questionId);
 
-      if (!newQuestionEvent) {
-        throw new Error(
-          `Unable to resolve LogNewQuestion event for proposal with tx ${event.txHash} for space ${space.ens}`,
-        );
-      }
-
-      if (newQuestionEvent.question.length < 2) {
-        throw new Error(
-          `Expected at least two values in the question field of the LogNewQuestion event for proposal with tx ${event.txHash} for space ${space.ens}`,
-        );
-      }
+      if (!newQuestionEvent) throw new MissingLogNewQuestionEventError(event.txHash, space.ens);
+      if (newQuestionEvent.question.length < 2) throw new InvalidLogNewQuestionArgsEventError(event.txHash, space.ens);
 
       const { question, startedAt, finishedAt, timeout } = newQuestionEvent;
       const snapshotId = question[0];
