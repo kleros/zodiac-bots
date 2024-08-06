@@ -1,12 +1,23 @@
-import type { EventEmitter } from "node:events";
-import { BotEventNames, SpaceDetailedPayload, SpaceSkippedPayload, SpaceStartedPayload } from "./bot-events";
+import {
+  BotEventNames,
+  type SpaceDetailedPayload,
+  type SpaceSkippedPayload,
+  type SpaceStartedPayload,
+} from "./bot-events";
 import { EventType, notify } from "./notify";
+import { findProposalByQuestionId, insertProposal } from "./services/db/proposals";
 import { updateSpace } from "./services/db/spaces";
 import { getPublicClient } from "./services/provider";
-import { getLogNewAnswer, getProposalQuestionsCreated } from "./services/reality";
-import { Space } from "./types";
+import {
+  getLogNewAnswer,
+  getProposalQuestionsCreated,
+  type LogNewAnswer,
+  type ProposalQuestionCreated,
+} from "./services/reality";
 import { defaultEmitter } from "./utils/emitter";
 import { env } from "./utils/env";
+import type { EventEmitter } from "node:events";
+import type { Space } from "./types";
 
 /**
  * Process all spaces, respecting the batch size. Triggers a notification per event. Returns the
@@ -57,7 +68,8 @@ export const processSpace = async (space: Space, blockNumber: bigint) => {
     emitter: defaultEmitter,
     calculateBlockRangeFn: calculateBlockRange,
     updateSpaceFn: updateSpace,
-    notifyFn: notify,
+    processProposalsFn: processProposals,
+    processAnswersFn: processAnswers,
   });
 };
 
@@ -67,10 +79,12 @@ type ConfigurableProcessSpaceDeps = {
   emitter: EventEmitter;
   calculateBlockRangeFn: typeof calculateBlockRange;
   updateSpaceFn: typeof updateSpace;
-  notifyFn: typeof notify;
+  processProposalsFn: typeof processProposals;
+  processAnswersFn: typeof processAnswers;
 };
 export const configurableProcessSpace = async (deps: ConfigurableProcessSpaceDeps): Promise<Space> => {
-  const { space, blockNumber, calculateBlockRangeFn, emitter, updateSpaceFn, notifyFn } = deps;
+  const { space, blockNumber, calculateBlockRangeFn, emitter, updateSpaceFn, processProposalsFn, processAnswersFn } =
+    deps;
 
   emitter.emit(BotEventNames.SPACE_STARTED, { space } satisfies SpaceStartedPayload);
 
@@ -104,24 +118,10 @@ export const configurableProcessSpace = async (deps: ConfigurableProcessSpaceDep
   };
   emitter.emit(BotEventNames.SPACE_EVENTS_FETCHED, emittedContext);
 
-  if (proposals.length !== 0 || answers.length !== 0) {
-    await Promise.all([
-      ...proposals.map((event) =>
-        notifyFn({
-          type: EventType.PROPOSAL_QUESTION_CREATED,
-          event,
-          space,
-        }),
-      ),
-      ...answers.map((event) =>
-        notifyFn({
-          type: EventType.NEW_ANSWER,
-          event,
-          space,
-        }),
-      ),
-    ]);
+  await processProposalsFn(space, proposals);
+  await processAnswersFn(space, answers);
 
+  if (proposals.length !== 0 || answers.length !== 0) {
     emitter.emit(BotEventNames.SPACE_NOTIFIED, emittedContext);
   }
 
@@ -177,3 +177,93 @@ export const min = (a: bigint, b: bigint) => (a < b ? a : b);
  * const biggest = max(5n, 10n) // 10n
  */
 export const max = (a: bigint, b: bigint) => (a > b ? a : b);
+
+/**
+ * Register the proposals as as active (to enable later identification
+ * of answers) and issue notifications for them.
+ *
+ * @param space - The space that the proposals belong to
+ * @param proposals - The proposals to process
+ *
+ * @example
+ * await processProposals(space, proposals)
+ */
+export const processProposals = (space: Space, proposals: ProposalQuestionCreated[]) => {
+  return configurableProcessProposals({
+    space,
+    proposals,
+    notifyFn: notify,
+    insertProposalFn: insertProposal,
+  });
+};
+
+type ConfigurableProcessProposalsDeps = {
+  space: Space;
+  proposals: ProposalQuestionCreated[];
+  notifyFn: typeof notify;
+  insertProposalFn: typeof insertProposal;
+};
+export const configurableProcessProposals = async (deps: ConfigurableProcessProposalsDeps) => {
+  const { space, proposals, insertProposalFn, notifyFn } = deps;
+
+  await Promise.all(
+    proposals.map((event) =>
+      Promise.all([
+        insertProposalFn({
+          ens: space.ens,
+          proposalId: event.proposalId,
+          txHash: event.txHash,
+          questionId: event.questionId,
+          happenedAt: event.happenedAt,
+        }),
+        notifyFn({
+          type: EventType.PROPOSAL_QUESTION_CREATED,
+          event,
+          space,
+        }),
+      ]),
+    ),
+  );
+};
+
+/**
+ * Notifies the answers, ignoring those not issued for the current space
+ *
+ * @param space - The space that the answers belong to
+ * @param answers - The answers to process
+ *
+ * @example
+ * await processAnswers(space, answers)
+ */
+export const processAnswers = (space: Space, answers: LogNewAnswer[]) => {
+  return configurableProcessAnswers({
+    space,
+    answers,
+    notifyFn: notify,
+    findProposalByQuestionIdFn: findProposalByQuestionId,
+  });
+};
+
+type ConfigurableProcessAnswersDeps = {
+  space: Space;
+  answers: LogNewAnswer[];
+  notifyFn: typeof notify;
+  findProposalByQuestionIdFn: typeof findProposalByQuestionId;
+};
+export const configurableProcessAnswers = async (deps: ConfigurableProcessAnswersDeps) => {
+  const { space, answers, notifyFn, findProposalByQuestionIdFn } = deps;
+
+  await Promise.all(
+    answers.map(async (event) => {
+      const proposal = await findProposalByQuestionIdFn(event.questionId);
+
+      if (!proposal || proposal.ens !== space.ens) return;
+
+      await notifyFn({
+        type: EventType.NEW_ANSWER,
+        event,
+        space,
+      });
+    }),
+  );
+};
