@@ -14,6 +14,6 @@ export class InvalidLogNewQuestionArgsEventError extends Error {
     const message = `Expected at least two values in the question field of the LogNewQuestion event for proposal with tx ${txHash} for space ${ens}`;
     super(message);
     this.name = this.constructor.name;
-    Error.captureStackTrace(this, MissingLogNewQuestionEventError);
+    Error.captureStackTrace(this, InvalidLogNewQuestionArgsEventError);
   }
 }
