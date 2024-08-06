@@ -283,11 +283,11 @@ type ConfigurableProcessAnswersDeps = {
   findProposalByQuestionIdFn: typeof findProposalByQuestionId;
 };
 export const configurableProcessAnswers = async (deps: ConfigurableProcessAnswersDeps) => {
-  const { space, answers, notifyFn } = deps;
+  const { space, answers, notifyFn, findProposalByQuestionIdFn } = deps;
 
   await Promise.all(
     answers.map(async (event) => {
-      const proposal = await deps.findProposalByQuestionIdFn(event.questionId);
+      const proposal = await findProposalByQuestionIdFn(event.questionId);
 
       if (!proposal || proposal.ens !== space.ens) return;
 
