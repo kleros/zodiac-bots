@@ -10,6 +10,7 @@ import { updateSpace } from "./services/db/spaces";
 import { getPublicClient } from "./services/provider";
 import {
   getLogNewAnswer,
+  getLogNewQuestion,
   getProposalQuestionsCreated,
   type LogNewAnswer,
   type ProposalQuestionCreated,
@@ -18,6 +19,7 @@ import { defaultEmitter } from "./utils/emitter";
 import { env } from "./utils/env";
 import type { EventEmitter } from "node:events";
 import type { Space } from "./types";
+import { InvalidLogNewQuestionArgsEventError, MissingLogNewQuestionEventError } from "./utils/errors";
 
 /**
  * Process all spaces, respecting the batch size. Triggers a notification per event. Returns the
@@ -179,8 +181,9 @@ export const min = (a: bigint, b: bigint) => (a < b ? a : b);
 export const max = (a: bigint, b: bigint) => (a > b ? a : b);
 
 /**
- * Register the proposals as as active (to enable later identification
- * of answers) and issue notifications for them.
+ * Enritches the proposal info with data coming from the corresponding LogNewQuestion event,
+ * registers the proposals as as active (to enable later identification of answers) and issues
+ * notifications for them.
  *
  * @param space - The space that the proposals belong to
  * @param proposals - The proposals to process
@@ -192,6 +195,7 @@ export const processProposals = (space: Space, proposals: ProposalQuestionCreate
   return configurableProcessProposals({
     space,
     proposals,
+    getLogNewQuestionFn: getLogNewQuestion,
     notifyFn: notify,
     insertProposalFn: insertProposal,
   });
@@ -200,29 +204,49 @@ export const processProposals = (space: Space, proposals: ProposalQuestionCreate
 type ConfigurableProcessProposalsDeps = {
   space: Space;
   proposals: ProposalQuestionCreated[];
+  getLogNewQuestionFn: typeof getLogNewQuestion;
   notifyFn: typeof notify;
   insertProposalFn: typeof insertProposal;
 };
 export const configurableProcessProposals = async (deps: ConfigurableProcessProposalsDeps) => {
-  const { space, proposals, insertProposalFn, notifyFn } = deps;
+  const { space, proposals, getLogNewQuestionFn, insertProposalFn, notifyFn } = deps;
 
   await Promise.all(
-    proposals.map((event) =>
-      Promise.all([
+    proposals.map(async (event) => {
+      const questions = await getLogNewQuestionFn({
+        realityOracleAddress: space.oracleAddress,
+        fromBlock: event.blockNumber,
+        toBlock: event.blockNumber,
+      });
+      const newQuestionEvent = questions.find((q) => q.questionId === event.questionId);
+
+      if (!newQuestionEvent) throw new MissingLogNewQuestionEventError(event.txHash, space.ens);
+      if (newQuestionEvent.question.length < 2) throw new InvalidLogNewQuestionArgsEventError(event.txHash, space.ens);
+
+      const { question, startedAt, finishedAt, timeout } = newQuestionEvent;
+      const snapshotId = question[0];
+
+      const logNewQuestionFields = { snapshotId, startedAt, finishedAt, timeout };
+
+      return Promise.all([
         insertProposalFn({
           ens: space.ens,
           proposalId: event.proposalId,
-          txHash: event.txHash,
           questionId: event.questionId,
+          txHash: event.txHash,
           happenedAt: event.happenedAt,
+          ...logNewQuestionFields,
         }),
         notifyFn({
           type: EventType.PROPOSAL_QUESTION_CREATED,
-          event,
+          event: {
+            ...event,
+            ...logNewQuestionFields,
+          },
           space,
         }),
-      ]),
-    ),
+      ]);
+    }),
   );
 };
 

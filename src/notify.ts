@@ -1,9 +1,10 @@
-import { LogNewAnswer, ProposalQuestionCreated } from "./services/reality";
+import { LogNewAnswer, LogNewQuestion, ProposalQuestionCreated } from "./services/reality";
 import { notify as notifySlack } from "./services/slack";
 import { notify as notifyTelegram } from "./services/telegram";
 import { notify as notifyEmail } from "./services/email";
 import { Space } from "./types";
 import { findUsedTransports, insertUsedTransport } from "./services/db/notifications";
+import { Proposal } from "./services/db/proposals";
 
 export type TransportName = "telegram" | "slack" | "email";
 type TransportFn = (notification: Notification) => Promise<void>;
@@ -18,10 +19,14 @@ export enum EventType {
   PROPOSAL_QUESTION_CREATED = "proposal-created",
   NEW_ANSWER = "answer-issued",
 }
+
+export type ProposalNotificationEvent = ProposalQuestionCreated &
+  Pick<Proposal, "snapshotId" | "startedAt" | "timeout" | "finishedAt">;
+
 export type ProposalNotification = {
   space: Space;
   type: EventType.PROPOSAL_QUESTION_CREATED;
-  event: ProposalQuestionCreated;
+  event: ProposalNotificationEvent;
 };
 export type AnswerNotification = {
   space: Space;

@@ -2,6 +2,7 @@ import { join, normalize } from "node:path";
 import ejs from "ejs";
 import type { TransportName, Notification, EventType } from "../notify";
 import { formatAnswer, formatWei } from "./format";
+import { getRealityQuestionLink, getSnapshotProposalLink } from "./links";
 
 const BASE_TEMPLATES_PATH = normalize(join(__dirname, "../../templates"));
 
@@ -42,13 +43,18 @@ export const getTemplateFilePath = (transport: TransportName, eventType: EventTy
  */
 export const render = (transport: TransportName, notification: Notification, variant?: string): Promise<string> => {
   const path = join(BASE_TEMPLATES_PATH, getTemplateFilePath(transport, notification.type, variant));
-  return ejs.renderFile(
-    path,
-    { notification, formatWei, formatAnswer },
-    {
-      cache: true,
-      async: true,
-      root: BASE_TEMPLATES_PATH,
-    },
-  );
+
+  const context = {
+    notification,
+    formatWei,
+    formatAnswer,
+    getRealityQuestionLink,
+    getSnapshotProposalLink,
+  };
+
+  return ejs.renderFile(path, context, {
+    cache: true,
+    async: true,
+    root: BASE_TEMPLATES_PATH,
+  });
 };

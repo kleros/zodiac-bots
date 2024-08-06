@@ -1,11 +1,10 @@
-*`<%- notification.space.ens %>`: 🗳 New Reality Answer!*
-<https://etherscan.io/tx/<%- notification.event.txHash %>|View transaction on Etherscan>
-<https://etherscan.io/address/<%- notification.event.user %>|View user on Etherscan>
+*`<%- notification.space.ens %>`: 💰 New Reality Answer!*
+<<%- getSnapshotProposalLink(notification) %>|Snapshot Proposal>
+<<%- getRealityQuestionLink(notification) %>|Reality Question>
+<https://etherscan.io/tx/<%- notification.event.txHash %>|Transaction>
 
-*Transaction:* `<%- notification.event.txHash %>` (block `<%- notification.event.blockNumber %>`)
-*User*: `<%- notification.event.user %>`
-
-*Event:*
+*Details:*
 _Question ID_: `<%- notification.event.questionId %>`
-_Bond_: `<%- formatWei(notification.event.bond) %>`
 _Answer_: `<%- formatAnswer(notification.event.answer) %>`
+_Bond_: `<%- formatWei(notification.event.bond) %>`
+_Submitted by_: `<%- notification.event.user %>`

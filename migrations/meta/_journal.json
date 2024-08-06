@@ -22,6 +22,13 @@
       "when": 1721384790855,
       "tag": "0002_proposal_initial",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1721888032141,
+      "tag": "0003_proposal_add_snapshot_id_and_timestamps",
+      "breakpoints": true
     }
   ]
 }

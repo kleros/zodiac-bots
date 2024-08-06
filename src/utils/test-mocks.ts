@@ -1,5 +1,6 @@
 import type { Address, Hash, Hex } from "viem";
-import { AnswerNotification, EventType, ProposalNotification, type Notification } from "../notify";
+import { AnswerNotification, EventType, ProposalNotification, ProposalNotificationEvent } from "../notify";
+import { InsertableProposal } from "../services/db/proposals";
 import type { LogNewAnswer, ProposalQuestionCreated } from "../services/reality";
 import type { Space } from "../types";
 
@@ -19,12 +20,33 @@ export const randomizeSpace = (): Space => ({
   oracleAddress: getRandomAddress(),
 });
 
-export const randomizeProposalEventField = (): ProposalQuestionCreated => ({
+export const randomizeProposal = (fields: Partial<InsertableProposal>): InsertableProposal => ({
+  ens: randomizeEns(),
+  questionId: getRandomHash(),
+  proposalId: getRandomHash(),
+  txHash: getRandomHash(),
+  happenedAt: new Date(),
+  snapshotId: getRandomHash(),
+  startedAt: new Date(),
+  timeout: 5000,
+  finishedAt: new Date(Date.now() + 5000 * 1000),
+  ...fields,
+});
+
+export const randomizeProposalQuestionCreated = (): ProposalQuestionCreated => ({
   txHash: getRandomHash(),
   proposalId: getRandomHash(),
   questionId: getRandomHash(),
   blockNumber: 50n,
   happenedAt: new Date(),
+});
+
+export const randomizeProposalNotificationEvent = (): ProposalNotificationEvent => ({
+  ...randomizeProposalQuestionCreated(),
+  snapshotId: getRandomHash(),
+  startedAt: new Date(),
+  timeout: 5000,
+  finishedAt: new Date(Date.now() + 5000 * 1000),
 });
 
 export const randomizeAnswerEventField = (): LogNewAnswer => ({
@@ -45,7 +67,7 @@ export const randomizeAnswerEventField = (): LogNewAnswer => ({
 export const randomizeProposalNotification = (fields?: Partial<ProposalNotification>): ProposalNotification => ({
   type: EventType.PROPOSAL_QUESTION_CREATED,
   space: randomizeSpace(),
-  event: randomizeProposalEventField(),
+  event: randomizeProposalNotificationEvent(),
   ...fields,
 });
 

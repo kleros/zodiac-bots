@@ -5,17 +5,21 @@ import { graphQLFetch } from "../../utils/fetch-graphql";
 import { getPublicClient } from "../provider";
 
 const PROPOSAL_QUESTION_CREATED_EVENT_NAME = "ProposalQuestionCreated";
+const LOG_NEW_QUESTION_EVENT_NAME = "LogNewQuestion";
 const LOG_NEW_ANSWER_EVENT_NAME = "LogNewAnswer";
 
 // Look for the events ABI
 const PROPOSAL_QUESTION_CREATED_ABI = realityModule.abi.find(
   (event) => "name" in event && event.name === PROPOSAL_QUESTION_CREATED_EVENT_NAME,
 ) as AbiEvent | undefined;
+const LOG_NEW_QUESTION_ABI = realityOracle.abi.find(
+  (event) => "name" in event && event.name === LOG_NEW_QUESTION_EVENT_NAME,
+) as AbiEvent | undefined;
 const LOG_NEW_ANSWER_ABI = realityOracle.abi.find(
   (event) => "name" in event && event.name === LOG_NEW_ANSWER_EVENT_NAME,
 ) as AbiEvent | undefined;
 
-if (!PROPOSAL_QUESTION_CREATED_ABI || !LOG_NEW_ANSWER_ABI) {
+if (!PROPOSAL_QUESTION_CREATED_ABI || !LOG_NEW_QUESTION_ABI || !LOG_NEW_ANSWER_ABI) {
   throw new Error(`Unable to find events in ABI`);
 }
 
@@ -199,6 +203,81 @@ export const getProposalQuestionsCreated: GetProposalQuestionsCreatedFn = async 
       };
     }),
   );
+  return events;
+};
+
+export type LogNewQuestion = {
+  questionId: Hash;
+  user: Address;
+  question: Array<string>;
+  startedAt: Date;
+  timeout: number;
+  finishedAt: Date;
+
+  blockNumber: bigint;
+  txHash: Hash;
+};
+
+type GetLogNewQuestionArgs = {
+  realityOracleAddress: Address;
+  fromBlock: bigint;
+  toBlock: bigint;
+};
+
+/**
+ * Looks for `LogNewQuestion` events on the Reality Oracle betwen `fromBlock` and `toBlock`.
+ *
+ * @returns An array of `LogNewQuestion` events
+ *
+ * @example
+ *
+ * const newQuetions = await getLogNewQuestion("0x5b7dD1E86623548AF054A4985F7fc8Ccbb554E2", 100n, 200n);
+ */
+export const getLogNewQuestion = async (args: GetLogNewQuestionArgs): Promise<LogNewQuestion[]> => {
+  const { realityOracleAddress, fromBlock, toBlock } = args;
+  const publicClient = getPublicClient();
+
+  const logs = await publicClient.getLogs({
+    event: LOG_NEW_QUESTION_ABI,
+    address: realityOracleAddress,
+    fromBlock,
+    toBlock,
+  });
+
+  const events: LogNewQuestion[] = await Promise.all(
+    logs.map(async (log) => {
+      const decoded = decodeEventLog({
+        abi: realityOracle.abi,
+        eventName: LOG_NEW_QUESTION_EVENT_NAME,
+        data: log.data,
+        topics: log.topics,
+      });
+
+      const rawQuestion = decoded.args.question;
+      const question = rawQuestion.split("␟");
+
+      let { opening_ts: openingTs, timeout } = decoded.args;
+      if (openingTs === 0) {
+        const block = await publicClient.getBlock({
+          blockNumber: log.blockNumber,
+        });
+        openingTs = Number(block.timestamp);
+      }
+
+      return {
+        questionId: decoded.args.question_id.toLowerCase() as Hash,
+        user: decoded.args.user.toLowerCase() as Address,
+        question,
+        startedAt: new Date(openingTs * 1000),
+        timeout,
+        finishedAt: new Date((openingTs + timeout) * 1000),
+
+        txHash: log.transactionHash.toLowerCase() as Hash,
+        blockNumber: log.blockNumber,
+      };
+    }),
+  );
+
   return events;
 };
 

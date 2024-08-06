@@ -49,6 +49,10 @@ event.txHash: ${event.txHash}
 event.blockNumber: ${event.blockNumber}
 event.questionId: ${event.questionId}
 event.proposalId: ${event.proposalId}
+event.snapshotId: ${event.snapshotId}
+event.startedAt: ${event.startedAt.toISOString()}
+event.finishedAt: ${event.finishedAt.toISOString()}
+event.timeout: ${event.timeout}
 event.happenedAt: ${event.happenedAt.toISOString()}
 `;
       expect(result).to.equal(expectedResult.trim());
