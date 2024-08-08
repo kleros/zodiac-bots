@@ -22,6 +22,7 @@ export enum EventType {
 
 export type ProposalNotificationEvent = ProposalQuestionCreated &
   Pick<Proposal, "snapshotId" | "startedAt" | "timeout" | "finishedAt">;
+export type AnswerNotificationEvent = LogNewAnswer & Pick<Proposal, "snapshotId">;
 
 export type ProposalNotification = {
   space: Space;
@@ -31,7 +32,7 @@ export type ProposalNotification = {
 export type AnswerNotification = {
   space: Space;
   type: EventType.NEW_ANSWER;
-  event: LogNewAnswer;
+  event: AnswerNotificationEvent;
 };
 export type Notification = ProposalNotification | AnswerNotification;
 

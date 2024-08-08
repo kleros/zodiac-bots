@@ -1,6 +1,6 @@
 import { AnswerNotification, ProposalNotification } from "../notify";
 
-export const getSnapshotProposalLink = (notification: ProposalNotification): string => {
+export const getSnapshotProposalLink = (notification: ProposalNotification | AnswerNotification): string => {
   const {
     space: { ens },
     event: { snapshotId },
@@ -9,7 +9,7 @@ export const getSnapshotProposalLink = (notification: ProposalNotification): str
   return `https://snapshot.org/#/${ens}/proposal/${snapshotId}`;
 };
 
-export const getRealityQuestionLink = (notification: AnswerNotification): string => {
+export const getRealityQuestionLink = (notification: ProposalNotification | AnswerNotification): string => {
   const {
     space: { oracleAddress },
     event: { questionId },

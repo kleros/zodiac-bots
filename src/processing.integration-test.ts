@@ -178,7 +178,7 @@ describe("processProposals", () => {
         timeout: 259200,
         finishedAt: new Date("2024-03-23T09:48:23.000Z"),
       },
-    } as Notification);
+    } satisfies Notification);
 
     const storedProposal = await findProposalByQuestionId(proposal.questionId);
     expect(storedProposal).to.not.be.null;
@@ -214,12 +214,11 @@ describe("processAnswers", () => {
       happenedAt: new Date(1712934227 * 1000),
     };
 
-    await insertProposal(
-      randomizeProposal({
-        ens: space.ens,
-        questionId: answer.questionId,
-      }),
-    );
+    const proposal = randomizeProposal({
+      ens: space.ens,
+      questionId: answer.questionId,
+    });
+    await insertProposal(proposal);
 
     await fn({
       space,
@@ -233,8 +232,11 @@ describe("processAnswers", () => {
     expect(call).to.deep.equal({
       type: EventType.NEW_ANSWER,
       space,
-      event: answer,
-    } as Notification);
+      event: {
+        ...answer,
+        snapshotId: proposal.snapshotId,
+      },
+    } satisfies Notification);
   });
 
   it("should ignore events that do not correspond to existing proposals", async () => {
