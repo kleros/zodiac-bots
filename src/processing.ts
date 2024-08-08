@@ -4,7 +4,7 @@ import {
   type SpaceSkippedPayload,
   type SpaceStartedPayload,
 } from "./bot-events";
-import { EventType, notify } from "./notify";
+import { AnswerNotificationEvent, EventType, notify } from "./notify";
 import { findProposalByQuestionId, insertProposal } from "./services/db/proposals";
 import { updateSpace } from "./services/db/spaces";
 import { getPublicClient } from "./services/provider";
@@ -283,9 +283,14 @@ export const configurableProcessAnswers = async (deps: ConfigurableProcessAnswer
 
       if (!proposal || proposal.ens !== space.ens) return;
 
+      const { snapshotId } = proposal;
+
       await notifyFn({
         type: EventType.NEW_ANSWER,
-        event,
+        event: {
+          snapshotId,
+          ...event,
+        },
         space,
       });
     }),

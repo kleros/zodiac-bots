@@ -1,7 +1,13 @@
 import type { Address, Hash, Hex } from "viem";
-import { AnswerNotification, EventType, ProposalNotification, ProposalNotificationEvent } from "../notify";
+import {
+  AnswerNotification,
+  AnswerNotificationEvent,
+  EventType,
+  ProposalNotification,
+  ProposalNotificationEvent,
+} from "../notify";
 import { InsertableProposal } from "../services/db/proposals";
-import type { LogNewAnswer, ProposalQuestionCreated } from "../services/reality";
+import type { ProposalQuestionCreated } from "../services/reality";
 import type { Space } from "../types";
 
 export const getRandomHex = (size: number): Hex =>
@@ -49,9 +55,10 @@ export const randomizeProposalNotificationEvent = (): ProposalNotificationEvent 
   finishedAt: new Date(Date.now() + 5000 * 1000),
 });
 
-export const randomizeAnswerEventField = (): LogNewAnswer => ({
+export const randomizeAnswerEventField = (): AnswerNotificationEvent => ({
   questionId: getRandomHash(),
   answer: "0x0000000000000000000000000000000000000000000000000000000000000001",
+  snapshotId: "0x0000000000000000000000000000000000000000000000000000000000000001",
   bond: 100000000000000000n,
   user: getRandomAddress(),
   txHash: getRandomHash(),
