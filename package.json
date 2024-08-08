@@ -12,7 +12,9 @@
     "bot:run": "node dist/start.js",
     "test:all": "mocha",
     "test:coverage": "c8 --reporter html --reporter text --all --src ./src mocha",
-    "test": "yarn test:coverage"
+    "test": "yarn test:coverage",
+    "docker:up:staging": "docker compose --env-file .env.staging up --build bot-dev",
+    "docker:down:staging": "docker compose --env-file .env.staging down -v"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
