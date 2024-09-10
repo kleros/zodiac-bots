@@ -70,18 +70,19 @@ export const configurableStart = async (deps: ConfigurableStartDeps) => {
 
   initializeLoggerFn(emitter);
   initializeGracefulShutdownFn();
-  emitter.emit(BotEventNames.STARTED);
-  initializeSlackFn();
-  initializeTelegramFn();
-  initializeEmailFn();
-  initializeHeartbeatFn();
-
-  let spaces = await initializeSpacesFn(parsedSpaces);
-
-  const shutdownSignalPromise = resolveOnEvent(BotEventNames.GRACEFUL_SHUTDOWN_START, emitter);
-  let shouldContinue = await isPromisePending(shutdownSignalPromise);
 
   try {
+    emitter.emit(BotEventNames.STARTED);
+    initializeSlackFn();
+    initializeTelegramFn();
+    initializeEmailFn();
+    initializeHeartbeatFn();
+
+    let spaces = await initializeSpacesFn(parsedSpaces);
+
+    const shutdownSignalPromise = resolveOnEvent(BotEventNames.GRACEFUL_SHUTDOWN_START, emitter);
+    let shouldContinue = await isPromisePending(shutdownSignalPromise);
+
     while (shouldContinue) {
       emitter.emit(BotEventNames.ITERATION_STARTED);
       spaces = await processSpacesFn(spaces);
