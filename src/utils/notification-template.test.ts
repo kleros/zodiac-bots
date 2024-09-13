@@ -1,7 +1,10 @@
-import { EventType, TransportName, transportNames } from "../notify";
+import { EventType, TransportName } from "../notify";
 import { getTemplateFilePath, render } from "./notification-template";
 import { randomizeAnswerNotification, randomizeProposalNotification } from "./test-mocks";
 import { expect } from "./tests-setup";
+import { env } from "./env";
+
+const unsubscribeEmail = env.SMTP_UNSUBSCRIBE_EMAIL;
 
 describe("Notification templates", () => {
   describe("getTemplateFilePath", () => {
@@ -40,6 +43,7 @@ describe("Notification templates", () => {
       const { type, space, event } = notification;
       const expectedResult = `
 type: ${type}
+unsubscribeEmail: ${unsubscribeEmail}
 space.ens: ${space.ens}
 space.moduleAddress: ${space.moduleAddress}
 space.oracleAddress: ${space.oracleAddress}
@@ -68,6 +72,7 @@ event.happenedAt: ${event.happenedAt.toISOString()}
       const { type, space, event } = notification;
       const expectedResult = `
 type: ${type}
+unsubscribeEmail: ${unsubscribeEmail}
 space.ens: ${space.ens}
 space.moduleAddress: ${space.moduleAddress}
 space.oracleAddress: ${space.oracleAddress}

@@ -158,6 +158,10 @@ export const schema = {
     example: "alert@kleros.local,example.ens:alerts@example.com",
     default: undefined,
   }),
+  SMTP_UNSUBSCRIBE_EMAIL: email({
+    desc: "Email to allow users notify about undesired emails",
+    example: "unsubscribe@kleros.local",
+  }),
   HEARTBEAT_URL: url({
     desc: "URL to request every HEARTBEAT_INTERVAL seconds to indicate that the service is up",
     example: "https://keros.io/api/heartbeat/zodiac",

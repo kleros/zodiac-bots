@@ -1,80 +1,47 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>New Reality Question</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-        }
-        .container {
-            width: 80%;
-            margin: auto;
-            padding: 20px;
-        }
-        .header {
-            background-color: #f2f2f2;
-            padding: 20px;
-            text-align: center;
-        }
-        .content {
-            margin: 20px 0;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-        }
-        .footer {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 0.9em;
-            color: #555;
-        }
-        .code {
-            font-family: "Courier New", Courier, monospace;
-            background-color: #f4f4f4;
-            padding: 1px;
-            border-radius: 5px;
-        }
-        p.links {
-            display: flex; 
-            justify-content: space-evenly;
-            gap: 20px; 
-            width: 100%;
-        }
-        img {
-            vertical-align: middle; 
-            margin-right: 5px;
-            width: 24px;
-        }
-        h3 {
-            margin-block-start: 1em;
-            margin-block-end: -0.5em;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🗳 New Reality Question!</h1>
-        </div>
-        <div class="content">
-            <p>Hey there,</p>
-            <p>A new Reality question has been created for a Snapshot proposal in the space <b><%- notification.space.ens %></b>.</p>
-            <p class="links">
-                <a href="<%- getRealityQuestionLink(notification) %>"><img src="https://cdn.kleros.link/ipfs/QmQAFr3mbeow62CCG8MG2pmw8VBhF3frkn5Ey3CE23Jdd4" alt="Reality" />Reality Question</a>
-                <a href="<%- getSnapshotProposalLink(notification) %>"><img src="https://cdn.kleros.link/ipfs/QmaQ8ZbkPWfd9rXKoZRRovSbxGJobPwkK18n72VqdjG2FN" alt="Snapshot" />Snapshot Proposal</a>
-                <a href="https://etherscan.io/tx/<%- notification.event.txHash %>"><img src="https://cdn.kleros.link/ipfs/QmarBWXNfvzViPoRGqymUUREF4jMHFNnQa79x6M3gCNEB9" alt="Etherscan" />Transaction</a>
-            </p>
-            <h3>Details</h3>
-            <p>
-                Reality Question ID: <span class="code"><%- notification.event.questionId %></span><br/>
-                Snapshot Proposal ID: <span class="code"><%- notification.event.proposalId %></span><br/>
-            </p>
+<%- include('./components/layout-start', { title: 'New Reality Question '}) %>
 
-        </div>
-        <div class="footer">
-            <p>Best regards,<br>Kleros Zodiac Notifications Bot</p>
-        </div>
-    </div>
-</body>
-</html>
+<table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
+    <tr>
+        <td align="left" style="padding:0;Margin:0;padding-top:25px;padding-bottom:40px">
+            <h1 style="Margin:0;line-height:25.2px;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:21px;font-style:normal;font-weight:normal;color:#daf0ff">Hi there!</h1>
+            <h1 style="Margin:0;line-height:25.2px;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:21px;font-style:normal;font-weight:normal;color:#daf0ff">A new Reality question has been created for a Snapshot proposal in the space 1inch.eth.</h1>
+        </td>
+    </tr>
+
+    <%- include('./components/event-links') %>
+
+    <tr>
+        <td align="center" style="padding:0;Margin:0;padding-top:25px;padding-bottom:25px;font-size:0">
+            <table border="0" width="100%" height="100%" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
+                <tr>
+                    <td style="padding:0;Margin:0;border-bottom:1px solid #42498f;background:unset;height:1px;width:100%;margin:0px"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td align="left" style="padding:0;Margin:0;padding-top:5px">
+            <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:14.4px;color:#daf0ff;font-size:12px">Reality Question ID:</p>
+        </td>
+    </tr>
+    <tr>
+        <td align="left" style="padding:0;Margin:0;padding-top:5px;padding-bottom:15px">
+            <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:14.4px;color:#becce5;font-size:12px"><%- notification.event.questionId %></p>
+        </td>
+    </tr>
+    <tr>
+        <td align="left" style="padding:0;Margin:0;padding-top:5px">
+            <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:14.4px;color:#daf0ff;font-size:12px">Snapshot Proposal ID:</p>
+        </td>
+    </tr>
+    <tr>
+        <td align="left" style="padding:0;Margin:0;padding-top:5px;padding-bottom:40px">
+            <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:14.4px;color:#becce5;font-size:12px"><%- notification.event.proposalId %></p>
+        </td>
+    </tr>
+
+    <%- include('./components/unsubscribe') %>
+
+</table>
+
+<%- include('./components/layout-end') %>
