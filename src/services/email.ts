@@ -45,6 +45,7 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
     "SMTP_PASSWORD",
     "SMTP_FROM",
     "SMTP_TO",
+    "SMTP_UNSUBSCRIBE_EMAIL",
   ];
   const missingFields = requiredFields.filter((varName) => env[varName] === undefined);
   if (missingFields.length > 0) {

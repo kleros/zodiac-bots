@@ -43,6 +43,7 @@ describe("Email service", () => {
         "SMTP_PASSWORD",
         "SMTP_FROM",
         "SMTP_TO",
+        "SMTP_UNSUBSCRIBE_EMAIL",
       ];
       requiredFields.forEach((key) => {
         it(`should emit a missing event when ${String(key)} is missing`, async () => {
