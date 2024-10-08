@@ -110,14 +110,15 @@ The [Telegram docs](https://core.telegram.org/bots#how-do-i-create-a-bot-token) 
 
 #### Email Transport
 
-| Variable        | Description                       | Example                 | Default |
-| --------------- | --------------------------------- | ----------------------- | ------- |
-| `SMTP_HOST`     | Hostname or IP of the SMTP server | `smtp.server.com`       |         |
-| `SMTP_PORT`     | Port for SMTP server              | `465`                   | `465`   |
-| `SMTP_USER`     | Username                          | `kleros`                |         |
-| `SMTP_PASSWORD` | Password                          | `kleros`                |         |
-| `SMTP_FROM`     | Sender email address              | `no-reply@kleros.local` |         |
-| `SMTP_TO`       | Recipient email address           | `alert@kleros.local`    |         |
+| Variable                 | Description                                                 | Example                    | Default |
+| ------------------------ | ----------------------------------------------------------- | -------------------------- | ------- |
+| `SMTP_HOST`              | Hostname or IP of the SMTP server                           | `smtp.server.com`          |         |
+| `SMTP_PORT`              | Port for SMTP server                                        | `465`                      | `465`   |
+| `SMTP_USER`              | Username                                                    | `kleros`                   |         |
+| `SMTP_PASSWORD`          | Password                                                    | `kleros`                   |         |
+| `SMTP_FROM`              | Sender email address                                        | `no-reply@kleros.local`    |         |
+| `SMTP_TO`                | Recipient email address                                     | `alert@kleros.local`       |         |
+| `SMTP_UNSUBSCRIBE_EMAIL` | Email address to be used for unsubscribe requests in emails | `unsubscribe@kleros.local` |         |
 
 `SMTP_TO` allows multiples entries separated by commas. Entries can be defined using one of the following formats:
 

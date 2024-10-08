@@ -3,8 +3,10 @@ import ejs from "ejs";
 import type { TransportName, Notification, EventType } from "../notify";
 import { formatAnswer, formatWei } from "./format";
 import { getRealityQuestionLink, getSnapshotProposalLink } from "./links";
+import { env } from "./env";
 
 const BASE_TEMPLATES_PATH = normalize(join(__dirname, "../../templates"));
+const unsubscribeEmail = env.SMTP_UNSUBSCRIBE_EMAIL;
 
 /**
  * Given a transport name and type of event, returns the relative path for the template under
@@ -50,11 +52,12 @@ export const render = (transport: TransportName, notification: Notification, var
     formatAnswer,
     getRealityQuestionLink,
     getSnapshotProposalLink,
+    unsubscribeEmail,
   };
 
   return ejs.renderFile(path, context, {
     cache: true,
-    async: true,
+    async: false,
     root: BASE_TEMPLATES_PATH,
   });
 };
