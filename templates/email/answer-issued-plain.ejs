@@ -1,0 +1,18 @@
+Hey there,
+
+A new Reality answer has been submitted for space <%- notification.space.ens %>.
+
+Please find the details below:
+
+
+You can explore the details using the following links:
+- Reality question: <%- getRealityQuestionLink(notification) %>
+- Snapshot proposal: <%- getSnapshotProposalLink(notification) %>
+- Transaction: https://etherscan.io/tx/<%- notification.event.txHash %>
+- Question ID: <%- notification.event.questionId %>
+- Answer: <%- formatAnswer(notification.event.answer) %>
+- Bond: <%- formatWei(notification.event.bond) %>
+- Submitted by: <%- notification.event.user %>
+
+Best regards,
+Kleros Zodiac Notifications Bot

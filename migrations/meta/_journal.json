@@ -1,0 +1,34 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1715601774566,
+      "tag": "0000_spaces_initial",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1718804158851,
+      "tag": "0001_notification_initial",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1721384790855,
+      "tag": "0002_proposal_initial",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1721888032141,
+      "tag": "0003_proposal_add_snapshot_id_and_timestamps",
+      "breakpoints": true
+    }
+  ]
+}

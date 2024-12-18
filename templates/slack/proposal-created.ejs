@@ -1,0 +1,8 @@
+*<%- notification.space.ens %>: 🗳 New Reality Proposal Question!*
+<<%- getSnapshotProposalLink(notification) %>|Snapshot Proposal>
+<<%- getRealityQuestionLink(notification) %>|Reality Question>
+<https://etherscan.io/tx/<%- notification.event.txHash %>|Transaction>
+
+*Details:*
+_Question ID_: `<%- notification.event.questionId %>`
+_Proposal ID_: `<%- notification.event.snapshotId %>`

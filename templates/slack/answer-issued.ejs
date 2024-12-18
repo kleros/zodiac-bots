@@ -1,0 +1,10 @@
+*<%- notification.space.ens %>: 💰 New Reality Answer!*
+<<%- getSnapshotProposalLink(notification) %>|Snapshot Proposal>
+<<%- getRealityQuestionLink(notification) %>|Reality Question>
+<https://etherscan.io/tx/<%- notification.event.txHash %>|Transaction>
+
+*Details:*
+_Question ID_: `<%- notification.event.questionId %>`
+_Answer_: `<%- formatAnswer(notification.event.answer) %>`
+_Bond_: `<%- formatWei(notification.event.bond) %>`
+_Submitted by_: `<%- notification.event.user %>`

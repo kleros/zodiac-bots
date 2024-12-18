@@ -1,0 +1,195 @@
+{
+  "id": "bfeb4137-96d7-452f-acac-fec57e0b60b1",
+  "prevId": "4ac8000c-14c3-4541-9bae-1cb4d3767dd2",
+  "version": "5",
+  "dialect": "pg",
+  "tables": {
+    "notification": {
+      "name": "notification",
+      "schema": "",
+      "columns": {
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block": {
+          "name": "block",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transport_name": {
+          "name": "transport_name",
+          "type": "transport_name",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "notification_tx_hash_transport_name_pk": {
+          "name": "notification_tx_hash_transport_name_pk",
+          "columns": [
+            "tx_hash",
+            "transport_name"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "proposal": {
+      "name": "proposal",
+      "schema": "",
+      "columns": {
+        "proposal_id": {
+          "name": "proposal_id",
+          "type": "varchar(66)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "question_id": {
+          "name": "question_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ens": {
+          "name": "ens",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "snapshot_id": {
+          "name": "snapshot_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timeout": {
+          "name": "timeout",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "happened_at": {
+          "name": "happened_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "question_idx": {
+          "name": "question_idx",
+          "columns": [
+            "question_id"
+          ],
+          "isUnique": false
+        },
+        "ens_idx": {
+          "name": "ens_idx",
+          "columns": [
+            "ens"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "proposal_ens_space_ens_fk": {
+          "name": "proposal_ens_space_ens_fk",
+          "tableFrom": "proposal",
+          "tableTo": "space",
+          "columnsFrom": [
+            "ens"
+          ],
+          "columnsTo": [
+            "ens"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "space": {
+      "name": "space",
+      "schema": "",
+      "columns": {
+        "ens": {
+          "name": "ens",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "start_block": {
+          "name": "start_block",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_processed_block": {
+          "name": "last_processed_block",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {
+    "transport_name": {
+      "name": "transport_name",
+      "values": {
+        "telegram": "telegram",
+        "slack": "slack",
+        "email": "email"
+      }
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

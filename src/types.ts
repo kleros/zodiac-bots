@@ -1,30 +1,9 @@
-import type { WatchContractEventReturnType, Hash, Address } from "viem";
+import { SpaceAddresses } from "./services/reality";
 
-export type SnapshotSpace = {
-  id: string;
-  name: string;
-  network: string;
-  plugins: {
-    safeSnap: {
-      address: Address;
-    };
-  };
-};
+export type Space = {
+  ens: string;
+  startBlock: bigint;
+  lastProcessedBlock?: bigint | null;
+} & SpaceAddresses;
 
-export type Answer = {
-  answer: Hash | undefined;
-  bond: bigint | undefined;
-  timestamp: number;
-  user: Hash | undefined;
-};
-
-export type Proposal = {
-  proposalId: string | undefined;
-  questionId: Hash;
-  answers: Answer[];
-};
-
-export type Context = {
-  watchers: WatchContractEventReturnType[];
-  proposals: Proposal[];
-};
+export type ParsedSpace = Pick<Space, "ens" | "startBlock"> & Partial<Pick<Space, "moduleAddress">>;

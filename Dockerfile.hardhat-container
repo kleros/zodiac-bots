@@ -1,0 +1,18 @@
+FROM node:20.12.1-alpine
+
+USER node
+
+RUN mkdir -p /home/node/app
+
+WORKDIR /home/node/app
+
+RUN npm init -y && npm install \
+  hardhat@^2.22.4 \
+  @nomicfoundation/hardhat-toolbox@^5.0.0 \
+  ts-node \
+  typescript \
+  @tsconfig/node20
+
+COPY --chown=node hardhat.config.ts tsconfig.json ./
+
+CMD ["node_modules/.bin/hardhat", "node", "--verbose"]
