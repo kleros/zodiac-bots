@@ -1142,13 +1142,13 @@ __metadata:
   linkType: hard
 
 "axios@npm:^1.6.3":
-  version: 1.7.2
-  resolution: "axios@npm:1.7.2"
+  version: 1.7.4
+  resolution: "axios@npm:1.7.4"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/6ae80dda9736bb4762ce717f1a26ff997d94672d3a5799ad9941c24d4fb019c1dff45be8272f08d1975d7950bac281f3ba24aff5ecd49ef5a04d872ec428782f
+  checksum: 10/7a1429be1e3d0c2e1b96d4bba4d113efbfabc7c724bed107beb535c782c7bea447ff634886b0c7c43395a264d085450d009eb1154b5f38a8bae49d469fdcbc61
   languageName: node
   linkType: hard
 
@@ -2810,9 +2810,9 @@ __metadata:
   linkType: hard
 
 "hono@npm:^4.1.4":
-  version: 4.4.8
-  resolution: "hono@npm:4.4.8"
-  checksum: 10/b278a1159fbcaed7abbefb28b9dc1f423cf17c6c0dfdc039e5591ff1c09c799adf4faf698819c516a2dd3c027571046654924e00382151ef3509587048ee5597
+  version: 4.5.8
+  resolution: "hono@npm:4.5.8"
+  checksum: 10/1d071a827fb9562a008955dd24bdde8cd6575890120b8cf7276cdda2a58735487666807927a99f57d0e43304202c2c493daefb5eaf4683fcb3eed9d4190a0ccc
   languageName: node
   linkType: hard
 
