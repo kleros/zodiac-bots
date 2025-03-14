@@ -1,11 +1,11 @@
 Hey there,
 
-A new Reality question has been created for space <%- notification.space.ens %>. 
+A new Reality question has been created for space <%- notification.space.ens %>.
 
 Please find the details below:
 - Snapshot proposal: <%- getSnapshotProposalLink(notification) %>
 - Reality question: <%- getRealityQuestionLink(notification) %>
-- Transaction: https://etherscan.io/tx/<%- notification.event.txHash %>
+- Transaction: <%- getBlockExplorerLinkForTx(notification.event.txHash) %>
 - Question ID: <%- notification.event.questionId %>
 - Proposal ID: <%- notification.event.snapshotId %>
 
