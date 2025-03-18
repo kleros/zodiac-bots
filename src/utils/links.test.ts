@@ -15,7 +15,7 @@ describe("interpolateUrlTemplate", () => {
 
 describe("getRealityQuestionLink", () => {
   it("should generate a link using the oracle address and questionId", () => {
-    const oracleAddress = "x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+    const oracleAddress = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
     const questionId = "123";
     const notification = {
       space: {
