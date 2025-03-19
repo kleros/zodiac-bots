@@ -92,7 +92,7 @@ export const schema = {
     example: "kleros.eth:3000000,1inch.eth:6000000",
   }),
   RPC_URL: url({
-    desc: "Provider URL for the Ethereum mainnet RPC",
+    desc: "Provider URL for the Ethereum RPC",
     example: "https://mainnet.infura.io/v3/8238211010344719ad14a89db874158c",
   }),
   CHAIN_ID: num({
