@@ -172,6 +172,16 @@ export const schema = {
     example: "60000",
     default: 60000,
   }),
+  BLOCK_EXPLORER_TX_LINK_TEMPLATE: url({
+    desc: "Block Explorer link template for transactions. Use {{txHash}} as transaction hash placeholder",
+    default: "https://etherscan.io/tx/{{txHash}}",
+    example: "https://etherscan.io/tx/{{txHash}}",
+  }),
+  REALITY_LINK_TEMPLATE: url({
+    desc: "Reality link template. Use {{oracleAddress}} and {{questionId}} as placeholders",
+    default: "https://reality.eth.limo/app/#!/question/{{oracleAddress}}-{{questionId}}/token/ETH",
+    example: "https://reality.eth.limo/app/#!/question/{{oracleAddress}}-{{questionId}}/token/ETH",
+  }),
 };
 
 export const env = cleanEnv(process.env, schema);
