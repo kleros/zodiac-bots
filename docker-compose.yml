@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   # Executes the bot only, without extra services
   bot:
