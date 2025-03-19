@@ -7,7 +7,7 @@ node dist/utils/env.js
 echo "Waiting for external services to become ready..."
 # Waitdeps command waits until all external services are ready
 # Base command with the mandatory services
-WAITDEPS_CMD="waitdeps wait --timeout 30s --tcp-connect $DB_URI --tcp-connect $MAINNET_RPC_URL --tcp-connect $SNAPSHOT_GRAPHQL_URL"
+WAITDEPS_CMD="waitdeps wait --timeout 30s --tcp-connect $DB_URI --tcp-connect $RPC_URL --tcp-connect $SNAPSHOT_GRAPHQL_URL"
 
 # Expand the base command to wait for Slack when the webhook is configured
 if [ -n "$SLACK_WEBHOOK" ]; then

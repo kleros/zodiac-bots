@@ -61,7 +61,7 @@ This section outlines the environment variables required for the application. Be
 | ----------------- | ----------------------------------------- | --------------------------------------------------------------- |
 | `SPACES`          | Spaces to monitor. At least one required. | `kleros.eth:3000000,1inch.eth:6000000`                          |
 | `DB_URI`          | Postgres connection string                | `postgresql://user:password@localhost:5432/dbname`              |
-| `MAINNET_RPC_URL` | Provider URL for the Ethereum mainnet RPC | `https://mainnet.infura.io/v3/8238211010344719ad14a89db874158c` |
+| `RPC_URL` | Provider URL for the desired network RPC | `https://mainnet.infura.io/v3/8238211010344719ad14a89db874158c` |
 
 - **SPACES format**: Comma separated list of spaces to follow. The spaces are defined by the ENS, starting block and (optionally) the Reality module contract address. These three values should be colon separated (`ens:block` or `ens:block:reality_module_address`). When the reality module address is not provided, the bot tries to auto-detect it. Examples:
   - `1inch.eth:19475120`: Defines space `1inch.eth` starting at block `19475120`.
