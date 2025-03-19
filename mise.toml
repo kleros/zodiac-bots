@@ -1,6 +1,0 @@
-[tools]
-node = "20.12.2"
-yarn = "4.1.1"
-
-[env]
-_.file = '.env'
