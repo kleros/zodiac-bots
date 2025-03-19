@@ -1,6 +1,36 @@
 import { createPublicClient, http } from "viem";
-import { mainnet } from "viem/chains";
+import type { Chain } from "viem/chains";
+import * as chains from "viem/chains";
 import { env } from "../utils/env";
+
+/**
+ * Error thrown when a chainId is not found in the viem chains registry
+ *
+ * @example
+ * throw new ChainIdNotFound(1);
+ */
+export class ChainIdNotFoundError extends Error {
+  constructor(chainId: number) {
+    super(`Chain with id ${chainId} not found`);
+  }
+}
+
+/**
+ * Returns a chain from the viem chains registry based on a chainId
+ *
+ * @param chainId - The chainId to resolve
+ *
+ * @returns The chain object from the viem chains registry
+ *
+ * @example
+ * const chain = resolveChain(1);
+ */
+export const resolveChain = (chainId: number): Chain => {
+  const found = Object.values(chains).find((chain) => chain.id === chainId);
+  if (!found) throw new ChainIdNotFoundError(chainId);
+
+  return found;
+};
 
 /**
  * Returns a viem PublicClient configured with the default RPC provided via environment variables
@@ -10,9 +40,11 @@ import { env } from "../utils/env";
  * @example
  * const publicClient = getPublicClient();
  */
-export const getPublicClient = (rpcUrl: string | undefined = env.MAINNET_RPC_URL) => {
+export const getPublicClient = (rpcUrl: string | undefined = env.RPC_URL, chainId = env.CHAIN_ID) => {
+  const resolvedChain = resolveChain(chainId);
+
   return createPublicClient({
-    chain: mainnet,
+    chain: resolvedChain,
     transport: http(rpcUrl),
   });
 };

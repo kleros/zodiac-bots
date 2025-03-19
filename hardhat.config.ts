@@ -5,13 +5,13 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: process.env.MAINNET_RPC_URL ?? "bad rpc url",
+        url: process.env.RPC_URL ?? "bad rpc url",
         enabled: true,
       },
     },
     mainnet: {
       chainId: 1,
-      url: process.env.MAINNET_RPC_URL,
+      url: process.env.RPC_URL,
     },
   },
 };

@@ -91,9 +91,15 @@ export const schema = {
     desc: "Spaces to monitor. Spaces should be defined by the ENS and the starting block, with the following format: `kleros.eth:3000000`. Multiple spaces can be present, separated by commas. At least one space is required.",
     example: "kleros.eth:3000000,1inch.eth:6000000",
   }),
-  MAINNET_RPC_URL: url({
+  RPC_URL: url({
     desc: "Provider URL for the Ethereum mainnet RPC",
     example: "https://mainnet.infura.io/v3/8238211010344719ad14a89db874158c",
+  }),
+  CHAIN_ID: num({
+    desc: "Chain where the contracts are deployed",
+    example: "1",
+    default: 1,
+    docs: "https://chainlist.org/?search&testnets=true",
   }),
   SNAPSHOT_GRAPHQL_URL: url({
     desc: "Snapshot GraphQL API endpoint",
