@@ -23,7 +23,7 @@ describe("Space model", () => {
 
       const enss = fakeSpaces.map((space) => space.ens);
       const result = await fn(enss);
-      expect(result).to.deep.eq(fakeSpaces);
+      expect(result).to.deep.equal(fakeSpaces);
     });
 
     it("should return empty array if no spaces are found", async () => {
@@ -51,7 +51,7 @@ describe("Space model", () => {
           ),
         );
 
-      expect(inserted).to.deep.eq(fakeSpaces);
+      expect(inserted).to.deep.equal(fakeSpaces);
     });
   });
 });
