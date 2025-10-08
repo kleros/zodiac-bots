@@ -17,13 +17,13 @@ import {
   type LogNewAnswer,
   type ProposalQuestionCreated,
 } from "./services/reality";
-import { validateRealityQuestion, ValidationResult } from "./services/reality-question-validation";
-import { ValidationErrorSeverity } from "./services/reality-question-validation/errors";
 import { getProposal } from "./services/snapshot";
 import type { Space } from "./types";
 import { defaultEmitter } from "./utils/emitter";
 import { env } from "./utils/env";
 import { MissingLogNewQuestionEventError, MissingSnapshotProposalError } from "./utils/errors";
+import { validateRealityQuestion, ValidationResult } from "./utils/reality-question-validation";
+import { ValidationErrorSeverity } from "./utils/reality-question-validation/errors";
 
 /**
  * Process all spaces, respecting the batch size. Triggers a notification per event. Returns the

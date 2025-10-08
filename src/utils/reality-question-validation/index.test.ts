@@ -1,6 +1,6 @@
 import { Address, Hash, Hex } from "viem";
-import { SnapshotProposal } from "../snapshot";
-import { LogNewQuestion } from "../reality";
+import { SnapshotProposal } from "../../services/snapshot";
+import { LogNewQuestion } from "../../services/reality";
 import { assertValidRealityQuestion } from ".";
 import { expect } from "chai";
 import {

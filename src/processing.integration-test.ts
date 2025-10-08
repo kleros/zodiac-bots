@@ -1,17 +1,17 @@
 import { EventEmitter } from "node:events";
 import { spy } from "sinon";
 import type { Hash } from "viem";
-import { EventType, notify, type Notification } from "./notify";
+import { EventType, type Notification } from "./notify";
 import { configurableProcessAnswers, configurableProcessProposals, configurableProcessSpace } from "./processing";
 import { findProposalByQuestionId, insertProposal, removeProposalByQuestionId } from "./services/db/proposals";
 import { findSpaces, insertSpaces, removeSpaceByEns, updateSpace } from "./services/db/spaces";
 import { getLogNewQuestion, type LogNewAnswer, type ProposalQuestionCreated } from "./services/reality";
-import type { Space } from "./types";
-import { randomizeAnswerEventField, randomizeEns, randomizeProposal, randomizeSpace } from "./utils/test-mocks";
-import { ONEINCH_MODULE_ADDRESS, ONEINCH_ORACLE_ADDRESS, expect } from "./utils/tests-setup";
 import { getProposal } from "./services/snapshot";
-import { validateRealityQuestion, ValidationResult } from "./services/reality-question-validation";
-import { ValidationErrorSeverity } from "./services/reality-question-validation/errors";
+import type { Space } from "./types";
+import { validateRealityQuestion, ValidationResult } from "./utils/reality-question-validation";
+import { ValidationErrorSeverity } from "./utils/reality-question-validation/errors";
+import { randomizeAnswerEventField, randomizeEns, randomizeProposal, randomizeSpace } from "./utils/test-mocks";
+import { expect, ONEINCH_MODULE_ADDRESS, ONEINCH_ORACLE_ADDRESS } from "./utils/tests-setup";
 
 const oneInchProposalBlockNumber = 19475120n;
 const oneInchAnswerBlockNumber = 19640300n;

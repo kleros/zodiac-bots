@@ -1,6 +1,6 @@
 import { Address, concat, Hex, keccak256 } from "viem";
-import { LogNewQuestion } from "../reality";
-import { SnapshotProposal } from "../snapshot";
+import { LogNewQuestion } from "../../services/reality";
+import { SnapshotProposal } from "../../services/snapshot";
 import { calculateTxHash } from "./eip-712-transaction-hash";
 import {
   BaseProposalValidationError,

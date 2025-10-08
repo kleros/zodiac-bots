@@ -5,11 +5,17 @@ export enum ValidationErrorSeverity {
   INCOMPLETE_DATA = "incomplete-data",
 }
 
+/**
+ * Base class for all the Proposal/Question validation errors. This class
+ * it not intended to be instantiated directly, but extended. It allows to
+ * detect if the validation failed due to a validation assertion or, otherwise,
+ * a completely unexpected cause.
+ */
 export class BaseProposalValidationError extends Error {
   public severity: ValidationErrorSeverity;
 
   constructor(severity: ValidationErrorSeverity, message: string) {
-    super(message); // Pass message to the Error constructor
+    super(message);
     this.severity = severity;
   }
 }
