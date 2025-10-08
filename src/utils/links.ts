@@ -1,5 +1,5 @@
 import type { Address } from "viem";
-import { AnswerNotification, ProposalNotification } from "../notify";
+import { AnswerNotification, ValidProposalNotification } from "../notify";
 import { env } from "./env";
 
 /**
@@ -10,7 +10,7 @@ import { env } from "./env";
  * @example
  * const link = getSnapshotProposalLink(notification);
  */
-export const getSnapshotProposalLink = (notification: ProposalNotification | AnswerNotification): string => {
+export const getSnapshotProposalLink = (notification: ValidProposalNotification | AnswerNotification): string => {
   const {
     space: { ens },
     event: { snapshotId },
@@ -45,7 +45,7 @@ export const interpolateUrlTemplate = (template: string, fields: Record<string, 
  * const link = getRealityQuestionLink(notification);
  */
 export const getRealityQuestionLink = (
-  notification: ProposalNotification | AnswerNotification,
+  notification: ValidProposalNotification | AnswerNotification,
   template: string = env.REALITY_LINK_TEMPLATE,
 ): string => {
   const {

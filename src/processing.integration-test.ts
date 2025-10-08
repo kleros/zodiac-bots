@@ -1,14 +1,17 @@
 import { EventEmitter } from "node:events";
 import { spy } from "sinon";
 import type { Hash } from "viem";
-import { EventType, type Notification } from "./notify";
+import { EventType, notify, type Notification } from "./notify";
 import { configurableProcessAnswers, configurableProcessProposals, configurableProcessSpace } from "./processing";
-import { findProposalByQuestionId, insertProposal } from "./services/db/proposals";
-import { findSpaces, insertSpaces, updateSpace } from "./services/db/spaces";
+import { findProposalByQuestionId, insertProposal, removeProposalByQuestionId } from "./services/db/proposals";
+import { findSpaces, insertSpaces, removeSpaceByEns, updateSpace } from "./services/db/spaces";
 import { getLogNewQuestion, type LogNewAnswer, type ProposalQuestionCreated } from "./services/reality";
 import type { Space } from "./types";
 import { randomizeAnswerEventField, randomizeEns, randomizeProposal, randomizeSpace } from "./utils/test-mocks";
 import { ONEINCH_MODULE_ADDRESS, ONEINCH_ORACLE_ADDRESS, expect } from "./utils/tests-setup";
+import { getProposal } from "./services/snapshot";
+import { validateRealityQuestion, ValidationResult } from "./services/reality-question-validation";
+import { ValidationErrorSeverity } from "./services/reality-question-validation/errors";
 
 const oneInchProposalBlockNumber = 19475120n;
 const oneInchAnswerBlockNumber = 19640300n;
@@ -128,22 +131,7 @@ describe("processSpace", () => {
 describe("processProposals", () => {
   const fn = configurableProcessProposals;
 
-  const space = randomizeSpace();
-
-  beforeEach(async () => {
-    space.ens = randomizeEns();
-    await insertSpaces([
-      {
-        ens: space.ens,
-        startBlock: 1n,
-        lastProcessedBlock: 1n,
-      },
-    ]);
-  });
-
-  it("should register the proposal and issue a notification", async () => {
-    const notifyFn = spy();
-
+  describe("should register the proposal and issue a notification", () => {
     const proposal: ProposalQuestionCreated = {
       proposalId: "0x791b3d71ea14497d3b8e756479f6f126e08b44351bfab904834c56b1ccf0479a",
       questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf" as Hash,
@@ -152,36 +140,141 @@ describe("processProposals", () => {
       happenedAt: new Date("2024-03-20T09:48:23.000Z"),
     };
 
-    const spaceWithRealOracle = {
-      ...space,
-      oracleAddress: ONEINCH_ORACLE_ADDRESS,
-    };
+    let space: Space;
 
-    await fn({
-      space: spaceWithRealOracle,
-      proposals: [proposal],
-      getLogNewQuestionFn: getLogNewQuestion,
-      notifyFn,
-      insertProposalFn: insertProposal,
+    beforeEach(async () => {
+      space = {
+        ...randomizeSpace(),
+        oracleAddress: ONEINCH_ORACLE_ADDRESS,
+      };
+      await insertSpaces([
+        {
+          ens: space.ens,
+          startBlock: 1n,
+          lastProcessedBlock: 1n,
+        },
+      ]);
     });
 
-    expect(notifyFn.calledOnce).to.be.true;
-    const call = notifyFn.firstCall.firstArg;
+    afterEach(async () => {
+      await removeProposalByQuestionId(proposal.questionId);
+      await removeSpaceByEns(space.ens);
+    });
 
-    expect(call).to.deep.equal({
-      type: EventType.PROPOSAL_QUESTION_CREATED,
-      space: spaceWithRealOracle,
-      event: {
-        ...proposal,
-        snapshotId: "0xa455f437479cad77a20096c1717f2b23777f258060dd6a0d5882a9aebfaf8275",
-        startedAt: new Date("2024-03-20T09:48:23.000Z"),
-        timeout: 259200,
-        finishedAt: new Date("2024-03-23T09:48:23.000Z"),
-      },
-    } satisfies Notification);
+    it("when the proposal is valid", async () => {
+      const notifyFn = spy();
+      await fn({
+        space,
+        proposals: [proposal],
+        getLogNewQuestionFn: getLogNewQuestion,
+        notifyFn,
+        validateRealityQuestionFn: validateRealityQuestion,
+        insertProposalFn: insertProposal,
+        getSnapshotProposalFn: getProposal,
+      });
 
-    const storedProposal = await findProposalByQuestionId(proposal.questionId);
-    expect(storedProposal).to.not.be.null;
+      expect(notifyFn.calledOnce).to.be.true;
+      const call = notifyFn.firstCall.firstArg;
+
+      expect(call).to.deep.equal({
+        type: EventType.PROPOSAL_QUESTION_VALID,
+        space,
+        event: {
+          ...proposal,
+          snapshotId: "0xa455f437479cad77a20096c1717f2b23777f258060dd6a0d5882a9aebfaf8275",
+          startedAt: new Date("2024-03-20T09:48:23.000Z"),
+          timeout: 259200,
+          finishedAt: new Date("2024-03-23T09:48:23.000Z"),
+        },
+      } satisfies Notification);
+
+      const storedProposal = await findProposalByQuestionId(proposal.questionId);
+      expect(storedProposal).to.not.be.null;
+    });
+
+    it("when the proposal is invalid due to missing data to perform the checks", async () => {
+      const notifyFn = spy();
+
+      const validationMessage = "this is the failure reason";
+      const validateMock = () =>
+        ({
+          isValid: false,
+          severity: ValidationErrorSeverity.INCOMPLETE_DATA,
+          code: "FooBarError",
+          message: validationMessage,
+        }) satisfies ValidationResult;
+
+      await fn({
+        space,
+        proposals: [proposal],
+        getLogNewQuestionFn: getLogNewQuestion,
+        notifyFn,
+        validateRealityQuestionFn: validateMock as typeof validateRealityQuestion,
+        insertProposalFn: insertProposal,
+        getSnapshotProposalFn: getProposal,
+      });
+
+      expect(notifyFn.calledOnce).to.be.true;
+      const call = notifyFn.firstCall.firstArg;
+
+      expect(call).to.deep.equal({
+        type: EventType.PROPOSAL_QUESTION_INCOMPLETE_DATA,
+        space,
+        event: {
+          ...proposal,
+          snapshotId: "0xa455f437479cad77a20096c1717f2b23777f258060dd6a0d5882a9aebfaf8275",
+          startedAt: new Date("2024-03-20T09:48:23.000Z"),
+          timeout: 259200,
+          finishedAt: new Date("2024-03-23T09:48:23.000Z"),
+        },
+        validationMessage,
+      } satisfies Notification);
+
+      const storedProposal = await findProposalByQuestionId(proposal.questionId);
+      expect(storedProposal).to.not.be.null;
+    });
+
+    it("when the proposal question should be rejected", async () => {
+      const notifyFn = spy();
+
+      const validationMessage = "this is the failure reason";
+      const validateMock = () =>
+        ({
+          isValid: false,
+          severity: ValidationErrorSeverity.SECURITY_ALERT,
+          code: "FooBarError",
+          message: validationMessage,
+        }) satisfies ValidationResult;
+
+      await fn({
+        space,
+        proposals: [proposal],
+        getLogNewQuestionFn: getLogNewQuestion,
+        notifyFn,
+        validateRealityQuestionFn: validateMock as typeof validateRealityQuestion,
+        insertProposalFn: insertProposal,
+        getSnapshotProposalFn: getProposal,
+      });
+
+      expect(notifyFn.calledOnce).to.be.true;
+      const call = notifyFn.firstCall.firstArg;
+
+      expect(call).to.deep.equal({
+        type: EventType.PROPOSAL_QUESTION_ALERT,
+        space,
+        event: {
+          ...proposal,
+          snapshotId: "0xa455f437479cad77a20096c1717f2b23777f258060dd6a0d5882a9aebfaf8275",
+          startedAt: new Date("2024-03-20T09:48:23.000Z"),
+          timeout: 259200,
+          finishedAt: new Date("2024-03-23T09:48:23.000Z"),
+        },
+        validationMessage,
+      } satisfies Notification);
+
+      const storedProposal = await findProposalByQuestionId(proposal.questionId);
+      expect(storedProposal).to.not.be.null;
+    });
   });
 });
 

@@ -1,8 +1,7 @@
-import { decodeEventLog, getAddress, type AbiEvent, type Address, type Hash } from "viem";
+import { decodeEventLog, getAddress, Hex, type AbiEvent, type Address, type Hash } from "viem";
 import { realityModuleEthConfig as realityModule, realityEthV3_0Config as realityOracle } from "./abi";
-import { env } from "../../utils/env";
-import { graphQLFetch } from "../../utils/fetch-graphql";
 import { getPublicClient } from "../provider";
+import { getRealityModuleAddress, type GetRealityModuleAddressFn } from "../snapshot";
 
 const PROPOSAL_QUESTION_CREATED_EVENT_NAME = "ProposalQuestionCreated";
 const LOG_NEW_QUESTION_EVENT_NAME = "LogNewQuestion";
@@ -22,39 +21,6 @@ const LOG_NEW_ANSWER_ABI = realityOracle.abi.find(
 if (!PROPOSAL_QUESTION_CREATED_ABI || !LOG_NEW_QUESTION_ABI || !LOG_NEW_ANSWER_ABI) {
   throw new Error(`Unable to find events in ABI`);
 }
-
-type QueryResponse = {
-  space: {
-    plugins: {
-      safeSnap: {
-        address: Address;
-      };
-    };
-  };
-};
-/**
- * Get the address of the Reality Module contract for a given space
- *
- * @param spaceId - The ID of the space to get the contract address for
- * @returns The address of the contract
- *
- * @example
- *
- * const address = await getRealityModuleAddress("1inch.eth");
- */
-type GetRealityModuleAddressFn = (spaceId: string) => Promise<Address | null>;
-export const getRealityModuleAddress: GetRealityModuleAddressFn = async (spaceId) => {
-  const query = `
-    query {
-      space(id: "${spaceId}") {
-        plugins
-      }
-    }
-  `;
-  const { space } = await graphQLFetch<QueryResponse>(env.SNAPSHOT_GRAPHQL_URL, query);
-
-  return space ? space.plugins.safeSnap.address : null;
-};
 
 type GetRealityOracleAddressFn = (realityModuleAddress: Address) => Promise<Address | null>;
 /**
@@ -195,9 +161,8 @@ export const getProposalQuestionsCreated: GetProposalQuestionsCreatedFn = async 
 
       return {
         proposalId: decoded.args.proposalId as Hash,
-        questionId: decoded.args.questionId as Hash,
-
         txHash: log.transactionHash,
+        questionId: decoded.args.questionId as Hash,
         blockNumber: log.blockNumber,
         happenedAt,
       };
@@ -209,7 +174,10 @@ export const getProposalQuestionsCreated: GetProposalQuestionsCreatedFn = async 
 export type LogNewQuestion = {
   questionId: Hash;
   user: Address;
-  question: Array<string>;
+  question: {
+    proposalId: Hex;
+    safeHash: Hash;
+  };
   startedAt: Date;
   timeout: number;
   finishedAt: Date;
@@ -254,7 +222,7 @@ export const getLogNewQuestion = async (args: GetLogNewQuestionArgs): Promise<Lo
       });
 
       const rawQuestion = decoded.args.question;
-      const question = rawQuestion.split("␟");
+      const questionParts = rawQuestion.split("␟");
 
       let { opening_ts: openingTs, timeout } = decoded.args;
       if (openingTs === 0) {
@@ -266,8 +234,11 @@ export const getLogNewQuestion = async (args: GetLogNewQuestionArgs): Promise<Lo
 
       return {
         questionId: decoded.args.question_id.toLowerCase() as Hash,
+        question: {
+          proposalId: questionParts[0] as Hex,
+          safeHash: `0x${questionParts[1]}` as Hash,
+        },
         user: decoded.args.user.toLowerCase() as Address,
-        question,
         startedAt: new Date(openingTs * 1000),
         timeout,
         finishedAt: new Date((openingTs + timeout) * 1000),

@@ -1,4 +1,4 @@
-import { type Hash } from "viem";
+import { Hex, type Hash } from "viem";
 
 export class MissingLogNewQuestionEventError extends Error {
   constructor(txHash: Hash, ens: string) {
@@ -9,11 +9,11 @@ export class MissingLogNewQuestionEventError extends Error {
   }
 }
 
-export class InvalidLogNewQuestionArgsEventError extends Error {
-  constructor(txHash: Hash, ens: string) {
-    const message = `Expected at least two values in the question field of the LogNewQuestion event for proposal with tx ${txHash} for space ${ens}`;
+export class MissingSnapshotProposalError extends Error {
+  constructor(proposalId: Hex, questionId: Hex, txHash: Hash) {
+    const message = `Unable to resolve proposal ${proposalId} related to Reality question ${questionId} present in the LogNewQuestion event in tx ${txHash}`;
     super(message);
     this.name = this.constructor.name;
-    Error.captureStackTrace(this, InvalidLogNewQuestionArgsEventError);
+    Error.captureStackTrace(this, MissingLogNewQuestionEventError);
   }
 }

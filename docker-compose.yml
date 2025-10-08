@@ -77,6 +77,8 @@ services:
     container_name: zodiac-smtp
     networks:
       - zodiac-bots-network
+    ports:
+      - "127.0.0.1:1080:1080"
 
 networks:
   zodiac-bots-network:

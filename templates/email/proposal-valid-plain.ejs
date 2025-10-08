@@ -1,0 +1,22 @@
+Hey there,
+
+A new Reality question has been created for space <%- notification.space.ens %>.
+
+Please find the details below:
+- Snapshot proposal: <%- getSnapshotProposalLink(notification) %>
+- Reality question: <%- getRealityQuestionLink(notification) %>
+- Transaction: <%- getBlockExplorerLinkForTx(notification.event.txHash) %>
+- Question ID: <%- notification.event.questionId %>
+- Proposal ID: <%- notification.event.snapshotId %>
+
+The following automatic checks has PASSED:
+- The proposal Safes hashes are the keccak of the concatenation of the individual hashes
+- The hash included on the Reality.eth question is the Proposal safe hash
+
+The following checks still require manual validation:
+- The proposal passed
+- The question was created after the proposal resolution
+- The proposal meets the DAO requirements
+
+Best regards,
+Kleros Zodiac Notifications Bot

@@ -1,4 +1,4 @@
-import { ProposalNotification } from "../notify";
+import { ValidProposalNotification } from "../notify";
 import { getBlockExplorerLinkForTx, getRealityQuestionLink, interpolateUrlTemplate } from "./links";
 import { expect } from "./tests-setup";
 
@@ -24,7 +24,7 @@ describe("getRealityQuestionLink", () => {
       event: {
         questionId,
       },
-    } as any as ProposalNotification;
+    } as any as ValidProposalNotification;
     const template = "http://test.com/{{oracleAddress}}/questions/{{questionId}}";
     const result = getRealityQuestionLink(notification, template);
     expect(result).to.eql(`http://test.com/${oracleAddress}/questions/${questionId}`);
