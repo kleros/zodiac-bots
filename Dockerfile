@@ -1,4 +1,4 @@
-FROM node:20.12.1-alpine
+FROM node:24.12.0-alpine
 
 ARG TARGETPLATFORM
 ENV WAITDEPS_VERSION 0.0.1
@@ -10,13 +10,16 @@ RUN set -o pipefail \
   && wget -nv -O - https://github.com/fcanela/waitdeps/releases/download/$WAITDEPS_VERSION/waitdeps-$WAITDEPS_VERSION-linux-$ARCH.tar.gz | tar xzf - -C /usr/local/bin \
   && apk del wget
 
+RUN corepack enable \
+  && corepack prepare yarn@4.7.0 --activate
+
 USER node
 RUN mkdir -p /home/node/app
 
 WORKDIR /home/node/app
 
-COPY --chown=node package.json yarn.lock ./
-RUN yarn && yarn cache clean
+COPY --chown=node package.json yarn.lock .yarnrc.yml ./
+RUN yarn install && yarn cache clean
 
 COPY --chown=node . .
 
