@@ -3,8 +3,6 @@ services:
   bot:
     build:
       context: .
-      args:
-        - ETHERSCAN_API_KEY=${ETHERSCAN_API_KEY}
     env_file: .env
     container_name: zodiac-bot
     restart: unless-stopped
@@ -13,8 +11,6 @@ services:
   bot-dev:
     build:
       context: .
-      args:
-        - ETHERSCAN_API_KEY=${ETHERSCAN_API_KEY}
     env_file: .env
     container_name: zodiac-bot-dev
     restart: unless-stopped
@@ -29,8 +25,6 @@ services:
   tests:
     build:
       context: .
-      args:
-        - ETHERSCAN_API_KEY=${ETHERSCAN_API_KEY}
     command: "yarn test"
     env_file: .env
     environment:
@@ -48,8 +42,6 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.hardhat-container
-      args:
-        - ETHERSCAN_API_KEY=${ETHERSCAN_API_KEY}
     env_file: .env
     container_name: zodiac-hardhat-fork
     restart: unless-stopped
