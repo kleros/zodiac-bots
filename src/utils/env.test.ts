@@ -10,6 +10,13 @@ describe("Environment variables lib", () => {
       expect(fn(input)).to.equal(input);
     });
 
+    it("should allow a subdomains in space", () => {
+      let input = "governance.kleros.eth:1000000";
+      expect(fn(input)).to.equal(input);
+      input = "also.valid.governance.kleros.eth:100000";
+      expect(fn(input)).to.equal(input);
+    });
+
     it("should allow multiple comma separated spaces", () => {
       const input = "kleros.eth:1000000,kleros2.eth:2000000";
       expect(fn(input)).to.equal(input);

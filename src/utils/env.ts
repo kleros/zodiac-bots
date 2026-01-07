@@ -17,6 +17,7 @@ import { Address } from "viem";
  * @example
  *
  * validateSpaces("kleros.eth:3000000"); // valid
+ * validateSpaces("governance.kleros.eth:3000000"); // valid
  * validateSpaces("kleros.eth:3000000,1inch.eth:6000000"); // valid
  * validateSpaces(""); // invalid
  * validateSpaces("kleros.eth"); // invalid
@@ -26,7 +27,15 @@ import { Address } from "viem";
  * validateSpaces("kleros.eth:1000,1inch.eth:2000:0x1234567890abcdef1234567890abcdef12345678"); // valid
  */
 export const validateSpaces = (input: string) => {
-  const isValid = /^[\w-]+\.eth:\d+(:0x[a-fA-F0-9]{40})?(,[\w-]+\.eth:\d+(:0x[a-fA-F0-9]{40})?)*$/.test(input);
+  const ens = "(?:[\\w-]+\\.)+eth";
+
+  // ens:blockNumber:realityModuleAddress
+  const entry = `${ens}:\\d+(?::0x[a-fA-F0-9]{40})?`;
+
+  // Comma separated list of space entries
+  const entriesRegex = new RegExp(`^${entry}(?:,${entry})*$`);
+
+  const isValid = entriesRegex.test(input);
 
   if (!isValid) throw new Error("Invalid spaces format");
 
