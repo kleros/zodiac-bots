@@ -23,17 +23,29 @@ if (!PROPOSAL_QUESTION_CREATED_ABI || !LOG_NEW_QUESTION_ABI || !LOG_NEW_ANSWER_A
   throw new Error(`Unable to find events in ABI`);
 }
 
+type AddressPluginStructure = {
+  address: Address;
+};
+
+type SafePluginStructure = {
+  safes: Array<{
+    network: String;
+    realityAddress: Address;
+  }>;
+};
+
 type QueryResponse = {
   space: {
     plugins: {
-      safeSnap: {
-        address: Address;
-      };
+      safeSnap: AddressPluginStructure | SafePluginStructure;
     };
   };
 };
 /**
  * Get the address of the Reality Module contract for a given space
+ *
+ * This function supports both the deprecated plugins field format (`address` key directly present)
+ * and the new one (`safes` array with the value in the `realityAddress` key)
  *
  * @param spaceId - The ID of the space to get the contract address for
  * @returns The address of the contract
@@ -42,8 +54,8 @@ type QueryResponse = {
  *
  * const address = await getRealityModuleAddress("1inch.eth");
  */
-type GetRealityModuleAddressFn = (spaceId: string) => Promise<Address | null>;
-export const getRealityModuleAddress: GetRealityModuleAddressFn = async (spaceId) => {
+type GetRealityModuleAddressFn = (spaceId: string, chainId?: number) => Promise<Address | null>;
+export const getRealityModuleAddress: GetRealityModuleAddressFn = async (spaceId, chainId = env.CHAIN_ID) => {
   const query = `
     query {
       space(id: "${spaceId}") {
@@ -53,7 +65,18 @@ export const getRealityModuleAddress: GetRealityModuleAddressFn = async (spaceId
   `;
   const { space } = await graphQLFetch<QueryResponse>(env.SNAPSHOT_GRAPHQL_URL, query);
 
-  return space ? space.plugins.safeSnap.address : null;
+  const safeSnap = space?.plugins?.safeSnap;
+
+  if (!safeSnap) return null;
+
+  if ("address" in safeSnap) return safeSnap.address;
+
+  if ("safes" in safeSnap) {
+    const safe = safeSnap.safes.find((safe) => safe.network == String(chainId));
+    return safe ? safe.realityAddress : null;
+  }
+
+  return null;
 };
 
 type GetRealityOracleAddressFn = (realityModuleAddress: Address) => Promise<Address | null>;

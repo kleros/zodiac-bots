@@ -12,9 +12,14 @@ import {
 describe("Reality", () => {
   const fn = getRealityModuleAddress;
   describe("getRealityModuleAddress", () => {
-    it("should return the address of the reality module contract", async () => {
+    it("should return the address of the reality module contract (old JSON plugins format)", async () => {
       const address = await fn("1inch.eth");
       expect(address).to.equal(ONEINCH_MODULE_ADDRESS);
+    });
+
+    it("should return the address of the reality module contract (new JSON plugins format)", async () => {
+      const address = await fn("testsnapshotspace.eth");
+      expect(address).to.equal("0x27bC6f27581CA89809213eDd7dD1ff7b55E65F8C");
     });
 
     it("should return null when the address is not found", async () => {
