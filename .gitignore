@@ -24,3 +24,5 @@ dist
 
 # Local dev tooling
 mise.toml
+# ShadowGit tracking directory (auto-added)
+.shadowgit.git

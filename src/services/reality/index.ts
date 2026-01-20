@@ -1,7 +1,7 @@
 import { decodeEventLog, getAddress, Hex, type AbiEvent, type Address, type Hash } from "viem";
-import { realityModuleEthConfig as realityModule, realityEthV3_0Config as realityOracle } from "./abi";
 import { getPublicClient } from "../provider";
 import { getRealityModuleAddress, type GetRealityModuleAddressFn } from "../snapshot";
+import { realityModuleEthConfig as realityModule, realityEthV3_0Config as realityOracle } from "./abi";
 
 const PROPOSAL_QUESTION_CREATED_EVENT_NAME = "ProposalQuestionCreated";
 const LOG_NEW_QUESTION_EVENT_NAME = "LogNewQuestion";

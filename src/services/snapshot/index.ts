@@ -2,17 +2,29 @@ import type { Address, Hash, Hex } from "viem";
 import { env } from "../../utils/env";
 import { graphQLFetch } from "../../utils/fetch-graphql";
 
-type SnapshotSpaceResponse = {
+type AddressPluginStructure = {
+  address: Address;
+};
+
+type SafePluginStructure = {
+  safes: Array<{
+    network: String;
+    realityAddress: Address;
+  }>;
+};
+
+type QueryResponse = {
   space: {
     plugins: {
-      safeSnap: {
-        address: Address;
-      };
+      safeSnap: AddressPluginStructure | SafePluginStructure;
     };
   };
 };
 /**
  * Get the address of the Reality Module contract for a given space
+ *
+ * This function supports both the deprecated plugins field format (`address` key directly present)
+ * and the new one (`safes` array with the value in the `realityAddress` key)
  *
  * @param spaceId - The ID of the space to get the contract address for
  * @returns The address of the contract
@@ -21,8 +33,8 @@ type SnapshotSpaceResponse = {
  *
  * const address = await getRealityModuleAddress("1inch.eth");
  */
-export type GetRealityModuleAddressFn = (spaceId: string) => Promise<Address | null>;
-export const getRealityModuleAddress: GetRealityModuleAddressFn = async (spaceId) => {
+export type GetRealityModuleAddressFn = (spaceId: string, chainId?: number) => Promise<Address | null>;
+export const getRealityModuleAddress: GetRealityModuleAddressFn = async (spaceId, chainId = env.CHAIN_ID) => {
   const query = `
     query {
       space(id: "${spaceId}") {
@@ -30,9 +42,20 @@ export const getRealityModuleAddress: GetRealityModuleAddressFn = async (spaceId
       }
     }
   `;
-  const { space } = await graphQLFetch<SnapshotSpaceResponse>(env.SNAPSHOT_GRAPHQL_URL, query);
+  const { space } = await graphQLFetch<QueryResponse>(env.SNAPSHOT_GRAPHQL_URL, query);
 
-  return space ? space.plugins.safeSnap.address : null;
+  const safeSnap = space?.plugins?.safeSnap;
+
+  if (!safeSnap) return null;
+
+  if ("address" in safeSnap) return safeSnap.address;
+
+  if ("safes" in safeSnap) {
+    const safe = safeSnap.safes.find((safe) => safe.network == String(chainId));
+    return safe ? safe.realityAddress : null;
+  }
+
+  return null;
 };
 
 type ProposalSafeBatchTransactionResponse = {

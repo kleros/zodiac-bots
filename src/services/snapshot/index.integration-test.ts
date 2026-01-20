@@ -4,9 +4,14 @@ import { getRealityModuleAddress, getProposal } from ".";
 describe("Snapshot API", () => {
   describe("getRealityModuleAddress", () => {
     const fn = getRealityModuleAddress;
-    it("should return the address of the reality module contract", async () => {
+    it("should return the address of the reality module contract (old JSON plugins format)", async () => {
       const address = await fn("1inch.eth");
       expect(address).to.equal(ONEINCH_MODULE_ADDRESS);
+    });
+
+    it("should return the address of the reality module contract (new JSON plugins format)", async () => {
+      const address = await fn("fast.govplay.eth");
+      expect(address).to.equal("0xc0150C90788836f06A4DEdC512F66eFe7CA0C31b");
     });
 
     it("should return null when the address is not found", async () => {
