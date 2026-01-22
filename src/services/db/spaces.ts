@@ -49,7 +49,7 @@ export const updateSpace = async (ens: string, lastProcessedBlock: bigint) => {
 };
 
 /**
- * Removes an space by its ens
+ * Removes an space by its ENS
  *
  * @param ens - The space ENS
  *
