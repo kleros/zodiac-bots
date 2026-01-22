@@ -1,15 +1,52 @@
 <%- include('./components/layout-start', { title: 'New Reality Question '}) %>
 
 <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
+    <!-- Header -->
     <tr>
         <td align="left" style="padding:0;Margin:0;padding-top:25px;padding-bottom:40px">
             <h1 style="Margin:0;line-height:25.2px;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:21px;font-style:normal;font-weight:normal;color:#daf0ff">Hi there!</h1>
             <h1 style="Margin:0;line-height:25.2px;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;font-size:21px;font-style:normal;font-weight:normal;color:#daf0ff">A new Reality question has been created for a Snapshot proposal in the space <%- notification.space.ens %>.</h1>
         </td>
     </tr>
+    <!-- /Header -->
+
+    <!-- Validation alert -->
+    <tr>
+        <td align="left" style="padding:0;Margin:0;padding-bottom:20px">
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
+                <tr>
+                    <td style="padding:14px 14px 12px 14px;Margin:0;border:1px solid #7a1f2b;background-color:#2a0f15;border-radius:8px">
+                        <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:19.2px;color:#ffd1d1;font-size:14px;font-weight:700">
+                            🚨🚨🚨 ALERT: Proposal failed automated validation 🚨🚨🚨
+                        </p>
+
+                        <p style="Margin:0;padding-top:8px;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:16.8px;color:#ffd1d1;font-size:12px">
+                            The proposal validation failed. Reason:
+                        </p>
+
+                        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px;margin-top:10px">
+                            <tr>
+                                <td style="padding:10px 12px;Margin:0;background-color:#1b0a0f;border-left:3px solid #ff4d6d">
+                                    <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;line-height:16.8px;color:#ffd1d1;font-size:12px;white-space:pre-wrap;word-break:break-word">
+                                        <%- notification.event.validationMessage %>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="Margin:0;padding-top:10px;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:16.8px;color:#ffb3b3;font-size:11px">
+                            Immediate review required: this validation failure may indicate a security issue.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <!-- /Validation alert -->
 
     <%- include('./components/event-links') %>
 
+    <!-- Details -->
     <tr>
         <td align="center" style="padding:0;Margin:0;padding-top:25px;padding-bottom:25px;font-size:0">
             <table border="0" width="100%" height="100%" cellpadding="0" cellspacing="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px">
@@ -39,6 +76,7 @@
             <p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:'open sans', 'helvetica neue', helvetica, arial, sans-serif;line-height:14.4px;color:#becce5;font-size:12px"><%- notification.event.snapshotId %></p>
         </td>
     </tr>
+    <!-- /Details -->
 
     <%- include('./components/unsubscribe') %>
 
