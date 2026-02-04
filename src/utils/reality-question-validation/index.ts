@@ -68,7 +68,8 @@ export const assertValidRealityQuestion = (event: LogNewQuestion, proposal: Snap
 
   const proposalNetworkSafe = safes.find((safe) => safe.network === proposal.network);
   if (!proposalNetworkSafe) throw new SafeNotFoundForProposalNetworkError();
-  if (proposalNetworkSafe.hash != event.question.safeHash) throw new SafeHashMismatchError();
+
+  if (proposalNetworkSafe.hash !== event.question.safeHash) throw new SafeHashMismatchError();
 };
 
 type ValidationResultOK = {
