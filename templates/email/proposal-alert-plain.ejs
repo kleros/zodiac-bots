@@ -1,0 +1,24 @@
+🚨🚨🚨 ALERT: Proposal failed automated validation 🚨🚨🚨
+
+The proposal validation failed. Reason:
+
+<%- notification.validationMessage %>
+
+Immediate review required: this validation failure may indicate a security issue.
+
+---
+
+Hey there,
+
+A new Reality question has been created for space <%- notification.space.ens %>.
+
+
+Please find the details below:
+- Snapshot proposal: <%- getSnapshotProposalLink(notification) %>
+- Reality question: <%- getRealityQuestionLink(notification) %>
+- Transaction: <%- getBlockExplorerLinkForTx(notification.event.txHash) %>
+- Question ID: <%- notification.event.questionId %>
+- Proposal ID: <%- notification.event.snapshotId %>
+
+Best regards,
+Kleros Zodiac Notifications Bot

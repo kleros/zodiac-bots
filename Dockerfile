@@ -1,7 +1,7 @@
 FROM node:24.12.0-alpine
 
 ARG TARGETPLATFORM
-ENV WAITDEPS_VERSION 0.0.1
+ENV WAITDEPS_VERSION=0.0.1
 
 RUN set -o pipefail \
   && ARCH=$(echo ${TARGETPLATFORM} | cut -d '/' -f 2) \

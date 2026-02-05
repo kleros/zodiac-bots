@@ -9,5 +9,14 @@ Please find the details below:
 - Question ID: <%- notification.event.questionId %>
 - Proposal ID: <%- notification.event.snapshotId %>
 
+These automated checks have passed:
+- The proposal Safe hash is the keccak256 of the concatenated individual hashes
+- The hash embedded in the Reality.eth question matches the proposal Safe hash
+
+The following checks need manual action:
+- The proposal passed (per Snapshot results)
+- The question was created after the proposal was resolved
+- The proposal meets the DAO’s requirements
+
 Best regards,
 Kleros Zodiac Notifications Bot

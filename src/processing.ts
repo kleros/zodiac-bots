@@ -1,10 +1,11 @@
+import type { EventEmitter } from "node:events";
 import {
   BotEventNames,
   type SpaceDetailedPayload,
   type SpaceSkippedPayload,
   type SpaceStartedPayload,
 } from "./bot-events";
-import { AnswerNotificationEvent, EventType, notify } from "./notify";
+import { EventType, InvalidProposalNotification, Notification, notify, ValidProposalNotification } from "./notify";
 import { findProposalByQuestionId, insertProposal } from "./services/db/proposals";
 import { updateSpace } from "./services/db/spaces";
 import { getPublicClient } from "./services/provider";
@@ -12,14 +13,17 @@ import {
   getLogNewAnswer,
   getLogNewQuestion,
   getProposalQuestionsCreated,
+  LogNewQuestion,
   type LogNewAnswer,
   type ProposalQuestionCreated,
 } from "./services/reality";
+import { getProposal } from "./services/snapshot";
+import type { Space } from "./types";
 import { defaultEmitter } from "./utils/emitter";
 import { env } from "./utils/env";
-import type { EventEmitter } from "node:events";
-import type { Space } from "./types";
-import { InvalidLogNewQuestionArgsEventError, MissingLogNewQuestionEventError } from "./utils/errors";
+import { MissingLogNewQuestionEventError, MissingSnapshotProposalError } from "./utils/errors";
+import { validateRealityQuestion, ValidationResult } from "./utils/reality-question-validation";
+import { ValidationErrorSeverity } from "./utils/reality-question-validation/errors";
 
 /**
  * Process all spaces, respecting the batch size. Triggers a notification per event. Returns the
@@ -196,20 +200,73 @@ export const processProposals = (space: Space, proposals: ProposalQuestionCreate
     space,
     proposals,
     getLogNewQuestionFn: getLogNewQuestion,
+    getSnapshotProposalFn: getProposal,
+    validateRealityQuestionFn: validateRealityQuestion,
     notifyFn: notify,
     insertProposalFn: insertProposal,
   });
+};
+
+/**
+ * Builds a new proposal notification based on the validation result
+ *
+ * @param space - The space that the proposal belongs to
+ * @param proposalCreationEvent - The proposal creation event
+ * @param logNewQuestionEvent - The LogNewQuestion event
+ * @param validation - The validation result
+ * @returns A new notification
+ */
+const buildProposalNotification = (
+  space: Space,
+  proposalCreationEvent: ProposalQuestionCreated,
+  logNewQuestionEvent: LogNewQuestion,
+  validation: ValidationResult,
+): Notification => {
+  const notification = {
+    event: {
+      ...proposalCreationEvent,
+      snapshotId: logNewQuestionEvent.question.proposalId,
+      startedAt: logNewQuestionEvent.startedAt,
+      finishedAt: logNewQuestionEvent.finishedAt,
+      timeout: logNewQuestionEvent.timeout,
+    },
+    space,
+  } as Partial<Notification>;
+
+  if (validation.isValid) {
+    notification.type = EventType.PROPOSAL_QUESTION_VALID;
+    return notification as ValidProposalNotification;
+  }
+
+  return {
+    ...notification,
+    type:
+      validation.severity === ValidationErrorSeverity.INCOMPLETE_DATA
+        ? EventType.PROPOSAL_QUESTION_INCOMPLETE_DATA
+        : EventType.PROPOSAL_QUESTION_ALERT,
+    validationMessage: validation.message,
+  } as InvalidProposalNotification;
 };
 
 type ConfigurableProcessProposalsDeps = {
   space: Space;
   proposals: ProposalQuestionCreated[];
   getLogNewQuestionFn: typeof getLogNewQuestion;
+  getSnapshotProposalFn: typeof getProposal;
+  validateRealityQuestionFn: typeof validateRealityQuestion;
   notifyFn: typeof notify;
   insertProposalFn: typeof insertProposal;
 };
 export const configurableProcessProposals = async (deps: ConfigurableProcessProposalsDeps) => {
-  const { space, proposals, getLogNewQuestionFn, insertProposalFn, notifyFn } = deps;
+  const {
+    space,
+    proposals,
+    getLogNewQuestionFn,
+    getSnapshotProposalFn,
+    validateRealityQuestionFn,
+    insertProposalFn,
+    notifyFn,
+  } = deps;
 
   await Promise.all(
     proposals.map(async (event) => {
@@ -219,16 +276,23 @@ export const configurableProcessProposals = async (deps: ConfigurableProcessProp
         toBlock: event.blockNumber,
       });
       const newQuestionEvent = questions.find((q) => q.questionId === event.questionId);
-
       if (!newQuestionEvent) throw new MissingLogNewQuestionEventError(event.txHash, space.ens);
-      if (newQuestionEvent.question.length < 2) throw new InvalidLogNewQuestionArgsEventError(event.txHash, space.ens);
-
       const { question, startedAt, finishedAt, timeout } = newQuestionEvent;
-      const snapshotId = question[0];
 
-      const logNewQuestionFields = { snapshotId, startedAt, finishedAt, timeout };
+      const proposal = await getSnapshotProposalFn(question.proposalId);
+      if (!proposal) throw new MissingSnapshotProposalError(event.proposalId, event.questionId, event.txHash);
+
+      const validation = validateRealityQuestionFn(newQuestionEvent, proposal);
+
+      const logNewQuestionFields = {
+        snapshotId: question.proposalId,
+        startedAt,
+        finishedAt,
+        timeout,
+      };
 
       return Promise.all([
+        notifyFn(buildProposalNotification(space, event, newQuestionEvent, validation)),
         insertProposalFn({
           ens: space.ens,
           proposalId: event.proposalId,
@@ -236,14 +300,6 @@ export const configurableProcessProposals = async (deps: ConfigurableProcessProp
           txHash: event.txHash,
           happenedAt: event.happenedAt,
           ...logNewQuestionFields,
-        }),
-        notifyFn({
-          type: EventType.PROPOSAL_QUESTION_CREATED,
-          event: {
-            ...event,
-            ...logNewQuestionFields,
-          },
-          space,
         }),
       ]);
     }),

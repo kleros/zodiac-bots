@@ -1,0 +1,17 @@
+*<%- notification.space.ens %>: 🗳 New Reality Proposal Question!*
+<<%- getSnapshotProposalLink(notification) %>|Snapshot Proposal>
+<<%- getRealityQuestionLink(notification) %>|Reality Question>
+<<%- getBlockExplorerLinkForTx(notification.event.txHash) %>|Transaction>
+
+*Details:*
+_Question ID_: `<%- notification.event.questionId %>`
+_Proposal ID_: `<%- notification.event.snapshotId %>`
+
+*Automated checks passed:*
+🟢 The proposal Safe hash is the keccak256 of the concatenated individual hashes
+🟢 The hash embedded in the Reality.eth question matches the proposal Safe hash
+
+*Manual validation required:*
+🟡 The proposal passed (per Snapshot results)
+🟡 The question was created after the proposal was resolved
+🟡 The proposal meets the DAO’s requirements

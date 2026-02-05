@@ -3,8 +3,8 @@ import {
   AnswerNotification,
   AnswerNotificationEvent,
   EventType,
-  ProposalNotification,
   ProposalNotificationEvent,
+  ValidProposalNotification,
 } from "../notify";
 import { InsertableProposal } from "../services/db/proposals";
 import type { ProposalQuestionCreated } from "../services/reality";
@@ -71,8 +71,10 @@ export const randomizeAnswerEventField = (): AnswerNotificationEvent => ({
  *
  * @param fields - Fields that has a fixed value and should not be randomized
  */
-export const randomizeProposalNotification = (fields?: Partial<ProposalNotification>): ProposalNotification => ({
-  type: EventType.PROPOSAL_QUESTION_CREATED,
+export const randomizeProposalNotification = (
+  fields?: Partial<ValidProposalNotification>,
+): ValidProposalNotification => ({
+  type: EventType.PROPOSAL_QUESTION_VALID,
   space: randomizeSpace(),
   event: randomizeProposalNotificationEvent(),
   ...fields,

@@ -1,4 +1,14 @@
 *<%- notification.space.ens %>: 🗳 New Reality Proposal Question!*
+
+🚨🚨🚨 ALERT: Proposal failed automated validation 🚨🚨🚨
+
+*Validation issue:*
+The proposal validation failed. Reason:
+
+> <%- notification.validationMessage %>
+
+Immediate review required: this validation failure may indicate a security issue.
+
 <<%- getSnapshotProposalLink(notification) %>|Snapshot Proposal>
 <<%- getRealityQuestionLink(notification) %>|Reality Question>
 <<%- getBlockExplorerLinkForTx(notification.event.txHash) %>|Transaction>

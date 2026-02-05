@@ -24,3 +24,5 @@ dist
 
 # Local dev tooling
 mise.toml
+.shadowgit.git
+.shadowgit-ignore

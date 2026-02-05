@@ -47,3 +47,16 @@ export const updateSpace = async (ens: string, lastProcessedBlock: bigint) => {
   const { db } = getConnection();
   await db.update(schema.space).set({ lastProcessedBlock }).where(eq(schema.space.ens, ens));
 };
+
+/**
+ * Removes an space by its ENS
+ *
+ * @param ens - The space ENS
+ *
+ * @example
+ * await removeSpaceByEns("1inch.eth");
+ */
+export const removeSpaceByEns = async (ens: string) => {
+  const { db } = getConnection();
+  await db.delete(schema.space).where(eq(schema.space.ens, ens));
+};

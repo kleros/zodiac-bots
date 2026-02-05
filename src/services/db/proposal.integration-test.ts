@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { Hash } from "viem";
-import type { ProposalNotification } from "../../notify";
+import type { ValidProposalNotification } from "../../notify";
 import type { Space } from "../../types";
 import { randomizeProposal, randomizeProposalNotification, randomizeSpace } from "../../utils/test-mocks";
 import { expect } from "../../utils/tests-setup";
@@ -9,7 +9,7 @@ import { findProposalByQuestionId, insertProposal, removeProposalByQuestionId } 
 import * as schema from "./schema";
 import { insertSpaces } from "./spaces";
 
-const randomizeProposalFromNotification = (notification: ProposalNotification) =>
+const randomizeProposalFromNotification = (notification: ValidProposalNotification) =>
   randomizeProposal({
     ens: notification.space.ens,
     questionId: notification.event.questionId,

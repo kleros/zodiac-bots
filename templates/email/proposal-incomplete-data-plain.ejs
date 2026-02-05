@@ -1,0 +1,30 @@
+⚠️WARNING: Unable to validate proposal keccak hash ⚠️
+
+We were unable to complete the automated keccak validation. This does not necessarily indicate an attack. Reason:
+
+<%- notification.validationMessage %>
+
+Manual review required: treat this as a potential security risk until verified.
+
+---
+
+Hey there,
+
+A new Reality question has been created for space <%- notification.space.ens %>.
+
+Please find the details below:
+- Snapshot proposal: <%- getSnapshotProposalLink(notification) %>
+- Reality question: <%- getRealityQuestionLink(notification) %>
+- Transaction: <%- getBlockExplorerLinkForTx(notification.event.txHash) %>
+- Question ID: <%- notification.event.questionId %>
+- Proposal ID: <%- notification.event.snapshotId %>
+
+Manual validation required:
+- ⚠️ The proposal Safe hash is the keccak256 of the concatenated individual hashes (automated validation unavailable)
+- ⚠️ The hash embedded in the Reality.eth question matches the proposal Safe hash (automated validation unavailable)
+- 🟡 The proposal passed (per Snapshot results)
+- 🟡 The question was created after the proposal was resolved
+- 🟡 The proposal meets the DAO’s requirements
+
+Best regards,
+Kleros Zodiac Notifications Bot

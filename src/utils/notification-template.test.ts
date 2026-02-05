@@ -1,4 +1,4 @@
-import { EventType, TransportName } from "../notify";
+import { EventType, InvalidProposalNotification, TransportName } from "../notify";
 import { getTemplateFilePath, render } from "./notification-template";
 import { randomizeAnswerNotification, randomizeProposalNotification } from "./test-mocks";
 import { expect } from "./tests-setup";
@@ -12,14 +12,14 @@ describe("Notification templates", () => {
 
     it("should resolve the path for a proposal via Telegram", () => {
       const transportName: TransportName = "telegram";
-      const result = fn(transportName, EventType.PROPOSAL_QUESTION_CREATED);
-      expect(result).to.equal("telegram/proposal-created.ejs");
+      const result = fn(transportName, EventType.PROPOSAL_QUESTION_VALID);
+      expect(result).to.equal("telegram/proposal-valid.ejs");
     });
 
     it("should resolve the path for a proposal email subject", () => {
       const transportName: TransportName = "email";
-      const result = fn(transportName, EventType.PROPOSAL_QUESTION_CREATED, "subject");
-      expect(result).to.equal("email/proposal-created-subject.ejs");
+      const result = fn(transportName, EventType.PROPOSAL_QUESTION_VALID, "subject");
+      expect(result).to.equal("email/proposal-valid-subject.ejs");
     });
 
     it("should resolve the path for an answer via Slack", () => {
@@ -36,7 +36,7 @@ describe("Notification templates", () => {
     // expected to be customized, so tests are more predictable
     const transportName = "test" as any as TransportName;
 
-    it("should interpolate a Proposal notification into a test template", async () => {
+    it("should interpolate a valid Proposal notification into a test template", async () => {
       const notification = randomizeProposalNotification();
       const result = await fn(transportName, notification);
 
@@ -60,6 +60,56 @@ event.timeout: ${event.timeout}
 event.happenedAt: ${event.happenedAt.toISOString()}
 `;
       expect(result).to.equal(expectedResult.trim());
+    });
+
+    describe("should interpolate an invalid Proposal notification into a test template", async () => {
+      const cases = [
+        {
+          title: "when the notification is a warning due to missing data",
+          notification: {
+            ...randomizeProposalNotification(),
+            type: EventType.PROPOSAL_QUESTION_INCOMPLETE_DATA,
+            validationMessage: "This is the warning message reason",
+          } as InvalidProposalNotification,
+        },
+        {
+          title: "when the notification is an alert due to validation failure",
+          type: EventType.PROPOSAL_QUESTION_ALERT,
+          notification: {
+            ...randomizeProposalNotification(),
+            type: EventType.PROPOSAL_QUESTION_ALERT,
+            validationMessage: "This is the alert message reason",
+          } as InvalidProposalNotification,
+        },
+      ];
+
+      cases.forEach(({ title, notification }) => {
+        it(title, async () => {
+          const result = await fn(transportName, notification);
+
+          const { type, space, event, validationMessage } = notification;
+          const expectedResult = `
+type: ${type}
+unsubscribeEmail: ${unsubscribeEmail}
+space.ens: ${space.ens}
+space.moduleAddress: ${space.moduleAddress}
+space.oracleAddress: ${space.oracleAddress}
+space.startBlock: ${space.startBlock}
+space.lastProcessedBlock: ${space.lastProcessedBlock}
+event.txHash: ${event.txHash}
+event.blockNumber: ${event.blockNumber}
+event.questionId: ${event.questionId}
+event.proposalId: ${event.proposalId}
+event.snapshotId: ${event.snapshotId}
+event.startedAt: ${event.startedAt.toISOString()}
+event.finishedAt: ${event.finishedAt.toISOString()}
+event.timeout: ${event.timeout}
+event.happenedAt: ${event.happenedAt.toISOString()}
+validationMessage: ${validationMessage}
+`;
+          expect(result).to.equal(expectedResult.trim());
+        });
+      });
     });
 
     it("should interpolate an Answer notification into a test template", async () => {

@@ -4,30 +4,11 @@ import {
   getLogNewAnswer,
   getLogNewQuestion,
   getProposalQuestionsCreated,
-  getRealityModuleAddress,
   getRealityOracleAddress,
   getSpaceAddresses,
 } from ".";
 
 describe("Reality", () => {
-  const fn = getRealityModuleAddress;
-  describe("getRealityModuleAddress", () => {
-    it("should return the address of the reality module contract (old JSON plugins format)", async () => {
-      const address = await fn("1inch.eth");
-      expect(address).to.equal(ONEINCH_MODULE_ADDRESS);
-    });
-
-    it("should return the address of the reality module contract (new JSON plugins format)", async () => {
-      const address = await fn("testsnapshotspace.eth");
-      expect(address).to.equal("0x27bC6f27581CA89809213eDd7dD1ff7b55E65F8C");
-    });
-
-    it("should return null when the address is not found", async () => {
-      const address = await fn("doesntexists");
-      expect(address).to.be.null;
-    });
-  });
-
   describe("getRealityOracleAddress", () => {
     const fn = getRealityOracleAddress;
     it("should return the address of the reality oracle contract", async () => {
@@ -118,10 +99,10 @@ describe("Reality", () => {
         blockNumber: 19475120n,
         questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf",
         user: "0xa62d2a75eb39c12e908e9f6bf50f189641692f2e",
-        question: [
-          "0xa455f437479cad77a20096c1717f2b23777f258060dd6a0d5882a9aebfaf8275",
-          "16f33619042ad909e8be177b122b02895f90e29c3cd4f17262cee4f148dca9b0",
-        ],
+        question: {
+          proposalId: "0xa455f437479cad77a20096c1717f2b23777f258060dd6a0d5882a9aebfaf8275",
+          safeHash: "0x16f33619042ad909e8be177b122b02895f90e29c3cd4f17262cee4f148dca9b0",
+        },
         startedAt: new Date("2024-03-20T09:48:23.000Z"),
         timeout: 259200,
         finishedAt: new Date("2024-03-23T09:48:23.000Z"),

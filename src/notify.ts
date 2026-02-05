@@ -16,7 +16,9 @@ export const transports: { [key in TransportName]: TransportFn } = {
 export const transportNames = Object.keys(transports) as TransportName[];
 
 export enum EventType {
-  PROPOSAL_QUESTION_CREATED = "proposal-created",
+  PROPOSAL_QUESTION_VALID = "proposal-valid",
+  PROPOSAL_QUESTION_INCOMPLETE_DATA = "proposal-incomplete-data",
+  PROPOSAL_QUESTION_ALERT = "proposal-alert",
   NEW_ANSWER = "answer-issued",
 }
 
@@ -24,17 +26,25 @@ export type ProposalNotificationEvent = ProposalQuestionCreated &
   Pick<Proposal, "snapshotId" | "startedAt" | "timeout" | "finishedAt">;
 export type AnswerNotificationEvent = LogNewAnswer & Pick<Proposal, "snapshotId">;
 
-export type ProposalNotification = {
+export type ValidProposalNotification = {
   space: Space;
-  type: EventType.PROPOSAL_QUESTION_CREATED;
+  type: EventType.PROPOSAL_QUESTION_VALID;
   event: ProposalNotificationEvent;
 };
+
+export type InvalidProposalNotification = {
+  space: Space;
+  type: EventType.PROPOSAL_QUESTION_INCOMPLETE_DATA | EventType.PROPOSAL_QUESTION_ALERT;
+  event: ProposalNotificationEvent;
+  validationMessage: string;
+};
+
 export type AnswerNotification = {
   space: Space;
   type: EventType.NEW_ANSWER;
   event: AnswerNotificationEvent;
 };
-export type Notification = ProposalNotification | AnswerNotification;
+export type Notification = ValidProposalNotification | InvalidProposalNotification | AnswerNotification;
 
 /**
  * Sends the notification via all the transports, skipping any transport that may have already processed it.
