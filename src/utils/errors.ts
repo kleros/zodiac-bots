@@ -8,12 +8,3 @@ export class MissingLogNewQuestionEventError extends Error {
     Error.captureStackTrace(this, MissingLogNewQuestionEventError);
   }
 }
-
-export class MissingSnapshotProposalError extends Error {
-  constructor(proposalId: Hex, questionId: Hex, txHash: Hash) {
-    const message = `Unable to resolve proposal ${proposalId} related to Reality question ${questionId} present in the LogNewQuestion event in tx ${txHash}`;
-    super(message);
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, MissingSnapshotProposalError);
-  }
-}

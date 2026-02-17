@@ -4,6 +4,7 @@ import { SnapshotProposal } from "../../services/snapshot";
 import { calculateTxHash } from "./eip-712-transaction-hash";
 import {
   BaseProposalValidationError,
+  MissingSnapshotProposalError,
   ProposalIdMismatchError,
   SafeHashCalculationError,
   SafeHashMismatchError,
@@ -27,10 +28,13 @@ import {
  * // it will just execute without returning anything
  * assertValidRealityQuestion(event, proposal);
  */
-export const assertValidRealityQuestion = (event: LogNewQuestion, proposal: SnapshotProposal) => {
+export const assertValidRealityQuestion = (event: LogNewQuestion, proposal: SnapshotProposal | null) => {
+  if (!proposal) throw new MissingSnapshotProposalError(event.question.proposalId);
+
   if (proposal.id != event.question.proposalId) {
     throw new ProposalIdMismatchError(proposal.id, event.question.proposalId);
   }
+
   const safes = proposal.plugins?.safeSnap?.safes;
   if (!safes || safes.length < 1) {
     throw new SafeSnapPluginConfigurationError();
@@ -96,7 +100,7 @@ export type ValidationResult = ValidationResultOK | ValidationResultFailed;
  * const result = validateRealityQuestion(event, proposal);
  * if (result.isValid) console.log("Validation passed!");
  */
-export const validateRealityQuestion = (event: LogNewQuestion, proposal: SnapshotProposal): ValidationResult => {
+export const validateRealityQuestion = (event: LogNewQuestion, proposal: SnapshotProposal | null): ValidationResult => {
   try {
     assertValidRealityQuestion(event, proposal);
     return { isValid: true };
