@@ -52,7 +52,10 @@ export const getRealityQuestionLink = (
     space: { oracleAddress },
     event: { questionId },
   } = notification;
-  return interpolateUrlTemplate(template, { oracleAddress, questionId });
+  return interpolateUrlTemplate(template, {
+    oracleAddress: oracleAddress.toLowerCase(),
+    questionId: questionId.toLowerCase(),
+  });
 };
 
 /**

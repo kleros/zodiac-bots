@@ -27,7 +27,7 @@ describe("getRealityQuestionLink", () => {
     } as any as ValidProposalNotification;
     const template = "http://test.com/{{oracleAddress}}/questions/{{questionId}}";
     const result = getRealityQuestionLink(notification, template);
-    expect(result).to.eql(`http://test.com/${oracleAddress}/questions/${questionId}`);
+    expect(result).to.eql(`http://test.com/${oracleAddress.toLowerCase()}/questions/${questionId.toLowerCase()}`);
   });
 });
 
