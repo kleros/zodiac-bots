@@ -21,7 +21,7 @@ import { getProposal } from "./services/snapshot";
 import type { Space } from "./types";
 import { defaultEmitter } from "./utils/emitter";
 import { env } from "./utils/env";
-import { MissingLogNewQuestionEventError, MissingSnapshotProposalError } from "./utils/errors";
+import { MissingLogNewQuestionEventError } from "./utils/errors";
 import { validateRealityQuestion, ValidationResult } from "./utils/reality-question-validation";
 import { ValidationErrorSeverity } from "./utils/reality-question-validation/errors";
 
@@ -280,7 +280,6 @@ export const configurableProcessProposals = async (deps: ConfigurableProcessProp
       const { question, startedAt, finishedAt, timeout } = newQuestionEvent;
 
       const proposal = await getSnapshotProposalFn(question.proposalId);
-      if (!proposal) throw new MissingSnapshotProposalError(event.proposalId, event.questionId, event.txHash);
 
       const validation = validateRealityQuestionFn(newQuestionEvent, proposal);
 

@@ -4,6 +4,7 @@ import { LogNewQuestion } from "../../services/reality";
 import { assertValidRealityQuestion } from ".";
 import { expect } from "chai";
 import {
+  MissingSnapshotProposalError,
   ProposalIdMismatchError,
   SafeHashCalculationError,
   SafeHashMismatchError,
@@ -102,6 +103,10 @@ describe("Reality/Proposal Validation", () => {
     });
 
     describe("it should warn when it is missing data to perform the validation", () => {
+      it("because there is not proposal", () => {
+        expect(() => fn(event, null)).to.throw(MissingSnapshotProposalError);
+      });
+
       it("because the snapshot plugin data is missing", () => {
         // @ts-ignore Force test condition
         proposal.plugins.safeSnap = null;

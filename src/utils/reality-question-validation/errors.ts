@@ -1,4 +1,4 @@
-import { Hash } from "viem";
+import { Hash, Hex } from "viem";
 
 export enum ValidationErrorSeverity {
   SECURITY_ALERT = "security-alert",
@@ -17,6 +17,15 @@ export class BaseProposalValidationError extends Error {
   constructor(severity: ValidationErrorSeverity, message: string) {
     super(message);
     this.severity = severity;
+  }
+}
+
+export class MissingSnapshotProposalError extends BaseProposalValidationError {
+  constructor(proposalId: Hex) {
+    super(
+      ValidationErrorSeverity.INCOMPLETE_DATA,
+      `The Snapshot GraphQL API didn't return any proposal with proposalId ${proposalId}`,
+    );
   }
 }
 
