@@ -29,6 +29,20 @@
       "when": 1721888032141,
       "tag": "0003_proposal_add_snapshot_id_and_timestamps",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1784667567871,
+      "tag": "0004_notification_add_log_index",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1784667567872,
+      "tag": "0005_proposal_rekey_question_id",
+      "breakpoints": true
     }
   ]
 }

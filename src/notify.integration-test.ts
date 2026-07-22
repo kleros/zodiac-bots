@@ -30,11 +30,11 @@ describe("Notify", () => {
     expect((transportsMock.slack as SinonSpy).calledOnce, "slack not notified").to.be.true;
 
     expect((transportsMock.email as SinonSpy).calledOnce, "email not notified").to.be.true;
-    const usedTransports = await findUsedTransports(notification.event.txHash);
+    const usedTransports = await findUsedTransports(notification.event.txHash, notification.event.logIndex);
     expect(usedTransports).to.have.lengthOf(transportNames.length);
   });
 
-  it("should skip transports that are already used for the txHash", async () => {
+  it("should skip transports that are already used for the log", async () => {
     const notification = randomizeProposalNotification();
     await insertUsedTransport(notification, "telegram");
 
@@ -49,7 +49,7 @@ describe("Notify", () => {
     expect((transportsMock.slack as SinonSpy).calledOnce, "slack not notified").to.be.true;
     expect((transportsMock.email as SinonSpy).calledOnce, "email not notified").to.be.true;
 
-    const usedTransports = await findUsedTransports(notification.event.txHash);
+    const usedTransports = await findUsedTransports(notification.event.txHash, notification.event.logIndex);
     expect(usedTransports).to.have.lengthOf(transportNames.length);
   });
 });

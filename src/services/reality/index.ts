@@ -120,6 +120,7 @@ export type ProposalQuestionCreated = {
   questionId: Hash;
 
   txHash: Hash;
+  logIndex: number;
   blockNumber: bigint;
   happenedAt: Date;
 };
@@ -162,6 +163,7 @@ export const getProposalQuestionsCreated: GetProposalQuestionsCreatedFn = async 
       return {
         proposalId: decoded.args.proposalId as Hash,
         txHash: log.transactionHash,
+        logIndex: log.logIndex,
         questionId: decoded.args.questionId as Hash,
         blockNumber: log.blockNumber,
         happenedAt,
@@ -260,6 +262,7 @@ export type LogNewAnswer = {
 
   blockNumber: bigint;
   txHash: Hash;
+  logIndex: number;
   happenedAt: Date;
 };
 
@@ -306,6 +309,7 @@ export const getLogNewAnswer: GetLogNewAnswerFn = async (args) => {
       bond: decoded.args.bond,
       user: decoded.args.user,
       txHash: log.transactionHash,
+      logIndex: log.logIndex,
       blockNumber: log.blockNumber,
       happenedAt,
     };

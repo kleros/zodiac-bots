@@ -43,6 +43,7 @@ export const randomizeProposalQuestionCreated = (): ProposalQuestionCreated => (
   txHash: getRandomHash(),
   proposalId: getRandomHash(),
   questionId: getRandomHash(),
+  logIndex: Math.floor(Math.random() * 1000),
   blockNumber: 50n,
   happenedAt: new Date(),
 });
@@ -62,6 +63,7 @@ export const randomizeAnswerEventField = (): AnswerNotificationEvent => ({
   bond: 100000000000000000n,
   user: getRandomAddress(),
   txHash: getRandomHash(),
+  logIndex: Math.floor(Math.random() * 1000),
   blockNumber: 50n,
   happenedAt: new Date(),
 });

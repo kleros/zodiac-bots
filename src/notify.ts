@@ -72,7 +72,8 @@ type ConfigurableNotifyDeps = {
 };
 export const configurableNotify = async (deps: ConfigurableNotifyDeps) => {
   const { notification, transports, findUsedTransportsFn, insertUsedTransportFn } = deps;
-  const usedTransports = await findUsedTransportsFn(notification.event.txHash);
+  const { txHash, logIndex } = notification.event;
+  const usedTransports = await findUsedTransportsFn(txHash, logIndex);
   const pendingTransports = transportNames.filter((name) => !usedTransports.includes(name));
 
   await Promise.all(

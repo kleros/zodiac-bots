@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Hash } from "viem";
 import type { ValidProposalNotification } from "../../notify";
 import type { Space } from "../../types";
-import { randomizeProposal, randomizeProposalNotification, randomizeSpace } from "../../utils/test-mocks";
+import { getRandomHash, randomizeProposal, randomizeProposalNotification, randomizeSpace } from "../../utils/test-mocks";
 import { expect } from "../../utils/tests-setup";
 import { getConnection } from "./connection";
 import { findProposalByQuestionId, insertProposal, removeProposalByQuestionId } from "./proposals";
@@ -35,7 +35,10 @@ describe("Active Proposals model", () => {
       const fields = randomizeProposalFromNotification(notification);
       await fn(fields);
 
-      const inserted = await db.select().from(schema.proposal).where(eq(schema.proposal.questionId, fields.questionId));
+      const inserted = await db
+        .select()
+        .from(schema.proposal)
+        .where(eq(schema.proposal.questionId, fields.questionId));
 
       expect(inserted).to.be.length(1);
 
@@ -45,6 +48,35 @@ describe("Active Proposals model", () => {
         ...fields,
         createdAt: storedProposal.createdAt,
       });
+    });
+
+    it("should persist two questions that share a proposalId (re-ask / reuse) without orphaning either", async () => {
+      const proposalId = getRandomHash();
+      const first = randomizeProposal({ ens: space.ens, proposalId });
+      const second = randomizeProposal({ ens: space.ens, proposalId });
+
+      await fn(first);
+      await fn(second);
+
+      const [firstStored, secondStored] = await Promise.all([
+        findProposalByQuestionId(first.questionId as Hash),
+        findProposalByQuestionId(second.questionId as Hash),
+      ]);
+      expect(firstStored).to.be.not.null;
+      expect(secondStored).to.be.not.null;
+    });
+
+    it("should be idempotent when the same question is processed twice", async () => {
+      const proposal = randomizeProposal({ ens: space.ens });
+
+      await fn(proposal);
+      await fn(proposal);
+
+      const stored = await db
+        .select()
+        .from(schema.proposal)
+        .where(eq(schema.proposal.questionId, proposal.questionId));
+      expect(stored).to.be.length(1);
     });
   });
 
