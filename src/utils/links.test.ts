@@ -1,4 +1,5 @@
 import { ValidProposalNotification } from "../notify";
+import { env } from "./env";
 import { getBlockExplorerLinkForTx, getRealityQuestionLink, interpolateUrlTemplate } from "./links";
 import { expect } from "./tests-setup";
 
@@ -25,9 +26,11 @@ describe("getRealityQuestionLink", () => {
         questionId,
       },
     } as any as ValidProposalNotification;
-    const template = "http://test.com/{{oracleAddress}}/questions/{{questionId}}";
+    const template = "http://test.com/network/{{chainId}}/{{oracleAddress}}/questions/{{questionId}}";
     const result = getRealityQuestionLink(notification, template);
-    expect(result).to.eql(`http://test.com/${oracleAddress.toLowerCase()}/questions/${questionId.toLowerCase()}`);
+    expect(result).to.eql(
+      `http://test.com/network/${env.CHAIN_ID}/${oracleAddress.toLowerCase()}/questions/${questionId.toLowerCase()}`,
+    );
   });
 });
 
