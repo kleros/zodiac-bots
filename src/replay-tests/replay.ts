@@ -2,8 +2,10 @@ import type { Hash } from "viem";
 import { configurableNotify, type Notification, transports } from "../notify";
 import { configurableProcessAnswers, configurableProcessProposals, configurableProcessSpace } from "../processing";
 import { initialize as initializeEmail } from "../services/email";
+import { getConnection } from "../services/db/connection";
 import { findUsedTransports, insertUsedTransport } from "../services/db/notifications";
 import { findProposalByQuestionId, insertProposal, removeProposalByQuestionId } from "../services/db/proposals";
+import * as schema from "../services/db/schema";
 import { insertSpaces, updateSpace } from "../services/db/spaces";
 import { getLogNewQuestion, type LogNewAnswer, type ProposalQuestionCreated } from "../services/reality";
 import { getProposal } from "../services/snapshot";
@@ -46,10 +48,12 @@ export type Replay = {
  * await replay.processBlock(BUNDLED_ANSWER.block);
  */
 export const setupReplay = (fixtureQuestionIds: Hash[]): Replay => {
+  const { db } = getConnection();
   let space: Space;
   let captured: Notification[];
 
-  const clearFixtures = () => Promise.all(fixtureQuestionIds.map((id) => removeProposalByQuestionId(id)));
+  const clearFixtures = () =>
+    Promise.all([db.delete(schema.notification), ...fixtureQuestionIds.map((id) => removeProposalByQuestionId(id))]);
 
   before(() => initializeEmail());
 

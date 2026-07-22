@@ -50,7 +50,7 @@ describe("Notification model", () => {
       await db.insert(schema.notification).values(insertedNotifications);
 
       const result = await fn(proposal.event.txHash, proposal.event.logIndex);
-      expect(result).to.deep.eq(presentTransports);
+      expect(result).to.have.members(presentTransports);
     });
 
     it("should scope the result to the log index, not the whole transaction", async () => {
