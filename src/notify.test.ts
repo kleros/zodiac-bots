@@ -69,6 +69,38 @@ describe("configurableNotify - per-log dedup", () => {
     expect(questionsSent).to.have.lengthOf(transportNames.length);
   });
 
+  it("notifies every log when several questions and answers are bundled in one transaction", async () => {
+    const fakes = makeNotifyFakes();
+    const txHash = mocks.getRandomHash();
+
+    const questions = [mocks.randomizeProposalNotification(), mocks.randomizeProposalNotification()];
+    const answers = [mocks.randomizeAnswerNotification(), mocks.randomizeAnswerNotification()];
+    const bundled = [...questions, ...answers];
+    bundled.forEach((notification, position) => {
+      notification.event.txHash = txHash;
+      notification.event.logIndex = 43 + position;
+    });
+
+    await Promise.all(
+      bundled.map((notification) =>
+        configurableNotify({
+          notification,
+          transports: fakes.transports,
+          findUsedTransportsFn: fakes.findUsedTransportsFn,
+          insertUsedTransportFn: fakes.insertUsedTransportFn,
+        }),
+      ),
+    );
+
+    expect(fakes.sent).to.have.lengthOf(bundled.length * transportNames.length);
+    bundled.forEach((notification) => {
+      const transportsForLog = fakes.sent
+        .filter((record) => record.txHash === txHash && record.logIndex === notification.event.logIndex)
+        .map((record) => record.transport);
+      expect(transportsForLog).to.have.members(transportNames);
+    });
+  });
+
   it("does not notify the same log twice across reprocessing", async () => {
     const fakes = makeNotifyFakes();
     const deps = {
