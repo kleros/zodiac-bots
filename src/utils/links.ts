@@ -40,6 +40,8 @@ export const interpolateUrlTemplate = (template: string, fields: Record<string, 
  *
  * @param notification - The notification object related to the triggering event
  * @param template - An string with handlebar-like syntax with the link structure
+ * @param chainId - The chain the question lives on. This should be the chain of the space's
+ *   oracle/module, but that is not modeled or stored yet, so it defaults to the monitored chain.
  *
  * @example
  * const link = getRealityQuestionLink(notification);
@@ -47,12 +49,14 @@ export const interpolateUrlTemplate = (template: string, fields: Record<string, 
 export const getRealityQuestionLink = (
   notification: ValidProposalNotification | AnswerNotification,
   template: string = env.REALITY_LINK_TEMPLATE,
+  chainId: string = env.CHAIN_ID.toString(),
 ): string => {
   const {
     space: { oracleAddress },
     event: { questionId },
   } = notification;
   return interpolateUrlTemplate(template, {
+    chainId,
     oracleAddress: oracleAddress.toLowerCase(),
     questionId: questionId.toLowerCase(),
   });

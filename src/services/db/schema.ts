@@ -12,20 +12,21 @@ export const notification = pgTable(
   "notification",
   {
     txHash: varchar("tx_hash", { length: 66 }).notNull(),
+    logIndex: integer("log_index").notNull(),
     block: bigint("block", { mode: "bigint" }).notNull(),
     transportName: transportEnum("transport_name").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.txHash, t.transportName] }),
+    pk: primaryKey({ columns: [t.txHash, t.logIndex, t.transportName] }),
   }),
 );
 
 export const proposal = pgTable(
   "proposal",
   {
-    proposalId: varchar("proposal_id", { length: 66 }).notNull().primaryKey(),
-    questionId: varchar("question_id", { length: 66 }).notNull(),
+    proposalId: varchar("proposal_id", { length: 66 }).notNull(),
+    questionId: varchar("question_id", { length: 66 }).notNull().primaryKey(),
     ens: varchar("ens")
       .references(() => space.ens)
       .notNull(),
@@ -38,7 +39,6 @@ export const proposal = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => ({
-    questionIdx: index("question_idx").on(t.questionId),
     ensIdx: index("ens_idx").on(t.ens),
   }),
 );

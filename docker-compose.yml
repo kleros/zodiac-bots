@@ -62,7 +62,10 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   smtp:
-    image: maildev/maildev
+    # Pinned: the unpinned tag floated onto 3.0.0-rc.1, which moved the REST API
+    # from /email to /api/email and broke the email integration tests. 2.2.1 keeps
+    # the /email endpoint the test harness (getMails) relies on.
+    image: maildev/maildev:2.2.1
     environment:
       - MAILDEV_WEBMAIL_USER=kleros
       - MAILDEV_WEBMAIL_PASSWORD=sorelk

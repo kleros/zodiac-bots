@@ -68,6 +68,7 @@ describe("processSpace", () => {
         proposalId: "0x791b3d71ea14497d3b8e756479f6f126e08b44351bfab904834c56b1ccf0479a",
         questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf" as Hash,
         txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43",
+        logIndex: 303,
         blockNumber: oneInchProposalBlockNumber,
         happenedAt: new Date("2024-03-20T09:48:23.000Z"),
       },
@@ -118,6 +119,7 @@ describe("processSpace", () => {
         user: "0x4D6CAa3E0983fAc7B514D60339EBb538C5A85AAe",
         bond: 10000000n,
         txHash: "0x0cc20c32ee428bdb8f16fa1aa22b396ecafa91b61bc2c3350723e4dfefeebff0",
+        logIndex: 188,
         blockNumber: oneInchAnswerBlockNumber,
         happenedAt: new Date(1712934227 * 1000),
       },
@@ -136,6 +138,7 @@ describe("processProposals", () => {
       proposalId: "0x791b3d71ea14497d3b8e756479f6f126e08b44351bfab904834c56b1ccf0479a",
       questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf" as Hash,
       txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43",
+      logIndex: 0,
       blockNumber: oneInchProposalBlockNumber,
       happenedAt: new Date("2024-03-20T09:48:23.000Z"),
     };
@@ -303,6 +306,7 @@ describe("processAnswers", () => {
       user: "0x4D6CAa3E0983fAc7B514D60339EBb538C5A85AAe",
       bond: 10000000n,
       txHash: "0x0cc20c32ee428bdb8f16fa1aa22b396ecafa91b61bc2c3350723e4dfefeebff0",
+      logIndex: 0,
       blockNumber: oneInchAnswerBlockNumber,
       happenedAt: new Date(1712934227 * 1000),
     };

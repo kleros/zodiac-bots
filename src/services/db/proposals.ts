@@ -39,7 +39,10 @@ export const insertProposal = async (proposal: InsertableProposal) => {
 export const findProposalByQuestionId = async (questionId: Hash): Promise<Proposal | null> => {
   const { db } = getConnection();
 
-  const results = await db.select().from(schema.proposal).where(eq(schema.proposal.questionId, questionId));
+  const results = await db
+    .select()
+    .from(schema.proposal)
+    .where(eq(schema.proposal.questionId, questionId));
 
   if (results.length === 0) return null;
 

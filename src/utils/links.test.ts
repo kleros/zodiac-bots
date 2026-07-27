@@ -1,4 +1,5 @@
 import { ValidProposalNotification } from "../notify";
+import { env } from "./env";
 import { getBlockExplorerLinkForTx, getRealityQuestionLink, interpolateUrlTemplate } from "./links";
 import { expect } from "./tests-setup";
 
@@ -25,9 +26,30 @@ describe("getRealityQuestionLink", () => {
         questionId,
       },
     } as any as ValidProposalNotification;
-    const template = "http://test.com/{{oracleAddress}}/questions/{{questionId}}";
+    const template = "http://test.com/network/{{chainId}}/{{oracleAddress}}/questions/{{questionId}}";
     const result = getRealityQuestionLink(notification, template);
-    expect(result).to.eql(`http://test.com/${oracleAddress.toLowerCase()}/questions/${questionId.toLowerCase()}`);
+    expect(result).to.eql(
+      `http://test.com/network/${env.CHAIN_ID}/${oracleAddress.toLowerCase()}/questions/${questionId.toLowerCase()}`,
+    );
+  });
+
+  it("should use an explicit chainId when given, instead of the default", () => {
+    const oracleAddress = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+    const questionId = "123";
+    const notification = {
+      space: {
+        oracleAddress,
+      },
+      event: {
+        questionId,
+      },
+    } as any as ValidProposalNotification;
+    const template = "http://test.com/network/{{chainId}}/{{oracleAddress}}/questions/{{questionId}}";
+    const explicitChainId = "100";
+    const result = getRealityQuestionLink(notification, template, explicitChainId);
+    expect(result).to.eql(
+      `http://test.com/network/${explicitChainId}/${oracleAddress.toLowerCase()}/questions/${questionId.toLowerCase()}`,
+    );
   });
 });
 
