@@ -120,6 +120,11 @@ export const schema = {
     example: "200",
     default: 200,
   }),
+  BLOCK_CONFIRMATIONS: num({
+    desc: "Number of block confirmations to hold back from the chain tip before processing, to avoid reorg-driven false-positive / duplicate notifications. 0 = process to the tip.",
+    example: "2",
+    default: 0,
+  }),
   BATCH_COOLDOWN: num({
     desc: "Amount of milliseconds to wait to process a new batch after the previous one was processed",
     example: "60000",
