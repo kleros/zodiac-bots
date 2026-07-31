@@ -31,13 +31,20 @@ describe("formatWei", () => {
   });
 
   it("should correctly humanize units close to the ether", () => {
-    expect(fn(10_000_000_000_000_000n)).to.eql("0.01 ether");
-    expect(fn(100_000_000_000_000_000n)).to.eql("0.1 ether");
-    expect(fn(1_000_000_000_000_000_000n)).to.eql("1 ether");
-    expect(fn(1_256_000_000_000_000_000n)).to.eql("1.256 ether");
-    expect(fn(1_500_000_000_000_000_000n)).to.eql("1.5 ether");
-    expect(fn(10_000_000_000_000_000_000n)).to.eql("10 ether");
-    expect(fn(100_000_000_000_000_000_000n)).to.eql("100 ether");
+    const mainnetChainId = 1;
+    expect(fn(10_000_000_000_000_000n, mainnetChainId)).to.eql("0.01 ETH");
+    expect(fn(100_000_000_000_000_000n, mainnetChainId)).to.eql("0.1 ETH");
+    expect(fn(1_000_000_000_000_000_000n, mainnetChainId)).to.eql("1 ETH");
+    expect(fn(1_256_000_000_000_000_000n, mainnetChainId)).to.eql("1.256 ETH");
+    expect(fn(1_500_000_000_000_000_000n, mainnetChainId)).to.eql("1.5 ETH");
+    expect(fn(10_000_000_000_000_000_000n, mainnetChainId)).to.eql("10 ETH");
+    expect(fn(100_000_000_000_000_000_000n, mainnetChainId)).to.eql("100 ETH");
+  });
+
+  it("should resolve the whole-unit symbol from the provided chain", () => {
+    const gnosisChainId = 100;
+    expect(fn(1_000_000_000_000_000_000n, gnosisChainId)).to.eql("1 XDAI");
+    expect(fn(100_000_000_000_000_000n, gnosisChainId)).to.eql("0.1 XDAI");
   });
 });
 
