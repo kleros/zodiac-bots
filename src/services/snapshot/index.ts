@@ -68,7 +68,7 @@ type ProposalSafeBatchTransactionResponse = {
   abi?: Array<string>;
 };
 
-type ProposalSafeBatchResponse = {
+export type ProposalSafeBatchResponse = {
   hash: Hash;
   nonce: number;
   transactions: Array<ProposalSafeBatchTransactionResponse>;

@@ -4,6 +4,8 @@ import { LogNewQuestion } from "../../services/reality";
 import { assertValidRealityQuestion } from ".";
 import { expect } from "chai";
 import {
+  MalformedSafeError,
+  MalformedSafeSnapTxError,
   MissingSnapshotProposalError,
   ProposalIdMismatchError,
   SafeHashCalculationError,
@@ -126,6 +128,94 @@ describe("Reality/Proposal Validation", () => {
       it("because no safe exists for the proposal network", () => {
         proposal.network = "50000";
         expect(() => fn(event, proposal)).to.throw(SafeNotFoundForProposalNetworkError);
+      });
+
+      it("because a safeSnap tx is missing its mainTransaction", () => {
+        // @ts-ignore Force test condition
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction = undefined;
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx mainTransaction is missing a required field", () => {
+        // @ts-ignore Force test condition
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.to = undefined;
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx has an unparseable numeric field", () => {
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = "not-a-number";
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx carries a non-integer number instead of a numeric string", () => {
+        // @ts-ignore Force test condition: the author-controlled JSON can hold a raw number
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = 1.5;
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx has a recipient that is not an address", () => {
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.to = "not-an-address" as Address;
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx has call data that is not hex", () => {
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.data = "not-hex";
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx has a negative value", () => {
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = "-1";
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx has a negative nonce", () => {
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.nonce = -1;
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx has a non-numeric operation", () => {
+        // @ts-ignore Force test condition
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.operation = "banana";
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx has an operation outside the Safe range", () => {
+        // @ts-ignore Force test condition
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.operation = "2";
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx value exceeds the uint256 range", () => {
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = (2n ** 256n).toString();
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safeSnap tx nonce exceeds the uint256 range", () => {
+        // @ts-ignore Force test condition: the author-controlled JSON can hold an out-of-range nonce
+        proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.nonce = (2n ** 256n).toString();
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
+      it("because a safe has a realityAddress that is not an address", () => {
+        proposal.plugins.safeSnap.safes[0].realityAddress = "not-an-address" as Address;
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
+      });
+
+      it("because a safe has a non-numeric network", () => {
+        proposal.plugins.safeSnap.safes[0].network = "not-a-number";
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
+      });
+
+      it("because a safe has no transactions array", () => {
+        // @ts-ignore Force test condition
+        proposal.plugins.safeSnap.safes[0].txs = undefined;
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
+      });
+
+      it("because a safe entry is null", () => {
+        // @ts-ignore Force test condition
+        proposal.plugins.safeSnap.safes[0] = null;
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
       });
     });
   });
