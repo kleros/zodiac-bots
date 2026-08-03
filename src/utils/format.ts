@@ -1,29 +1,32 @@
 import { formatEther, formatGwei, Hex } from "viem";
+import { resolveChain } from "../services/provider";
+import { env } from "./env";
 
 /**
  * Converts a wei amount to a human-readable string in wei, gwei, or ether.
  *
  * - Values less than 0.01 gwei are displayed in wei.
  * - Values from 0.01 gwei up to 0.01 ether are displayed in gwei.
- * - Values equal to or greater than 0.01 ether are displayed in ether.
+ * - Values equal to or greater than 0.01 ether are displayed in the chain's native currency (ETH, xDAI, ...).
  *
  * @param {bigint} wei - The amount in wei to be converted.
+ * @param {number} chainId - Chain whose native currency labels whole units; defaults to the configured CHAIN_ID.
  * @returns {string} - The human-readable string representation of the wei amount.
  *
  * @example
  * formatWei(1_000n); // "1000 wei"
  * formatWei(10_000_000n); // "0.01 gwei"
  * formatWei(100_0000_000n); // "1 gwei"
- * formatWei(100_000_000_000_000_000n); // "0.1 ether"
- * formatWei(1_000_000_000_000_000_000n); // "1 ether"
+ * formatWei(100_000_000_000_000_000n); // "0.1 ETH"
+ * formatWei(1_000_000_000_000_000_000n); // "1 ETH"
  */
 
-export const formatWei = (wei: bigint): string => {
+export const formatWei = (wei: bigint, chainId: number = env.CHAIN_ID): string => {
   const digitCount = wei.toString().length;
 
   if (digitCount < 8) return `${wei.toString()} wei`;
   if (digitCount < 17) return `${formatGwei(wei)} gwei`;
-  return `${formatEther(wei)} ether`;
+  return `${formatEther(wei)} ${resolveChain(chainId).nativeCurrency.symbol}`;
 };
 
 /**
