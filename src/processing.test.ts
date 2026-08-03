@@ -90,6 +90,13 @@ describe("calculateBlockRange", () => {
     const result = fn(mockSpace, blockNumber, 5n);
     expect(result.toBlock).to.equal(blockNumber - 5n);
   });
+
+  it("should default the confirmations depth to the BLOCK_CONFIRMATIONS env var", () => {
+    const blockNumber = mockSpace.lastProcessedBlock! + 10n;
+    const withDefault = fn(mockSpace, blockNumber);
+    const withEnvConfirmations = fn(mockSpace, blockNumber, BigInt(env.BLOCK_CONFIRMATIONS));
+    expect(withDefault).to.deep.equal(withEnvConfirmations);
+  });
 });
 
 describe("min", () => {
