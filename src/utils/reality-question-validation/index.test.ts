@@ -137,6 +137,12 @@ describe("Reality/Proposal Validation", () => {
         expect(() => fn(event, proposal)).to.throw(SafeNotFoundForProposalNetworkError);
       });
 
+      it("because a safeSnap tx entry is null", () => {
+        // @ts-ignore Force test condition
+        proposal.plugins.safeSnap.safes[0].txs[0] = null;
+        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+      });
+
       it("because a safeSnap tx is missing its mainTransaction", () => {
         // @ts-ignore Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction = undefined;
