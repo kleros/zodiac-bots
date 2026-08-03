@@ -87,6 +87,13 @@ describe("Reality/Proposal Validation", () => {
       expect(() => fn(event, proposal)).not.to.throw();
     });
 
+    it("should finish without errors when the addresses are valid but not checksummed", () => {
+      const safe = proposal.plugins.safeSnap.safes[0];
+      safe.txs[0].mainTransaction.to = safe.txs[0].mainTransaction.to.toLowerCase() as Address;
+      safe.realityAddress = safe.realityAddress.toLowerCase() as Address;
+      expect(() => fn(event, proposal)).not.to.throw();
+    });
+
     describe("it should raise a security alert", () => {
       it("when a tx hash can not be recreated", () => {
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = "4242";
