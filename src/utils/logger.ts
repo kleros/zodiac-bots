@@ -98,14 +98,14 @@ export const configurableInitialize = (deps: ConfigurableInitializeDeps) => {
   });
 
   emitter.on(event.HEARTBEAT_READY, () => {
-    logger.info("Perioc hearbeats ready");
+    logger.info("Periodic heartbeats ready");
   });
 
   emitter.on(event.HEARTBEAT_SENT, () => {
-    logger.info(`Perioc hearbeat sent to ${env.HEARTBEAT_URL}`);
+    logger.info(`Periodic heartbeat sent to ${env.HEARTBEAT_URL}`);
   });
 
   emitter.on(event.HEARTBEAT_FAILED, () => {
-    logger.error(`Perioc hearbeat to ${env.HEARTBEAT_URL} failed`);
+    logger.error(`Periodic heartbeat to ${env.HEARTBEAT_URL} failed`);
   });
 };
