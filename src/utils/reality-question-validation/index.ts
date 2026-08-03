@@ -21,7 +21,9 @@ import {
  * transaction data as always present, but the response can omit it or hold unparseable values, so
  * anything malformed becomes a validation error instead of an uncaught exception that crashes the bot.
  *
- * @param tx - The safeSnap transaction to read.
+ * @param tx - The safeSnap transaction to read. The declared type is non-null, but the value comes
+ *   from the author-controlled Snapshot plugins JSON (cast, never validated), so a malformed payload
+ *   can hold a null entry here.
  * @param index - The position of the transaction in the safe, used in the error message.
  * @returns The parsed message, ready for the EIP-712 hash calculation.
  * @throws {MalformedSafeSnapTxError} When the transaction data is missing or cannot be parsed.
@@ -29,7 +31,7 @@ import {
  * @example
  * const message = parseSafeSnapTxMessage(tx, 0);
  */
-const parseSafeSnapTxMessage = (tx: ProposalSafeBatchResponse, index: number) => {
+const parseSafeSnapTxMessage = (tx: ProposalSafeBatchResponse | null, index: number) => {
   const mainTransaction = tx?.mainTransaction;
   if (!mainTransaction) throw new MalformedSafeSnapTxError(index);
 
