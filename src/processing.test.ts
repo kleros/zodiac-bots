@@ -51,14 +51,14 @@ describe("calculateBlockRange", () => {
 
   it("should return the range from lastProcessedBlock up to blockNumber in normal conditions", () => {
     const blockNumber = mockSpace.lastProcessedBlock! + BigInt(env.MAX_BLOCKS_BATCH_SIZE) - 1n;
-    const result = fn(mockSpace, blockNumber);
+    const result = fn(mockSpace, blockNumber, 0n);
     expect(result.fromBlock).to.equal(mockSpace.lastProcessedBlock);
     expect(result.toBlock).to.equal(blockNumber);
   });
 
   it("should limit the range if it is larger than MAX_BOCKS_BATCH_SIZE", () => {
     const blockNumber = mockSpace.lastProcessedBlock! + BigInt(env.MAX_BLOCKS_BATCH_SIZE) + 1000n;
-    const result = fn(mockSpace, blockNumber);
+    const result = fn(mockSpace, blockNumber, 0n);
     expect(result.fromBlock).to.equal(mockSpace.lastProcessedBlock);
     expect(result.toBlock).to.equal(mockSpace.lastProcessedBlock! + BigInt(env.MAX_BLOCKS_BATCH_SIZE));
   });
@@ -69,7 +69,7 @@ describe("calculateBlockRange", () => {
       lastProcessedBlock: null,
     };
     const blockNumber = space.startBlock! + BigInt(env.MAX_BLOCKS_BATCH_SIZE) - 1n;
-    const result = fn(space, blockNumber);
+    const result = fn(space, blockNumber, 0n);
     expect(result.fromBlock).to.equal(space.startBlock);
     expect(result.toBlock).to.equal(blockNumber);
   });
@@ -80,9 +80,22 @@ describe("calculateBlockRange", () => {
       startBlock: mockSpace.lastProcessedBlock! + 5n,
     };
     const blockNumber = space.startBlock! + BigInt(env.MAX_BLOCKS_BATCH_SIZE) - 1n;
-    const result = fn(space, blockNumber);
+    const result = fn(space, blockNumber, 0n);
     expect(result.fromBlock).to.equal(space.startBlock);
     expect(result.toBlock).to.equal(blockNumber);
+  });
+
+  it("should hold back the confirmations depth from the tip", () => {
+    const blockNumber = mockSpace.lastProcessedBlock! + 10n;
+    const result = fn(mockSpace, blockNumber, 5n);
+    expect(result.toBlock).to.equal(blockNumber - 5n);
+  });
+
+  it("should default the confirmations depth to the BLOCK_CONFIRMATIONS env var", () => {
+    const blockNumber = mockSpace.lastProcessedBlock! + 10n;
+    const withDefault = fn(mockSpace, blockNumber);
+    const withEnvConfirmations = fn(mockSpace, blockNumber, BigInt(env.BLOCK_CONFIRMATIONS));
+    expect(withDefault).to.deep.equal(withEnvConfirmations);
   });
 });
 

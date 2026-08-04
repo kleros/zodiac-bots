@@ -145,17 +145,24 @@ export const configurableProcessSpace = async (deps: ConfigurableProcessSpaceDep
  *
  * @param space - The space to calculate the block range for
  * @param blockNumber - The latest block number
+ * @param confirmations - Blocks to hold back from the tip; defaults to the BLOCK_CONFIRMATIONS env var
  * @returns the block range that should be processed
  *
  * @example
  *
  * const { fromBlock, toBlock } = calculateBlockRange(space, blockNumber)
  */
-export const calculateBlockRange = (space: Space, blockNumber: bigint) => {
+export const calculateBlockRange = (
+  space: Space,
+  blockNumber: bigint,
+  confirmations: bigint = BigInt(env.BLOCK_CONFIRMATIONS),
+) => {
   const lastProcessedBlock = space.lastProcessedBlock || space.startBlock;
 
+  const safeHead = blockNumber > confirmations ? blockNumber - confirmations : 0n;
+
   const fromBlock = max(lastProcessedBlock, space.startBlock);
-  const toBlock = min(blockNumber, fromBlock + BigInt(env.MAX_BLOCKS_BATCH_SIZE));
+  const toBlock = min(safeHead, fromBlock + BigInt(env.MAX_BLOCKS_BATCH_SIZE));
 
   return { fromBlock, toBlock };
 };
