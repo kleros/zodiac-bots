@@ -117,7 +117,7 @@ describe("Reality/Proposal Validation", () => {
       });
 
       it("because the snapshot plugin data is missing", () => {
-        // @ts-ignore Force test condition
+        // @ts-expect-error Force test condition
         proposal.plugins.safeSnap = null;
         expect(() => fn(event, proposal)).to.throw(SafeSnapPluginConfigurationError);
       });
@@ -138,19 +138,19 @@ describe("Reality/Proposal Validation", () => {
       });
 
       it("because a safeSnap tx entry is null", () => {
-        // @ts-ignore Force test condition
+        // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0] = null;
         expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx is missing its mainTransaction", () => {
-        // @ts-ignore Force test condition
+        // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction = undefined;
         expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx mainTransaction is missing a required field", () => {
-        // @ts-ignore Force test condition
+        // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.to = undefined;
         expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
@@ -161,7 +161,7 @@ describe("Reality/Proposal Validation", () => {
       });
 
       it("because a safeSnap tx carries a non-integer number instead of a numeric string", () => {
-        // @ts-ignore Force test condition: the author-controlled JSON can hold a raw number
+        // @ts-expect-error Force test condition: the author-controlled JSON can hold a raw number
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = 1.5;
         expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
@@ -187,13 +187,13 @@ describe("Reality/Proposal Validation", () => {
       });
 
       it("because a safeSnap tx has a non-numeric operation", () => {
-        // @ts-ignore Force test condition
+        // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.operation = "banana";
         expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx has an operation outside the Safe range", () => {
-        // @ts-ignore Force test condition
+        // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.operation = "2";
         expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
@@ -204,7 +204,7 @@ describe("Reality/Proposal Validation", () => {
       });
 
       it("because a safeSnap tx nonce exceeds the uint256 range", () => {
-        // @ts-ignore Force test condition: the author-controlled JSON can hold an out-of-range nonce
+        // @ts-expect-error Force test condition: the author-controlled JSON can hold an out-of-range nonce
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.nonce = (2n ** 256n).toString();
         expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
@@ -220,13 +220,13 @@ describe("Reality/Proposal Validation", () => {
       });
 
       it("because a safe has no transactions array", () => {
-        // @ts-ignore Force test condition
+        // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs = undefined;
         expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
       });
 
       it("because a safe entry is null", () => {
-        // @ts-ignore Force test condition
+        // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0] = null;
         expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
       });
