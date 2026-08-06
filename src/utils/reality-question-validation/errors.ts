@@ -46,6 +46,24 @@ export class SafeSnapPluginConfigurationError extends BaseProposalValidationErro
   }
 }
 
+export class MalformedSafeSnapTxError extends BaseProposalValidationError {
+  constructor(index: number) {
+    super(
+      ValidationErrorSeverity.INCOMPLETE_DATA,
+      `The SafeSnap plugin transaction at index ${index} is missing its mainTransaction or required fields (to, data, nonce, value, operation)`,
+    );
+  }
+}
+
+export class MalformedSafeError extends BaseProposalValidationError {
+  constructor(index: number) {
+    super(
+      ValidationErrorSeverity.INCOMPLETE_DATA,
+      `The SafeSnap safe at index ${index} is malformed (invalid or missing network, realityAddress, or transactions)`,
+    );
+  }
+}
+
 export class TxHashMismatchError extends BaseProposalValidationError {
   constructor(snapshotHash: Hash, computedHash: Hash) {
     super(
