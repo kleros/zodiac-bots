@@ -14,7 +14,7 @@ Manual review required: treat this as a potential security risk until verified.
 
 *Details:*
 _Question ID_: `<%- notification.event.questionId %>`
-_Proposal ID_: `<%- notification.event.snapshotId %>`
+_Proposal ID_: `<%- toDisplaySafe(notification.event.snapshotId) %>`
 
 *Automated validation did NOT run - verify all of these yourself:*
 🟡 Verify the proposal Safe hash equals the keccak256 of the concatenated individual hashes

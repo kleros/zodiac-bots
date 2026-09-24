@@ -53,3 +53,34 @@ export const formatAnswer = (answer: Hex): string => {
 
   return answer;
 };
+
+// Characters a proposal id may keep when rendered. Every transport parses its own markup —
+// HTML for email, Markdown for Telegram, mrkdwn for Slack — so the union of their significant
+// characters is excluded rather than escaped per dialect. No legitimate Snapshot id contains
+// any of them.
+const DISPLAYABLE_PATTERN = /[^A-Za-z0-9 .,:/-]/g;
+
+/** Longest proposal id rendered in a notification. Telegram rejects messages over 4096 chars. */
+export const DISPLAYED_PROPOSAL_ID_MAX_LENGTH = 200;
+
+/**
+ * Renders an untrusted proposal id safely.
+ *
+ * The Reality module emits the proposer's string verbatim, so it can carry markup aimed at the
+ * reviewer reading the alert, or enough length to push the message past a transport's limit.
+ *
+ * @param proposalId - The proposal id as emitted by the Reality module
+ * @returns The id with unrenderable characters replaced and its length bounded
+ *
+ * @example
+ * toDisplaySafe("<a href=x>Approved by Kleros</a>"); // "?a href=x?Approved by Kleros?/a?"
+ */
+export const toDisplaySafe = (proposalId: string): string => {
+  const safe = proposalId.replace(DISPLAYABLE_PATTERN, "?");
+
+  if (safe.length <= DISPLAYED_PROPOSAL_ID_MAX_LENGTH) return safe;
+
+  const dropped = safe.length - DISPLAYED_PROPOSAL_ID_MAX_LENGTH;
+
+  return `${safe.slice(0, DISPLAYED_PROPOSAL_ID_MAX_LENGTH)} … [+${dropped} chars]`;
+};

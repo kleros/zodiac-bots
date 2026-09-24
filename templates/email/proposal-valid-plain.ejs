@@ -7,7 +7,7 @@ Please find the details below:
 - Reality question: <%- getRealityQuestionLink(notification) %>
 - Transaction: <%- getBlockExplorerLinkForTx(notification.event.txHash) %>
 - Question ID: <%- notification.event.questionId %>
-- Proposal ID: <%- notification.event.snapshotId %>
+- Proposal ID: <%- toDisplaySafe(notification.event.snapshotId) %>
 
 These automated checks passed:
 - The proposal Safe hash is the keccak256 of the concatenated individual hashes

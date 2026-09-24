@@ -1,4 +1,5 @@
 import { Hash, Hex } from "viem";
+import { toDisplaySafe } from "../format";
 
 export enum ValidationErrorSeverity {
   SECURITY_ALERT = "security-alert",
@@ -36,7 +37,7 @@ export class MalformedProposalIdError extends BaseProposalValidationError {
   constructor(proposalId: string) {
     super(
       ValidationErrorSeverity.SECURITY_ALERT,
-      `The proposal id is not shaped like a Snapshot proposal id: ${proposalId}`,
+      `The proposal id is not shaped like a Snapshot proposal id: ${toDisplaySafe(proposalId)}`,
     );
   }
 }
