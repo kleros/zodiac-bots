@@ -175,4 +175,33 @@ event.happenedAt: ${event.happenedAt.toISOString()}
       });
     });
   });
+
+  describe("space identification", () => {
+    // The group receives alerts for every monitored space, so a reader must be able to tell
+    // which DAO an alert belongs to without opening a link. On 2026-09-23 both monitored
+    // spaces fired hours apart and the Telegram headers were indistinguishable.
+    const surfaces: [TransportName, string | undefined][] = [
+      ["telegram" as TransportName, undefined],
+      ["slack" as TransportName, undefined],
+      ["email" as TransportName, "subject"],
+    ];
+
+    surfaces.forEach(([transport, variant]) => {
+      it(`should name the space in a proposal notification via ${transport}${variant ? ` (${variant})` : ""}`, async () => {
+        const notification = randomizeProposalNotification();
+
+        const rendered = await render(transport, notification, variant);
+
+        expect(rendered).to.contain(notification.space.ens);
+      });
+
+      it(`should name the space in an answer notification via ${transport}${variant ? ` (${variant})` : ""}`, async () => {
+        const notification = randomizeAnswerNotification();
+
+        const rendered = await render(transport, notification, variant);
+
+        expect(rendered).to.contain(notification.space.ens);
+      });
+    });
+  });
 });
