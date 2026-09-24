@@ -9,7 +9,7 @@ The proposal validation failed. Reason:
 
 Immediate review required: this validation failure may indicate a security issue.
 
-<<%- getSnapshotProposalLink(notification) %>|Snapshot Proposal>
+<% const snapshotProposalLink = getSnapshotProposalLink(notification); %><% if (snapshotProposalLink) { %><<%- snapshotProposalLink %>|Snapshot Proposal><% } else { %>Snapshot Proposal: the proposal id is not a Snapshot id, so there is no proposal page<% } %>
 <<%- getRealityQuestionLink(notification) %>|Reality Question>
 <<%- getBlockExplorerLinkForTx(notification.event.txHash) %>|Transaction>
 

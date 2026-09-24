@@ -17,6 +17,7 @@ style="height:39px; v-text-anchor:middle; width:198px" arcsize="8%" stroke="f"  
         <!--<![endif]-->
     </td>
 </tr>
+<% if (getSnapshotProposalLink(notification)) { %>
 <tr>
     <td align="center" bgcolor="#220050" style="Margin:0;padding-bottom:5px;padding-top:10px;padding-left:25px;padding-right:25px">
         <!--[if mso]><a href="<%- getSnapshotProposalLink(notification) %>" target="_blank" hidden>
@@ -36,6 +37,7 @@ style="height:39px; v-text-anchor:middle; width:216px" arcsize="8%" stroke="f"  
         <!--<![endif]-->
     </td>
 </tr>
+<% } %>
 <tr>
     <td align="center" bgcolor="#220050" style="Margin:0;padding-top:10px;padding-bottom:25px;padding-left:25px;padding-right:25px">
         <!--[if mso]><a href="<%- getBlockExplorerLinkForTx(notification.event.txHash) %>" target="_blank" hidden>

@@ -1,4 +1,4 @@
-import { decodeEventLog, getAddress, Hex, type AbiEvent, type Address, type Hash } from "viem";
+import { decodeEventLog, getAddress, type AbiEvent, type Address, type Hash } from "viem";
 import { getPublicClient } from "../provider";
 import { getRealityModuleAddress, type GetRealityModuleAddressFn } from "../snapshot";
 import { realityModuleEthConfig as realityModule, realityEthV3_0Config as realityOracle } from "./abi";
@@ -173,13 +173,44 @@ export const getProposalQuestionsCreated: GetProposalQuestionsCreatedFn = async 
   return events;
 };
 
+const QUESTION_FIELD_SEPARATOR = "␟";
+const TRANSACTIONS_HASH_PATTERN = /^[0-9a-f]{64}$/;
+
+export type RealityQuestionFields = {
+  proposalId: string;
+  safeHash: Hash | null;
+};
+
+/**
+ * Splits a Reality question into the proposal id and the transactions hash.
+ *
+ * Splits from the RIGHT: the separator is not escaped on chain, so a proposer can hide
+ * separators inside the id. The trailing hash is always lowercase hex, which makes the last
+ * separator the only reliable boundary.
+ *
+ * @param rawQuestion - The `question` argument of a `LogNewQuestion` event
+ * @returns The proposal id, and the safe hash or `null` when the shape is unexpected
+ *
+ * @example
+ * parseRealityQuestion("0xabc␟f00d"); // { proposalId: "0xabc", safeHash: "0xf00d" }
+ */
+export const parseRealityQuestion = (rawQuestion: string): RealityQuestionFields => {
+  const separatorIndex = rawQuestion.lastIndexOf(QUESTION_FIELD_SEPARATOR);
+  if (separatorIndex === -1) return { proposalId: rawQuestion, safeHash: null };
+
+  const transactionsHash = rawQuestion.slice(separatorIndex + QUESTION_FIELD_SEPARATOR.length);
+  if (!TRANSACTIONS_HASH_PATTERN.test(transactionsHash)) return { proposalId: rawQuestion, safeHash: null };
+
+  return {
+    proposalId: rawQuestion.slice(0, separatorIndex),
+    safeHash: `0x${transactionsHash}` as Hash,
+  };
+};
+
 export type LogNewQuestion = {
   questionId: Hash;
   user: Address;
-  question: {
-    proposalId: Hex;
-    safeHash: Hash;
-  };
+  question: RealityQuestionFields;
   startedAt: Date;
   timeout: number;
   finishedAt: Date;
@@ -223,8 +254,7 @@ export const getLogNewQuestion = async (args: GetLogNewQuestionArgs): Promise<Lo
         topics: log.topics,
       });
 
-      const rawQuestion = decoded.args.question;
-      const questionParts = rawQuestion.split("␟");
+      const question = parseRealityQuestion(decoded.args.question);
 
       let { opening_ts: openingTs, timeout } = decoded.args;
       if (openingTs === 0) {
@@ -236,10 +266,7 @@ export const getLogNewQuestion = async (args: GetLogNewQuestionArgs): Promise<Lo
 
       return {
         questionId: decoded.args.question_id.toLowerCase() as Hash,
-        question: {
-          proposalId: questionParts[0] as Hex,
-          safeHash: `0x${questionParts[1]}` as Hash,
-        },
+        question,
         user: decoded.args.user.toLowerCase() as Address,
         startedAt: new Date(openingTs * 1000),
         timeout,

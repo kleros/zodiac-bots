@@ -7,7 +7,7 @@ Immediate review required: this validation failure may indicate a security issue
 
 >> <%- notification.validationMessage %>
 
-[Snapshot Proposal](<%- getSnapshotProposalLink(notification) %>)
+<% const snapshotProposalLink = getSnapshotProposalLink(notification); %><% if (snapshotProposalLink) { %>[Snapshot Proposal](<%- snapshotProposalLink %>)<% } else { %>_Snapshot Proposal: the proposal id is not a Snapshot id, so there is no proposal page_<% } %>
 [Reality Question](<%- getRealityQuestionLink(notification) %>)
 [Transaction](<%- getBlockExplorerLinkForTx(notification.event.txHash) %>)
 

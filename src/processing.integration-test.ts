@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { spy } from "sinon";
-import type { Hash } from "viem";
+import { keccak256, stringToBytes, type Hash } from "viem";
 import { EventType, type Notification } from "./notify";
 import { configurableProcessAnswers, configurableProcessProposals, configurableProcessSpace } from "./processing";
 import { findProposalByQuestionId, insertProposal, removeProposalByQuestionId } from "./services/db/proposals";
@@ -193,6 +193,44 @@ describe("processProposals", () => {
 
       const storedProposal = await findProposalByQuestionId(proposal.questionId);
       expect(storedProposal).to.not.be.null;
+    });
+
+    it("when the proposal id could not be a Snapshot id, without reaching Snapshot", async () => {
+      const malformedProposalId = "wave3-drain";
+      const notifyFn = spy();
+      const getSnapshotProposalFn = spy();
+      const getLogNewQuestionFn = async () => [
+        {
+          questionId: proposal.questionId,
+          user: ONEINCH_MODULE_ADDRESS,
+          question: { proposalId: malformedProposalId, safeHash: `0x${"a".repeat(64)}` as Hash },
+          startedAt: new Date("2024-03-20T09:48:23.000Z"),
+          timeout: 259200,
+          finishedAt: new Date("2024-03-23T09:48:23.000Z"),
+          txHash: proposal.txHash,
+          blockNumber: proposal.blockNumber,
+        },
+      ];
+
+      await fn({
+        space,
+        proposals: [{ ...proposal, proposalId: keccak256(stringToBytes(malformedProposalId)) }],
+        getLogNewQuestionFn,
+        notifyFn,
+        validateRealityQuestionFn: validateRealityQuestion,
+        insertProposalFn: insertProposal,
+        getSnapshotProposalFn,
+      });
+
+      expect(getSnapshotProposalFn.called).to.be.false;
+
+      const call = notifyFn.firstCall.firstArg;
+      expect(call.type).to.equal(EventType.PROPOSAL_QUESTION_ALERT);
+      expect(call.validationMessage).to.contain(malformedProposalId);
+
+      // The proposal must still be recorded, or every answer to it is silently skipped.
+      const storedProposal = await findProposalByQuestionId(proposal.questionId);
+      expect(storedProposal?.snapshotId).to.equal(malformedProposalId);
     });
 
     it("when the proposal is invalid due to missing data to perform the checks", async () => {

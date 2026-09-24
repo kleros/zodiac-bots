@@ -1,4 +1,4 @@
-import { bigint, index, integer, pgEnum, pgTable, primaryKey, timestamp, varchar } from "drizzle-orm/pg-core";
+import { bigint, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const space = pgTable("space", {
   ens: varchar("ens").primaryKey(),
@@ -30,7 +30,8 @@ export const proposal = pgTable(
     ens: varchar("ens")
       .references(() => space.ens)
       .notNull(),
-    snapshotId: varchar("snapshot_id", { length: 66 }).notNull(),
+    // Attacker controlled and unbounded on chain.
+    snapshotId: text("snapshot_id").notNull(),
     startedAt: timestamp("started_at").notNull(),
     timeout: integer("timeout").notNull(),
     finishedAt: timestamp("finished_at").notNull(),

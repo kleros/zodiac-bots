@@ -1,17 +1,21 @@
 import { Address, Hash, Hex } from "viem";
 import { SnapshotProposal } from "../../services/snapshot";
-import { LogNewQuestion } from "../../services/reality";
-import { assertValidRealityQuestion } from ".";
+import { LogNewQuestion, ProposalQuestionCreated } from "../../services/reality";
+import { assertValidRealityQuestion, validateRealityQuestion } from ".";
 import { expect } from "chai";
 import {
+  MalformedProposalIdError,
+  MalformedRealityQuestionError,
   MalformedSafeError,
   MalformedSafeSnapTxError,
   MissingSnapshotProposalError,
+  ProposalIdIntegrityError,
   ProposalIdMismatchError,
   SafeHashCalculationError,
   SafeHashMismatchError,
   SafeNotFoundForProposalNetworkError,
   SafeSnapPluginConfigurationError,
+  ValidationErrorSeverity,
   TxHashMismatchError,
 } from "./errors";
 
@@ -27,6 +31,18 @@ const cloneEvent = (): LogNewQuestion => ({
   finishedAt: new Date("2024-03-23T09:48:23.000Z"),
   txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43" as Hash,
   blockNumber: 19475120n,
+});
+
+// Hard coded so the test cannot agree with the implementation by construction.
+const RECORDED_PROPOSAL_ID_HASH = "0x791b3d71ea14497d3b8e756479f6f126e08b44351bfab904834c56b1ccf0479a" as Hash;
+
+const cloneProposalEvent = (): ProposalQuestionCreated => ({
+  proposalId: RECORDED_PROPOSAL_ID_HASH,
+  questionId: "0xebf5b601fedfaa5562a03590e9ac8be937cc070a131443af01948a7eda6dfabf" as Hash,
+  txHash: "0x890ddd7826fcd79ff17b54368e8df393959f269847ceeb0fea13cc4b68330d43" as Hash,
+  logIndex: 0,
+  blockNumber: 19475120n,
+  happenedAt: new Date("2024-03-20T09:48:23.000Z"),
 });
 
 const cloneProposal = (): SnapshotProposal => ({
@@ -75,161 +91,220 @@ describe("Reality/Proposal Validation", () => {
   describe("assertValidRealityQuestion()", () => {
     const fn = assertValidRealityQuestion;
 
+    let proposalEvent: ProposalQuestionCreated;
     let event: LogNewQuestion;
     let proposal: SnapshotProposal;
 
     beforeEach(() => {
+      proposalEvent = cloneProposalEvent();
       event = cloneEvent();
       proposal = cloneProposal();
     });
 
     it("should finish without errors when everything is as expected", () => {
-      expect(() => fn(event, proposal)).not.to.throw();
+      expect(() => fn(proposalEvent, event, proposal)).not.to.throw();
     });
 
     it("should finish without errors when the addresses are valid but not checksummed", () => {
       const safe = proposal.plugins.safeSnap.safes[0];
       safe.txs[0].mainTransaction.to = safe.txs[0].mainTransaction.to.toLowerCase() as Address;
       safe.realityAddress = safe.realityAddress.toLowerCase() as Address;
-      expect(() => fn(event, proposal)).not.to.throw();
+      expect(() => fn(proposalEvent, event, proposal)).not.to.throw();
     });
 
     describe("it should raise a security alert", () => {
       it("when a tx hash can not be recreated", () => {
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = "4242";
-        expect(() => fn(event, proposal)).to.throw(TxHashMismatchError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(TxHashMismatchError);
       });
 
       it("when the hash is not the keccak256 of the concatenation of tx hashes", () => {
         proposal.plugins.safeSnap.safes[0].hash = "0x0";
-        expect(() => fn(event, proposal)).to.throw(SafeHashCalculationError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(SafeHashCalculationError);
       });
 
       it("when the reality question includes a different hash", () => {
         event.question.safeHash = "0xa";
-        expect(() => fn(event, proposal)).to.throw(SafeHashMismatchError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(SafeHashMismatchError);
+      });
+
+      it("when the question does not have the shape the Reality module produces", () => {
+        event.question.safeHash = null;
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedRealityQuestionError);
+      });
+
+      it("when the proposal id could not be a Snapshot proposal id", () => {
+        event.question.proposalId = "wave3-drain";
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedProposalIdError);
+      });
+
+      it("when the proposal id read from the question is not the one the module recorded", () => {
+        proposalEvent.proposalId = `0x${"0".repeat(64)}` as Hash;
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(ProposalIdIntegrityError);
       });
     });
 
     describe("it should warn when it is missing data to perform the validation", () => {
       it("because there is not proposal", () => {
-        expect(() => fn(event, null)).to.throw(MissingSnapshotProposalError);
+        expect(() => fn(proposalEvent, event, null)).to.throw(MissingSnapshotProposalError);
       });
 
       it("because the snapshot plugin data is missing", () => {
         // @ts-expect-error Force test condition
         proposal.plugins.safeSnap = null;
-        expect(() => fn(event, proposal)).to.throw(SafeSnapPluginConfigurationError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(SafeSnapPluginConfigurationError);
       });
 
       it("because no safe is found", () => {
         proposal.plugins.safeSnap.safes = [];
-        expect(() => fn(event, proposal)).to.throw(SafeSnapPluginConfigurationError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(SafeSnapPluginConfigurationError);
       });
 
       it("because the resolved proposal seems unrelated with the question", () => {
         proposal.id = "0x4242";
-        expect(() => fn(event, proposal)).to.throw(ProposalIdMismatchError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(ProposalIdMismatchError);
       });
 
       it("because no safe exists for the proposal network", () => {
         proposal.network = "50000";
-        expect(() => fn(event, proposal)).to.throw(SafeNotFoundForProposalNetworkError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(SafeNotFoundForProposalNetworkError);
+      });
+
+      it("because a well formed proposal id did not resolve on Snapshot", () => {
+        expect(() => fn(proposalEvent, event, null)).to.throw(MissingSnapshotProposalError);
       });
 
       it("because a safeSnap tx entry is null", () => {
         // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0] = null;
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx is missing its mainTransaction", () => {
         // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction = undefined;
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx mainTransaction is missing a required field", () => {
         // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.to = undefined;
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx has an unparseable numeric field", () => {
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = "not-a-number";
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx carries a non-integer number instead of a numeric string", () => {
         // @ts-expect-error Force test condition: the author-controlled JSON can hold a raw number
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = 1.5;
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx has a recipient that is not an address", () => {
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.to = "not-an-address" as Address;
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx has call data that is not hex", () => {
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.data = "not-hex";
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx has a negative value", () => {
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = "-1";
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx has a negative nonce", () => {
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.nonce = -1;
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx has a non-numeric operation", () => {
         // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.operation = "banana";
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx has an operation outside the Safe range", () => {
         // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.operation = "2";
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx value exceeds the uint256 range", () => {
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.value = (2n ** 256n).toString();
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safeSnap tx nonce exceeds the uint256 range", () => {
         // @ts-expect-error Force test condition: the author-controlled JSON can hold an out-of-range nonce
         proposal.plugins.safeSnap.safes[0].txs[0].mainTransaction.nonce = (2n ** 256n).toString();
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeSnapTxError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeSnapTxError);
       });
 
       it("because a safe has a realityAddress that is not an address", () => {
         proposal.plugins.safeSnap.safes[0].realityAddress = "not-an-address" as Address;
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeError);
       });
 
       it("because a safe has a non-numeric network", () => {
         proposal.plugins.safeSnap.safes[0].network = "not-a-number";
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeError);
       });
 
       it("because a safe has no transactions array", () => {
         // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0].txs = undefined;
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeError);
       });
 
       it("because a safe entry is null", () => {
         // @ts-expect-error Force test condition
         proposal.plugins.safeSnap.safes[0] = null;
-        expect(() => fn(event, proposal)).to.throw(MalformedSafeError);
+        expect(() => fn(proposalEvent, event, proposal)).to.throw(MalformedSafeError);
       });
+    });
+  });
+
+  describe("validateRealityQuestion()", () => {
+    const fn = validateRealityQuestion;
+
+    let proposalEvent: ProposalQuestionCreated;
+    let event: LogNewQuestion;
+    let proposal: SnapshotProposal;
+
+    beforeEach(() => {
+      proposalEvent = cloneProposalEvent();
+      event = cloneEvent();
+      proposal = cloneProposal();
+    });
+
+    it("should report a correct question as valid", () => {
+      expect(fn(proposalEvent, event, proposal)).to.deep.equal({ isValid: true });
+    });
+
+    it("should turn a validation failure into a result instead of throwing", () => {
+      event.question.proposalId = "wave3-drain";
+
+      const result = fn(proposalEvent, event, proposal);
+
+      expect(result.isValid).to.equal(false);
+      if (result.isValid) throw new Error("expected an invalid result");
+      expect(result.severity).to.equal(ValidationErrorSeverity.SECURITY_ALERT);
+      expect(result.code).to.equal("MalformedProposalIdError");
+      expect(result.message).to.contain("wave3-drain");
+    });
+
+    it("should report a missing proposal as incomplete data rather than a security alert", () => {
+      const result = fn(proposalEvent, event, null);
+
+      expect(result.isValid).to.equal(false);
+      if (result.isValid) throw new Error("expected an invalid result");
+      expect(result.severity).to.equal(ValidationErrorSeverity.INCOMPLETE_DATA);
     });
   });
 });

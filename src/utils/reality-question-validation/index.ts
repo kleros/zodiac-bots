@@ -1,12 +1,16 @@
-import { concat, isAddress, isHex, keccak256, maxUint256 } from "viem";
-import { LogNewQuestion } from "../../services/reality";
+import { concat, isAddress, isHex, keccak256, maxUint256, stringToBytes } from "viem";
+import { LogNewQuestion, ProposalQuestionCreated } from "../../services/reality";
+import { isSnapshotProposalId } from "../snapshot-proposal-id";
 import { ProposalSafeBatchResponse, SnapshotProposal } from "../../services/snapshot";
 import { calculateTxHash } from "./eip-712-transaction-hash";
 import {
   BaseProposalValidationError,
+  MalformedProposalIdError,
+  MalformedRealityQuestionError,
   MalformedSafeError,
   MalformedSafeSnapTxError,
   MissingSnapshotProposalError,
+  ProposalIdIntegrityError,
   ProposalIdMismatchError,
   SafeHashCalculationError,
   SafeHashMismatchError,
@@ -83,11 +87,28 @@ const parseSafeSnapTxMessage = (tx: ProposalSafeBatchResponse | null, index: num
  * // it will just execute without returning anything
  * assertValidRealityQuestion(event, proposal);
  */
-export const assertValidRealityQuestion = (event: LogNewQuestion, proposal: SnapshotProposal | null) => {
-  if (!proposal) throw new MissingSnapshotProposalError(event.question.proposalId);
+export const assertValidRealityQuestion = (
+  proposalEvent: ProposalQuestionCreated,
+  event: LogNewQuestion,
+  proposal: SnapshotProposal | null,
+) => {
+  const { proposalId, safeHash } = event.question;
 
-  if (proposal.id != event.question.proposalId) {
-    throw new ProposalIdMismatchError(proposal.id, event.question.proposalId);
+  if (safeHash === null) throw new MalformedRealityQuestionError();
+
+  if (!isSnapshotProposalId(proposalId)) throw new MalformedProposalIdError(proposalId);
+
+  // The event topic is the keccak of the exact string proposed, so this catches an id that
+  // hid a separator inside itself.
+  const readProposalIdHash = keccak256(stringToBytes(proposalId));
+  if (readProposalIdHash !== proposalEvent.proposalId) {
+    throw new ProposalIdIntegrityError(proposalEvent.proposalId, readProposalIdHash);
+  }
+
+  if (!proposal) throw new MissingSnapshotProposalError(proposalId);
+
+  if (proposal.id != proposalId) {
+    throw new ProposalIdMismatchError(proposal.id, proposalId);
   }
 
   const safes = proposal.plugins?.safeSnap?.safes;
@@ -128,7 +149,7 @@ export const assertValidRealityQuestion = (event: LogNewQuestion, proposal: Snap
   const proposalNetworkSafe = safes.find((safe) => safe.network === proposal.network);
   if (!proposalNetworkSafe) throw new SafeNotFoundForProposalNetworkError();
 
-  if (proposalNetworkSafe.hash !== event.question.safeHash) throw new SafeHashMismatchError();
+  if (proposalNetworkSafe.hash !== safeHash) throw new SafeHashMismatchError();
 };
 
 type ValidationResultOK = {
@@ -155,9 +176,13 @@ export type ValidationResult = ValidationResultOK | ValidationResultFailed;
  * const result = validateRealityQuestion(event, proposal);
  * if (result.isValid) console.log("Validation passed!");
  */
-export const validateRealityQuestion = (event: LogNewQuestion, proposal: SnapshotProposal | null): ValidationResult => {
+export const validateRealityQuestion = (
+  proposalEvent: ProposalQuestionCreated,
+  event: LogNewQuestion,
+  proposal: SnapshotProposal | null,
+): ValidationResult => {
   try {
-    assertValidRealityQuestion(event, proposal);
+    assertValidRealityQuestion(proposalEvent, event, proposal);
     return { isValid: true };
   } catch (error) {
     if (!(error instanceof BaseProposalValidationError)) throw error;

@@ -1,4 +1,4 @@
-import { Hex, type Hash } from "viem";
+import { type Hash } from "viem";
 
 export class MissingLogNewQuestionEventError extends Error {
   constructor(txHash: Hash, ens: string) {

@@ -7,7 +7,7 @@ Please find the details below:
 
 You can explore the details using the following links:
 - Reality question: <%- getRealityQuestionLink(notification) %>
-- Snapshot proposal: <%- getSnapshotProposalLink(notification) %>
+<% const snapshotProposalLink = getSnapshotProposalLink(notification); %>- Snapshot proposal: <%- snapshotProposalLink || "the proposal id is not a Snapshot id, so there is no proposal page" %>
 - Transaction: <%- getBlockExplorerLinkForTx(notification.event.txHash) %>
 - Question ID: <%- notification.event.questionId %>
 - Answer: <%- formatAnswer(notification.event.answer) %>
