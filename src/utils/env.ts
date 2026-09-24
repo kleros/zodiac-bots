@@ -199,8 +199,8 @@ export const schema = {
   }),
   REALITY_LINK_TEMPLATE: url({
     desc: "Reality link template. Use {{chainId}}, {{oracleAddress}} and {{questionId}} as placeholders",
-    default: "https://reality.eth.limo/app/#!/network/{{chainId}}/question/{{oracleAddress}}-{{questionId}}",
-    example: "https://reality.eth.limo/app/#!/network/{{chainId}}/question/{{oracleAddress}}-{{questionId}}",
+    default: "https://reality.gwei.site/#!/network/{{chainId}}/question/{{oracleAddress}}-{{questionId}}",
+    example: "https://reality.gwei.site/#!/network/{{chainId}}/question/{{oracleAddress}}-{{questionId}}",
   }),
 };
 
