@@ -2,7 +2,12 @@ import { eq } from "drizzle-orm";
 import type { Hash } from "viem";
 import type { ValidProposalNotification } from "../../notify";
 import type { Space } from "../../types";
-import { getRandomHash, randomizeProposal, randomizeProposalNotification, randomizeSpace } from "../../utils/test-mocks";
+import {
+  getRandomHash,
+  randomizeProposal,
+  randomizeProposalNotification,
+  randomizeSpace,
+} from "../../utils/test-mocks";
 import { expect } from "../../utils/tests-setup";
 import { getConnection } from "./connection";
 import { findProposalByQuestionId, insertProposal, removeProposalByQuestionId } from "./proposals";
@@ -35,10 +40,7 @@ describe("Active Proposals model", () => {
       const fields = randomizeProposalFromNotification(notification);
       await fn(fields);
 
-      const inserted = await db
-        .select()
-        .from(schema.proposal)
-        .where(eq(schema.proposal.questionId, fields.questionId));
+      const inserted = await db.select().from(schema.proposal).where(eq(schema.proposal.questionId, fields.questionId));
 
       expect(inserted).to.be.length(1);
 
@@ -48,6 +50,20 @@ describe("Active Proposals model", () => {
         ...fields,
         createdAt: storedProposal.createdAt,
       });
+    });
+
+    it("should store the widest timeout the oracle can emit", async () => {
+      // Reality declares the timeout as uint32, so the whole range is a value a module may
+      // legitimately be configured with, not just the 3 days the monitored ones use.
+      const maxUint32 = 4294967295;
+      const fields = randomizeProposal({ ens: space.ens, timeout: maxUint32 });
+
+      await fn(fields);
+
+      const inserted = await db.select().from(schema.proposal).where(eq(schema.proposal.questionId, fields.questionId));
+
+      expect(inserted).to.be.length(1);
+      expect(inserted[0].timeout).to.equal(maxUint32);
     });
 
     it("should persist two questions that share a proposalId (re-ask / reuse) without orphaning either", async () => {
@@ -72,10 +88,7 @@ describe("Active Proposals model", () => {
       await fn(proposal);
       await fn(proposal);
 
-      const stored = await db
-        .select()
-        .from(schema.proposal)
-        .where(eq(schema.proposal.questionId, proposal.questionId));
+      const stored = await db.select().from(schema.proposal).where(eq(schema.proposal.questionId, proposal.questionId));
       expect(stored).to.be.length(1);
     });
   });

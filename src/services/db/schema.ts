@@ -33,7 +33,9 @@ export const proposal = pgTable(
     // Attacker controlled and unbounded on chain.
     snapshotId: text("snapshot_id").notNull(),
     startedAt: timestamp("started_at").notNull(),
-    timeout: integer("timeout").notNull(),
+    // uint32 on chain, which does not fit a Postgres integer. Number mode is safe because the
+    // widest value the oracle can emit is far below Number.MAX_SAFE_INTEGER.
+    timeout: bigint("timeout", { mode: "number" }).notNull(),
     finishedAt: timestamp("finished_at").notNull(),
     txHash: varchar("tx_hash", { length: 66 }).notNull(),
     happenedAt: timestamp("happened_at").notNull(),
