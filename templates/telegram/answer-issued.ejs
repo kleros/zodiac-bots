@@ -1,5 +1,5 @@
-*💰 New Reality Answer!*
-[Snapshot Proposal](<%- getSnapshotProposalLink(notification) %>)
+*<%- notification.space.ens %>: 💰 New Reality Answer!*
+<% const snapshotProposalLink = getSnapshotProposalLink(notification); %><% if (snapshotProposalLink) { %>[Snapshot Proposal](<%- snapshotProposalLink %>)<% } else { %>_Snapshot Proposal: the proposal id is not a Snapshot id, so there is no proposal page_<% } %>
 [Reality Question](<%- getRealityQuestionLink(notification) %>)
 [Transaction](<%- getBlockExplorerLinkForTx(notification.event.txHash) %>)
 

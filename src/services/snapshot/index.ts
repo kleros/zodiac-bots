@@ -98,7 +98,7 @@ type ProposalResponse = {
 
 export type SnapshotProposal = ProposalResponse["proposal"];
 
-export const getProposal = async (proposalId: Hex): Promise<SnapshotProposal | null> => {
+export const getProposal = async (proposalId: string): Promise<SnapshotProposal | null> => {
   const query = `
 query {
   proposal(id: "${proposalId}") {

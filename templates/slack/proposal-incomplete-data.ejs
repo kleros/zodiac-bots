@@ -8,13 +8,13 @@ We were unable to complete the automated keccak validation. This does not necess
 
 Manual review required: treat this as a potential security risk until verified.
 
-<<%- getSnapshotProposalLink(notification) %>|Snapshot Proposal>
+<% const snapshotProposalLink = getSnapshotProposalLink(notification); %><% if (snapshotProposalLink) { %><<%- snapshotProposalLink %>|Snapshot Proposal><% } else { %>Snapshot Proposal: the proposal id is not a Snapshot id, so there is no proposal page<% } %>
 <<%- getRealityQuestionLink(notification) %>|Reality Question>
 <<%- getBlockExplorerLinkForTx(notification.event.txHash) %>|Transaction>
 
 *Details:*
 _Question ID_: `<%- notification.event.questionId %>`
-_Proposal ID_: `<%- notification.event.snapshotId %>`
+_Proposal ID_: `<%- toDisplaySafe(notification.event.snapshotId) %>`
 
 *Automated validation did NOT run - verify all of these yourself:*
 • 🟡 Verify the proposal Safe hash equals the keccak256 of the concatenated individual hashes

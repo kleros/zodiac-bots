@@ -1,4 +1,5 @@
 import { Hash, Hex } from "viem";
+import { toDisplaySafe } from "../format";
 
 export enum ValidationErrorSeverity {
   SECURITY_ALERT = "security-alert",
@@ -17,11 +18,41 @@ export class BaseProposalValidationError extends Error {
   constructor(severity: ValidationErrorSeverity, message: string) {
     super(message);
     this.severity = severity;
+    // Without this every subclass reports `name` as "Error", making the `code` of a
+    // validation result useless for telling the failures apart.
+    this.name = this.constructor.name;
+  }
+}
+
+export class MalformedRealityQuestionError extends BaseProposalValidationError {
+  constructor() {
+    super(
+      ValidationErrorSeverity.SECURITY_ALERT,
+      "The Reality question is not a proposal id followed by a 64 character transactions hash, so its fields cannot be read",
+    );
+  }
+}
+
+export class MalformedProposalIdError extends BaseProposalValidationError {
+  constructor(proposalId: string) {
+    super(
+      ValidationErrorSeverity.SECURITY_ALERT,
+      `The proposal id is not shaped like a Snapshot proposal id: ${toDisplaySafe(proposalId)}`,
+    );
+  }
+}
+
+export class ProposalIdIntegrityError extends BaseProposalValidationError {
+  constructor(recorded: Hash, read: Hash) {
+    super(
+      ValidationErrorSeverity.SECURITY_ALERT,
+      `The proposal id read from the Reality question does not match the one recorded by the module. Recorded ${recorded}, read ${read}`,
+    );
   }
 }
 
 export class MissingSnapshotProposalError extends BaseProposalValidationError {
-  constructor(proposalId: Hex) {
+  constructor(proposalId: string) {
     super(
       ValidationErrorSeverity.INCOMPLETE_DATA,
       `The Snapshot GraphQL API didn't return any proposal with proposalId ${proposalId}`,

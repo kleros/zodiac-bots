@@ -1,20 +1,28 @@
 import type { Address } from "viem";
-import { AnswerNotification, ValidProposalNotification } from "../notify";
+import { Notification } from "../notify";
+import { isSnapshotProposalId } from "./snapshot-proposal-id";
 import { env } from "./env";
 
 /**
- * Given a notification, generates a link to the Snapshot propoasal page.
+ * Given a notification, generates a link to the Snapshot proposal page.
+ *
+ * Returns `null` for an id that cannot address a real proposal, so attacker text is never
+ * rendered as a working link.
  *
  * @param notification - The notification object related to the triggering event
+ * @returns The proposal URL, or `null` when the proposal id cannot address a proposal
  *
  * @example
  * const link = getSnapshotProposalLink(notification);
+ * if (link) console.log(link);
  */
-export const getSnapshotProposalLink = (notification: ValidProposalNotification | AnswerNotification): string => {
+export const getSnapshotProposalLink = (notification: Notification): string | null => {
   const {
     space: { ens },
     event: { snapshotId },
   } = notification;
+
+  if (!isSnapshotProposalId(snapshotId)) return null;
 
   return `https://snapshot.org/#/${ens}/proposal/${snapshotId}`;
 };
@@ -47,7 +55,7 @@ export const interpolateUrlTemplate = (template: string, fields: Record<string, 
  * const link = getRealityQuestionLink(notification);
  */
 export const getRealityQuestionLink = (
-  notification: ValidProposalNotification | AnswerNotification,
+  notification: Notification,
   template: string = env.REALITY_LINK_TEMPLATE,
   chainId: string = env.CHAIN_ID.toString(),
 ): string => {

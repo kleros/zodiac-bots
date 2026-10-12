@@ -22,6 +22,7 @@ import type { Space } from "./types";
 import { defaultEmitter } from "./utils/emitter";
 import { env } from "./utils/env";
 import { MissingLogNewQuestionEventError } from "./utils/errors";
+import { isSnapshotProposalId, truncateForStorage } from "./utils/snapshot-proposal-id";
 import { validateRealityQuestion, ValidationResult } from "./utils/reality-question-validation";
 import { ValidationErrorSeverity } from "./utils/reality-question-validation/errors";
 
@@ -286,12 +287,15 @@ export const configurableProcessProposals = async (deps: ConfigurableProcessProp
       if (!newQuestionEvent) throw new MissingLogNewQuestionEventError(event.txHash, space.ens);
       const { question, startedAt, finishedAt, timeout } = newQuestionEvent;
 
-      const proposal = await getSnapshotProposalFn(question.proposalId);
+      // Skipping keeps a Snapshot outage distinguishable from a forged id.
+      const proposal = isSnapshotProposalId(question.proposalId)
+        ? await getSnapshotProposalFn(question.proposalId)
+        : null;
 
-      const validation = validateRealityQuestionFn(newQuestionEvent, proposal);
+      const validation = validateRealityQuestionFn(event, newQuestionEvent, proposal);
 
       const logNewQuestionFields = {
-        snapshotId: question.proposalId,
+        snapshotId: truncateForStorage(question.proposalId),
         startedAt,
         finishedAt,
         timeout,

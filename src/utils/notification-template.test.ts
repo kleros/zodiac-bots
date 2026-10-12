@@ -139,4 +139,69 @@ event.happenedAt: ${event.happenedAt.toISOString()}
       expect(result).to.equal(expectedResult.trim());
     });
   });
+
+  describe("untrusted proposal id rendering", () => {
+    // The Reality module emits the proposer's string verbatim, so every transport that parses
+    // markup is a channel to the reviewer deciding whether the proposal is an attack. The
+    // sentinels bracket the interpolated value so the assertion cannot catch the template's
+    // own legitimate markup.
+    const START = "INJECTIONSTART";
+    const END = "INJECTIONEND";
+    const HOSTILE_ID = `${START}<a href="http://evil">Approved by Kleros</a> *bold* _em_ \`code\` <http://evil|x>${END}`;
+
+    const surfaces: [TransportName, string | undefined][] = [
+      ["telegram" as TransportName, undefined],
+      ["slack" as TransportName, undefined],
+      ["email" as TransportName, "html"],
+      ["email" as TransportName, "plain"],
+    ];
+
+    surfaces.forEach(([transport, variant]) => {
+      it(`should not emit markup from the proposal id via ${transport}${variant ? ` (${variant})` : ""}`, async () => {
+        const notification = randomizeProposalNotification();
+        notification.event.snapshotId = HOSTILE_ID;
+
+        const rendered = await render(transport, notification, variant);
+        const from = rendered.indexOf(START);
+        const to = rendered.indexOf(END);
+
+        expect(from, "the proposal id was not interpolated at all").to.be.greaterThan(-1);
+
+        const interpolated = rendered.slice(from, to);
+
+        // The text survives, because it is the evidence a reviewer needs to judge the proposal.
+        expect(interpolated).to.contain("Approved by Kleros");
+        [...'<>&"`*_[]()|='].forEach((markup) => expect(interpolated).to.not.contain(markup));
+      });
+    });
+  });
+
+  describe("space identification", () => {
+    // The group receives alerts for every monitored space, so a reader must be able to tell
+    // which DAO an alert belongs to without opening a link. On 2026-09-23 both monitored
+    // spaces fired hours apart and the Telegram headers were indistinguishable.
+    const surfaces: [TransportName, string | undefined][] = [
+      ["telegram" as TransportName, undefined],
+      ["slack" as TransportName, undefined],
+      ["email" as TransportName, "subject"],
+    ];
+
+    surfaces.forEach(([transport, variant]) => {
+      it(`should name the space in a proposal notification via ${transport}${variant ? ` (${variant})` : ""}`, async () => {
+        const notification = randomizeProposalNotification();
+
+        const rendered = await render(transport, notification, variant);
+
+        expect(rendered).to.contain(notification.space.ens);
+      });
+
+      it(`should name the space in an answer notification via ${transport}${variant ? ` (${variant})` : ""}`, async () => {
+        const notification = randomizeAnswerNotification();
+
+        const rendered = await render(transport, notification, variant);
+
+        expect(rendered).to.contain(notification.space.ens);
+      });
+    });
+  });
 });

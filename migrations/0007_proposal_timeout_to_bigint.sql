@@ -1,0 +1,1 @@
+ALTER TABLE "proposal" ALTER COLUMN "timeout" SET DATA TYPE bigint;

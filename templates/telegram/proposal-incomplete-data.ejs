@@ -1,4 +1,4 @@
-*🗳 New Reality Proposal Question*
+*<%- notification.space.ens %>: 🗳 New Reality Proposal Question*
 
 ⚠️WARNING: Unable to validate proposal keccak hash ⚠️
 
@@ -8,13 +8,13 @@ We were unable to complete the automated keccak validation. This does not necess
 
 Manual review required: treat this as a potential security risk until verified.
 
-[Snapshot Proposal](<%- getSnapshotProposalLink(notification) %>)
+<% const snapshotProposalLink = getSnapshotProposalLink(notification); %><% if (snapshotProposalLink) { %>[Snapshot Proposal](<%- snapshotProposalLink %>)<% } else { %>_Snapshot Proposal: the proposal id is not a Snapshot id, so there is no proposal page_<% } %>
 [Reality Question](<%- getRealityQuestionLink(notification) %>)
 [Transaction](<%- getBlockExplorerLinkForTx(notification.event.txHash) %>)
 
 *Details:*
 _Question ID_: `<%- notification.event.questionId %>`
-_Proposal ID_: `<%- notification.event.snapshotId %>`
+_Proposal ID_: `<%- toDisplaySafe(notification.event.snapshotId) %>`
 
 *Automated validation did NOT run - verify all of these yourself:*
 🟡 Verify the proposal Safe hash equals the keccak256 of the concatenated individual hashes
